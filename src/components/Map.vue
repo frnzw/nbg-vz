@@ -3,6 +3,7 @@
   import "leaflet/dist/leaflet.css";
   import L from "leaflet";
   import PlacesLayer from './PlacesLayer.vue'
+  import Slider from './Slider.vue'
   import PersonsLayer from './PersonsLayer.vue'
   import DistantLayer from './DistantLayer.vue'
   import { useRoute } from 'vue-router'
@@ -48,6 +49,7 @@
 
 <template>
 <div id="mapContainer"></div>
+<Slider />
 <PlacesLayer v-if="route.path === '/map/places'" :map="globalMap"/>
 <PersonsLayer v-if="route.path === '/map/persons'" :map="globalMap"/>
 <DistantLayer v-if="route.path === '/map/distant'" :map="globalMap"/>
@@ -57,7 +59,7 @@
 <style scoped>
 #mapContainer {
 width: 100vw;
-height: 100%;
+height: 90%;
 
 }
 </style>

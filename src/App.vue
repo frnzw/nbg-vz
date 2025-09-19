@@ -39,6 +39,7 @@
         <!-- Global Map Instance for all map views-->
         <!-- When bringing in other views (About, Data): use v-if / v-else to render map -->
         <Map />
+      
         <!-- <RouterView /> -->
 
       </v-main>
