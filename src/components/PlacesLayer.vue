@@ -2,51 +2,74 @@
     import Map from './Map.vue'
     import L from "leaflet";
     import { usePlacesStore } from '../stores/placesStore'
-    import {onMounted, reactive} from 'vue'
+    import {onMounted, reactive, defineProps, onUnmounted} from 'vue'
 
     const placesStore = usePlacesStore();
 
-    // will be set async by event of child component, make reactive to pick that change up in
-    // lifecycle methods of vue (e.g. onMount)
-    let state = reactive({
-        map: undefined
+    const props = defineProps({
+        test: String,
+        map: Object
     })
 
-    function onMapIsReady(map) {
-        // console.log('Map instance:', map)
-        state.map = map;
-    }
+    let placeMarkers = undefined;
 
-    const addStationMarkers = function(stations, map) {
+    const createStationMarkers = function(stations, map) {
         console.log("Attempting to add " + Object.keys(stations).length + " markers")
+        const markers = []
         for (const key of Object.keys(stations)) {
             if (!key) continue
             if (stations.hasOwnProperty(key)) {
-                console.log(key)
+                //console.log(key)
                 
                 const station = stations[key]
-                console.log(key, station)
+                //console.log(key, station)
 
                 const marker = L.marker([station.lat, station.long], {
                 title: station.stationId
                 })
 
-                marker.addTo(map)
+                const circle = L.circle([station.lat, station.long], {
+                    color: 'red',
+                    fillColor: '#f03',
+                    fillOpacity: 0.5,
+                    radius: 500
+                })
+
+                circle.bindPopup(`${station.stationId}`);
+
+                markers.push(circle)
             }
 
         }
+        placeMarkers = L.layerGroup(markers);
 
     }
 
+    const showPlacesLayer = function(layergroup, map) {
+        layergroup.addTo(map)
+    }
+
+    const hidePlacesLayer = function(layergroup, map) {
+        layergroup.removeFrom(map)
+    }
+
     onMounted(async () => {
+        console.log('Places view test prop: ' + props.test);
+        console.log('Places view map prop: ');
+        console.log(props.map);
         console.log('pathToDataFile: ' + placesStore.pathToDataFile)
         await placesStore.readData(placesStore.pathToDataFile)
         console.log(placesStore.stations)
 
-        if (state.map) addStationMarkers(placesStore.stations, state.map)
+        if (placeMarkers === undefined) createStationMarkers(placesStore.stations, props.map)
+
+        showPlacesLayer(placeMarkers, props.map);
+
     })
+
+    onUnmounted(() => hidePlacesLayer(placeMarkers, props.map))
 
 </script>
 <template>
-    <!-- <Map @mapIsReady="onMapIsReady" /> -->
+
 </template>

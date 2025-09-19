@@ -1,35 +1,77 @@
 <script setup>
     import Map from './Map.vue'
-    // import L from "leaflet";
+    import L from "leaflet"
     // import personStore
-    // import placesStore
-    import {onMounted, reactive} from 'vue'
+    import { usePlacesStore } from '../stores/placesStore'
+    import {onMounted, reactive, defineProps, onUnmounted} from 'vue'
 
-    // const placesStore = usePlacesStore(); <--- use PersonStore
-    // const placesStore = usePlacesStore(); <--- use placesStore
+    /**
+     * @todo use person store as well
+     */
+    const placesStore = usePlacesStore(); 
 
-    // will be set async by event of child component, make reactive to pick that change up in
-    // lifecycle methods of vue (e.g. onMount)
-    let state = reactive({
-        map: undefined
+
+    const props = defineProps({
+        test: String,
+        map: Object
     })
 
-    function onMapIsReady(map) {
-        // console.log('Map instance:', map)
-        state.map = map;
+    let placeMarkersDistant = undefined;
+
+    const createStationMarkersDistant = function(stations) {
+        console.log("Attempting to add " + Object.keys(stations).length + " markers")
+        const markers = []
+        for (const key of Object.keys(stations)) {
+            if (!key) continue
+            if (stations.hasOwnProperty(key)) {
+                //console.log(key)
+                
+                const station = stations[key]
+                //console.log(key, station)
+
+                const marker = L.marker([station.lat, station.long], {
+                title: station.stationId
+                })
+
+                markers.push(marker)
+            }
+
+        }
+        placeMarkersDistant = L.layerGroup(markers);
+
     }
 
-    // function for adding person markers etc
+    const showPlacesLayerDistant = function(layergroup, map) {
+        layergroup.addTo(map)
+    }
+
+    const hidePlacesLayerDistant = function(layergroup, map) {
+        layergroup.removeFrom(map)
+    }
 
     onMounted(async () => {
+        console.log('Places view map prop: ');
+        console.log(props.map);
+        console.log('pathToDataFile: ' + placesStore.pathToDataFile)
+        if (!placesStore.loaded) await placesStore.readData(placesStore.pathToDataFile)
+        console.log(placesStore.stations)
+
+        if (placeMarkersDistant === undefined) createStationMarkersDistant(placesStore.stations)
+
+        showPlacesLayerDistant(placeMarkersDistant, props.map);
+
+    })
+
+    
+
+    onMounted(async () => {
+        console.log('RENDERED DISTANT LAYER')
         // init loading of data into store
         // apply further logic when map is ready
     })
 
+    onUnmounted(() => hidePlacesLayerDistant(placeMarkersDistant, props.map))
+
 </script>
 <template>
-    <div>
-        <Map @mapIsReady="onMapIsReady" />
-    </div>
-
 </template>

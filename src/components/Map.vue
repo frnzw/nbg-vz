@@ -2,18 +2,28 @@
   import { onMounted, ref } from 'vue'
   import "leaflet/dist/leaflet.css";
   import L from "leaflet";
+  import PlacesLayer from './PlacesLayer.vue'
+  import PersonsLayer from './PersonsLayer.vue'
+  import DistantLayer from './DistantLayer.vue'
+  import { useRoute } from 'vue-router'
 
   // import { useMapStore } from '../stores/mapStore'
 
+  const route = useRoute()
 
   const emit = defineEmits(['mapIsReady']) // for passing map to parent component
 
-  const center = [37.7749, -122.4194];
+  const center = [30, 0];
 
-  
+  const testProp = "hello prop!";
+
+  let globalMap = undefined;
 
   const initMap = function() {
-    const map = L.map("mapContainer").setView(center, 2);
+    const map = L.map("mapContainer").fitWorld().zoomIn() //.setView(center, 2);
+    /**
+     * @todo set minZoom and initial view dependent on screen size: large screen needs minZoom 3 for initial view / overview
+     */
     const tileLayer = L.tileLayer(
         'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}' + (L.Browser.retina ? '@2x.png' : '.png'), 
         {
@@ -25,18 +35,22 @@
 
     tileLayer.addTo(map)
 
-    return map
+    globalMap = map
   }
 
   onMounted(async () => {
-    const map = initMap();
-    emit('mapIsReady', map) // pass map to parent component
+    initMap();
+    
+    emit('mapIsReady', globalMap) // pass map to parent component
   });
 
 </script>
 
 <template>
 <div id="mapContainer"></div>
+<PlacesLayer v-if="route.path === '/map/places'" :map="globalMap"/>
+<PersonsLayer v-if="route.path === '/map/persons'" :map="globalMap"/>
+<DistantLayer v-if="route.path === '/map/distant'" :map="globalMap"/>
 </template>
 
 

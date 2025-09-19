@@ -1,33 +1,138 @@
 <script setup>
     import Map from './Map.vue'
-    // import L from "leaflet";
-    // import personStore
-    import {onMounted, reactive} from 'vue'
+    import L from "leaflet";
+    import { usePlacesStore } from '../stores/placesStore'
+    import {onMounted, onUnmounted} from 'vue'
 
-    // const placesStore = usePlacesStore(); <--- use PersonStore
+    /**
+     * @todo use person store as well
+     */
+     const placesStore = usePlacesStore(); 
 
-    // will be set async by event of child component, make reactive to pick that change up in
-    // lifecycle methods of vue (e.g. onMount)
-    let state = reactive({
-        map: undefined
+    const props = defineProps({
+        test: String,
+        map: Object
     })
 
-    function onMapIsReady(map) {
-        // console.log('Map instance:', map)
-        state.map = map;
+    let personMarkers = undefined;
+
+    const createPersonMarkers = function(stations) {
+        console.log("Attempting to add " + Object.keys(stations).length + " markers")
+        const markers = []
+        for (const key of Object.keys(stations)) {
+            if (!key) continue
+            if (stations.hasOwnProperty(key)) {
+                //console.log(key)
+                
+                const station = stations[key]
+                //console.log(key, station)
+                
+                const markerCss = 'background-color:#c30b82; '
+                                + 'width: 50px; height: 50px; '
+                                + 'transform: rotate(-45deg); '
+                                + 'border-radius: 50% 50% 50% 0; '
+
+                
+            
+                const wrapperStyle = 'position: relative; width: 50px; height: 50px;'
+
+                const markerSvg = `
+                <svg viewBox="0 0 30 50" width="30" height="50" style="display: block;">
+                <path d="M15 0
+                        C32 0, 32 25, 15 50
+                        C-2 25, -2 0, 15 0 Z"
+                        fill="#F5F5F5" fill-opacity="0.9" stroke="black" stroke-width="1"/>
+                </svg>
+                `
+
+                const iconCss = 'font-size: 28px; position: absolute; top: 0px; left: 1px'
+
+                const html = `<div style="${wrapperStyle}">`
+                           + markerSvg
+                           + `<i class="mdi mdi-human-male" style="${iconCss}"></i>`
+                           + '</div>'
+
+
+
+                var myIcon = L.divIcon({
+                    className: 'custom-div-icon', 
+                    html:html, //`<div style="${markerCss}" class="marker-pin"><i class="mdi mdi-account" style=" transform: rotate(+45deg)"></div>`,
+                    iconSize: [30, 42],
+                    iconAnchor: [15, 42]})
+                // var myIcon = L.divIcon({className: 'my-div-icon', html:'<i class="mdi mdi-account"></i>'})
+                // var myIcon = L.divIcon({className: 'my-div-icon', html:'<v-icon color="teal-darken-2" icon="mdi-account" size="large"></v-icon>'});
+                const marker = L.marker([station.lat, station.long], {icon: myIcon, title: station.stationId})
+
+                markers.push(marker)
+            }
+
+        }
+        personMarkers = L.layerGroup(markers);
+
     }
 
-    // function for adding person markers etc
+    const showPersonsLayer = function(layergroup, map) {
+        layergroup.addTo(map)
+    }
+
+    const hidePersonsLayer = function(layergroup, map) {
+        layergroup.removeFrom(map)
+    }
 
     onMounted(async () => {
-        // init loading of data into store
-        // apply further logic when map is ready
+        console.log('RENDERED PERSONS LAYER')
+        console.log('Person view map prop: ');
+        console.log(props.map);
+        console.log('pathToDataFile: ' + placesStore.pathToDataFile)
+        if (!placesStore.loaded) await placesStore.readData(placesStore.pathToDataFile)
+        console.log(placesStore.stations)
+
+        if (personMarkers === undefined) createPersonMarkers(placesStore.stations)
+
+        showPersonsLayer(personMarkers, props.map);
+
     })
+
+    onUnmounted(() => hidePersonsLayer(personMarkers, props.map))
+
 
 </script>
 <template>
-    <div>
-        <Map @mapIsReady="onMapIsReady" />
-    </div>
-
 </template>
+
+<style scoped>
+.marker-pin {
+  width: 30px;
+  height: 30px;
+  border-radius: 50% 50% 50% 0;
+  background: #c30b82;
+  position: absolute;
+  transform: rotate(-45deg);
+  left: 50%;
+  top: 50%;
+  margin: -15px 0 0 -15px;
+}
+.marker-pin::after {
+    content: '';
+    width: 24px;
+    height: 24px;
+    margin: 3px 0 0 3px;
+    background: #fff;
+    position: absolute;
+    border-radius: 50%;
+ }
+
+.custom-div-icon i {
+   position: absolute;
+   width: 22px;
+   font-size: 22px;
+   left: 0;
+   right: 0;
+   margin: 10px auto;
+   text-align: center;
+}
+</style>
+
+
+
+  
