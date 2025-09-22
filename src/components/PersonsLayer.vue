@@ -60,8 +60,10 @@
                 personMarkers.push(marker)
             }
 
-        
-            personLayer = L.layerGroup(personMarkers);
+            const filteredByYear = personMarkers.filter(marker => marker.data.year === props.sliderValue)
+            filteredByYear.forEach(marker => marker.addTo(personLayer))
+
+            personLayer = L.layerGroup(filteredByYear);
             console.log('markers added to layergroup')
 
     }
