@@ -1,13 +1,20 @@
 <script setup>
-    import { ref } from 'vue'
+    import { ref, defineEmits, defineProps } from 'vue'
+
+    defineProps({
+        modelValue: Number,
+    });
+
+    const emit = defineEmits(["update:modelValue"])
+
     const min = ref(1800)
     const max = ref(1900)
-    const slider = ref(1819)
+
 </script>
 
 <template>
     <!-- <div class="position-relative" style="width: 100%; height: 50px; border: 2px solid black"> -->
-        <v-slider v-model="slider" :max="max" :min="min"style="width:25%">
+        <v-slider v-model="props.modelValue" @update:modelValue="val => emit('update:modelValue', val)" :max="max" :min="min"style="width:25%">
         </v-slider>
     <!-- </div> -->
 

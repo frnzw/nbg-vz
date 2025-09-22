@@ -1,17 +1,17 @@
 <script setup>
     import Map from './Map.vue'
     import L from "leaflet";
-    import { usePlacesStore } from '../stores/placesStore'
+    import { usePersonsPlacesStore } from '../stores/personsPlacesStore'
     import {onMounted, onUnmounted} from 'vue'
 
     /**
      * @todo use person store as well
      */
-     const placesStore = usePlacesStore(); 
+     const personsPlacesStore = usePersonsPlacesStore(); 
 
     const props = defineProps({
-        test: String,
-        map: Object
+        map: Object,
+        sliderValue: Number
     })
 
     let personMarkers = undefined;
@@ -83,11 +83,11 @@
         console.log('RENDERED PERSONS LAYER')
         console.log('Person view map prop: ');
         console.log(props.map);
-        console.log('pathToDataFile: ' + placesStore.pathToDataFile)
-        if (!placesStore.loaded) await placesStore.readData(placesStore.pathToDataFile)
-        console.log(placesStore.stations)
+        console.log('pathToDataFile: ' + personsPlacesStore.pathToDataFile)
+        if (!personsPlacesStore.loaded) await personsPlacesStore.readData(personsPlacesStore.pathToDataFile)
+        console.log(personsPlacesStore.entries)
 
-        if (personMarkers === undefined) createPersonMarkers(placesStore.stations)
+        if (personMarkers === undefined) createPersonMarkers(placesStore.entri)
 
         showPersonsLayer(personMarkers, props.map);
 
@@ -100,7 +100,7 @@
 <template>
 </template>
 
-<style scoped>
+<!-- <style scoped>
 .marker-pin {
   width: 30px;
   height: 30px;
@@ -131,7 +131,7 @@
    margin: 10px auto;
    text-align: center;
 }
-</style>
+</style> -->
 
 
 

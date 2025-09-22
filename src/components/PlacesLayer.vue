@@ -7,8 +7,8 @@
     const placesStore = usePlacesStore();
 
     const props = defineProps({
-        test: String,
-        map: Object
+        map: Object,
+        sliderValue: Number
     })
 
     let placeMarkers = undefined;

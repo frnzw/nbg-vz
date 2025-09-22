@@ -4,6 +4,8 @@
   import L from "leaflet";
   import PlacesLayer from './PlacesLayer.vue'
   import Slider from './Slider.vue'
+  import SliderWrapper from "./SliderWrapper.vue"
+  import DisplayValue from "./DisplayValue.vue"
   import PersonsLayer from './PersonsLayer.vue'
   import DistantLayer from './DistantLayer.vue'
   import { useRoute } from 'vue-router'
@@ -17,6 +19,8 @@
   const center = [30, 0];
 
   const testProp = "hello prop!";
+
+  const sliderValue = ref(1819); 
 
   let globalMap = undefined;
 
@@ -49,10 +53,13 @@
 
 <template>
 <div id="mapContainer"></div>
-<Slider />
-<PlacesLayer v-if="route.path === '/map/places'" :map="globalMap"/>
-<PersonsLayer v-if="route.path === '/map/persons'" :map="globalMap"/>
-<DistantLayer v-if="route.path === '/map/distant'" :map="globalMap"/>
+<v-container>
+    <slider-wrapper v-model="sliderValue" class="pt-4"/>
+    <display-value :value="sliderValue" />
+  </v-container>
+<PlacesLayer v-if="route.path === '/map/places'" :map="globalMap" :sliderValue="sliderValue"/>
+<PersonsLayer v-if="route.path === '/map/persons'" :map="globalMap" :sliderValue="sliderValue"/>
+<DistantLayer v-if="route.path === '/map/distant'" :map="globalMap" :sliderValue="sliderValue"/>
 </template>
 
 
