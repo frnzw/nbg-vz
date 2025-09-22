@@ -2,11 +2,8 @@
     import Map from './Map.vue'
     import L from "leaflet";
     import { usePersonsPlacesStore } from '../stores/personsPlacesStore'
-    import {onMounted, onUnmounted} from 'vue'
+    import {onMounted, onUnmounted, watch} from 'vue'
 
-    /**
-     * @todo use person store as well
-     */
      const personsPlacesStore = usePersonsPlacesStore(); 
 
     const props = defineProps({
@@ -15,17 +12,15 @@
     })
 
     let personMarkers = undefined;
+    let personLayer = undefined;
 
-    const createPersonMarkers = function(stations) {
-        console.log("Attempting to add " + Object.keys(stations).length + " markers")
-        const markers = []
-        for (const key of Object.keys(stations)) {
-            if (!key) continue
-            if (stations.hasOwnProperty(key)) {
-                //console.log(key)
-                
-                const station = stations[key]
-                //console.log(key, station)
+    const createPersonMarkers = function(entries) {
+        console.log("Attempting to add " + entries.length + " person markers")
+        personMarkers = []
+        for (const entry of entries) {
+            if (!entry.stationId) continue
+
+                // console.log(entry)
                 
                 const markerCss = 'background-color:#c30b82; '
                                 + 'width: 50px; height: 50px; '
@@ -56,20 +51,34 @@
 
                 var myIcon = L.divIcon({
                     className: 'custom-div-icon', 
-                    html:html, //`<div style="${markerCss}" class="marker-pin"><i class="mdi mdi-account" style=" transform: rotate(+45deg)"></div>`,
+                    html:html, 
                     iconSize: [30, 42],
                     iconAnchor: [15, 42]})
-                // var myIcon = L.divIcon({className: 'my-div-icon', html:'<i class="mdi mdi-account"></i>'})
-                // var myIcon = L.divIcon({className: 'my-div-icon', html:'<v-icon color="teal-darken-2" icon="mdi-account" size="large"></v-icon>'});
-                const marker = L.marker([station.lat, station.long], {icon: myIcon, title: station.stationId})
 
-                markers.push(marker)
+                const marker = L.marker([entry.lat, entry.long], {icon: myIcon, title: entry.stationId+entry.person})
+                marker.data = {year: entry.year}
+                personMarkers.push(marker)
             }
 
-        }
-        personMarkers = L.layerGroup(markers);
+        
+            personLayer = L.layerGroup(personMarkers);
+            console.log('markers added to layergroup')
 
     }
+
+    watch(() => props.sliderValue, (sliderValue) => {
+        console.log('triggered watch for slider!')
+        if (personMarkers && personLayer) {
+            personLayer.clearLayers()
+            console.log('removed markers')
+
+            const filteredByYear = personMarkers.filter(marker => marker.data.year === sliderValue)
+            filteredByYear.forEach(marker => marker.addTo(personLayer))
+            console.log(`Filtered markers for year ${sliderValue}: ${filteredByYear.length}`)
+
+        }
+
+    })
 
     const showPersonsLayer = function(layergroup, map) {
         layergroup.addTo(map)
@@ -87,51 +96,20 @@
         if (!personsPlacesStore.loaded) await personsPlacesStore.readData(personsPlacesStore.pathToDataFile)
         console.log(personsPlacesStore.entries)
 
-        if (personMarkers === undefined) createPersonMarkers(placesStore.entri)
+        if (personMarkers === undefined) createPersonMarkers(personsPlacesStore.entries)
 
-        showPersonsLayer(personMarkers, props.map);
+        showPersonsLayer(personLayer, props.map);
+        console.log(personMarkers[0])
 
     })
 
-    onUnmounted(() => hidePersonsLayer(personMarkers, props.map))
+    onUnmounted(() => hidePersonsLayer(personLayer, props.map))
 
 
 </script>
 <template>
 </template>
 
-<!-- <style scoped>
-.marker-pin {
-  width: 30px;
-  height: 30px;
-  border-radius: 50% 50% 50% 0;
-  background: #c30b82;
-  position: absolute;
-  transform: rotate(-45deg);
-  left: 50%;
-  top: 50%;
-  margin: -15px 0 0 -15px;
-}
-.marker-pin::after {
-    content: '';
-    width: 24px;
-    height: 24px;
-    margin: 3px 0 0 3px;
-    background: #fff;
-    position: absolute;
-    border-radius: 50%;
- }
-
-.custom-div-icon i {
-   position: absolute;
-   width: 22px;
-   font-size: 22px;
-   left: 0;
-   right: 0;
-   margin: 10px auto;
-   text-align: center;
-}
-</style> -->
 
 
 

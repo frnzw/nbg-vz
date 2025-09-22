@@ -21,7 +21,7 @@ export const usePersonsPlacesStore = defineStore('personsPlaces', () => {
             const data = Papa.parse(csvString, {header:true, dynamicTyping: true}).data;
             console.log('Loaded personsPlacesStore')
             // console.log(data)
-        
+            entries.value = data
             loaded.value = true
 
         } catch (error) {
