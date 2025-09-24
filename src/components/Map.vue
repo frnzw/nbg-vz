@@ -20,7 +20,7 @@
 
   const testProp = "hello prop!";
 
-  const sliderValue = ref(1819); 
+  const sliderValue = ref(1828); 
 
   let globalMap = undefined;
 

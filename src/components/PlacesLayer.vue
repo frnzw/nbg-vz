@@ -18,10 +18,13 @@
     const facetName = "Stationsnamen"
     let nameList = ref([])
     const selectedValues = ref([])
+    const markerBaseSize = 500
 
     const createStationMarkers = function(stations) {
         console.log("Attempting to add " + Object.keys(stations).length + " markers")
         placeMarkers = []
+
+        console.log('resizing markers for slidervalue: ' + props.sliderValue)
         for (const key of Object.keys(stations)) {
             if (!key) continue
             if (stations.hasOwnProperty(key)) {
@@ -34,15 +37,20 @@
                 title: station.stationId
                 })
 
+                
+                console.log('station.nofPersons[sliderValue]: ' + station.nofPersons[props.sliderValue])
+                console.log('markerBaseSize: ' + markerBaseSize)
+                const radiusScaled = station.nofPersons[props.sliderValue] ? markerBaseSize * parseInt(station.nofPersons[props.sliderValue]) : markerBaseSize
+                console.log('radius scaled: ' + radiusScaled)
                 const circle = L.circle([station.lat, station.long], {
-                    color: 'red',
+                    color: station.nofPersons[props.sliderValue] ? 'red' : 'grey',
                     fillColor: '#f03',
                     fillOpacity: 0.5,
-                    radius: 500
+                    radius: radiusScaled * (20 - props.map.getZoom()) * 10000
                 })
 
                 // @todo include here: year, nofPersonsPresent
-                circle.data = {stationName:station.stationId}
+                circle.data = {stationName:station.stationId, nofPersons:station.nofPersons}
 
                 circle.bindPopup(`${station.stationId}`);
 
@@ -58,21 +66,30 @@
 
     }
 
-const applyFilters = function(sliderValue, selectedValues, layer) {
-        if (layer) layer.clearLayers()
-        console.log('removed markers')
+        const resizePlaceMarkers = function(markers, year) {
+            markers.forEach((marker) => {
+                const radiusScaled = marker.data.nofPersons[year] ? markerBaseSize * parseInt(marker.data.nofPersons[year]) : markerBaseSize
+                marker.setRadius(radiusScaled * (20 - props.map.getZoom())) * 10000
+                marker.setStyle({color: marker.data.nofPersons[year] ? 'red' : 'grey'})
+            });
+        }
 
-        // const filteredByYear = placeMarkers.filter(marker => marker.data.year === sliderValue)
-        // console.log(`Filtered markers for year ${sliderValue}: ${filteredByYear.length}`)
-        const filteredByYear = placeMarkers
-        console.log(`Not yet filtering markers for year.`)
-        console.log(typeof(selectedValues))
-        console.log(selectedValues)
-        const filteredByNames = selectedValues.length == 0 ? filteredByYear : filteredByYear.filter(marker => selectedValues.includes(marker.data.stationName))
-        console.log(`Filtered markers by names ${selectedValues}: ${filteredByNames.length}`)
+        const applyFilters = function(sliderValue, selectedValues, layer) {
+                if (layer) layer.clearLayers()
+                console.log('removed markers')
 
-        return filteredByNames
-}
+                // const filteredByYear = placeMarkers.filter(marker => marker.data.year === sliderValue)
+                // console.log(`Filtered markers for year ${sliderValue}: ${filteredByYear.length}`)
+                const filteredByYear = placeMarkers
+                console.log(`Not yet filtering markers for year.`)
+                console.log(typeof(selectedValues))
+                console.log(selectedValues)
+                const filteredByNames = selectedValues.length == 0 ? filteredByYear : filteredByYear.filter(marker => selectedValues.includes(marker.data.stationName))
+                console.log(`Filtered markers by names ${selectedValues}: ${filteredByNames.length}`)
+
+                resizePlaceMarkers(filteredByNames, props.sliderValue)
+                return filteredByNames
+        }
 
         watch(() => props.sliderValue, (sliderValue) => {
                 console.log('triggered watch for slider!')
