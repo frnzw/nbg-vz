@@ -130,8 +130,6 @@
 
 
         if (personMarkers === undefined) createPersonMarkers(personsPlacesStore.entries)
-        console.log(nameList.value.length > 0)
-        console.log(nameList.vlaue)
         nameList.value = Array.from(personsStore.nameIDs)
         console.log(nameList)
 

@@ -2,7 +2,8 @@
     import Map from './Map.vue'
     import L from "leaflet";
     import { usePlacesStore } from '../stores/placesStore'
-    import {onMounted, reactive, defineProps, onUnmounted} from 'vue'
+    import {onMounted, ref, defineProps, onUnmounted, watch} from 'vue'
+    import SearchField from './SearchField.vue'
 
     const placesStore = usePlacesStore();
 
@@ -12,10 +13,15 @@
     })
 
     let placeMarkers = undefined;
+    let placeLayer = undefined;
 
-    const createStationMarkers = function(stations, map) {
+    const facetName = "Stationsnamen"
+    let nameList = ref([])
+    const selectedValues = ref([])
+
+    const createStationMarkers = function(stations) {
         console.log("Attempting to add " + Object.keys(stations).length + " markers")
-        const markers = []
+        placeMarkers = []
         for (const key of Object.keys(stations)) {
             if (!key) continue
             if (stations.hasOwnProperty(key)) {
@@ -35,15 +41,61 @@
                     radius: 500
                 })
 
+                // @todo include here: year, nofPersonsPresent
+                circle.data = {stationName:station.stationId}
+
                 circle.bindPopup(`${station.stationId}`);
 
-                markers.push(circle)
+                placeMarkers.push(circle)
             }
 
         }
-        placeMarkers = L.layerGroup(markers);
+        const filtered = applyFilters(props.sliderValue, selectedValues.value, placeLayer, placeMarkers)
+        placeLayer = L.layerGroup(filtered);
+        placeLayer.addTo(props.map)
+        console.log('markers added to layergroup')
+        
 
     }
+
+const applyFilters = function(sliderValue, selectedValues, layer) {
+        if (layer) layer.clearLayers()
+        console.log('removed markers')
+
+        // const filteredByYear = placeMarkers.filter(marker => marker.data.year === sliderValue)
+        // console.log(`Filtered markers for year ${sliderValue}: ${filteredByYear.length}`)
+        const filteredByYear = placeMarkers
+        console.log(`Not yet filtering markers for year.`)
+        console.log(typeof(selectedValues))
+        console.log(selectedValues)
+        const filteredByNames = selectedValues.length == 0 ? filteredByYear : filteredByYear.filter(marker => selectedValues.includes(marker.data.stationName))
+        console.log(`Filtered markers by names ${selectedValues}: ${filteredByNames.length}`)
+
+        return filteredByNames
+}
+
+        watch(() => props.sliderValue, (sliderValue) => {
+                console.log('triggered watch for slider!')
+                if (placeMarkers && placeLayer) {
+                    // console.log(selectedValues.value)
+                    const filtered = applyFilters(sliderValue, selectedValues.value, placeLayer, placeMarkers)
+                    filtered.forEach(marker => marker.addTo(placeLayer))
+
+                }
+
+            })
+
+        const onSelectedNamesUpdate = function (selectedValues, sliderValue, personLayer, personMarkers) {
+            if (placeMarkers && placeLayer) {
+                console.log('On selected names update:')
+                console.log(selectedValues) // !!! selectedValues comes from template here, can access directly not via .value
+                const filtered = applyFilters(sliderValue, selectedValues, placeLayer, placeMarkers)
+                filtered.forEach(marker => marker.addTo(placeLayer))
+
+            }
+        }
+
+
 
     const showPlacesLayer = function(layergroup, map) {
         layergroup.addTo(map)
@@ -62,14 +114,20 @@
         console.log(placesStore.stations)
 
         if (placeMarkers === undefined) createStationMarkers(placesStore.stations, props.map)
+        console.log(Object.keys(placesStore.stations))
+        nameList.value = Array.from(Object.keys(placesStore.stations))
+        console.log(nameList.value)
 
-        showPlacesLayer(placeMarkers, props.map);
+        showPlacesLayer(placeLayer, props.map);
 
     })
 
-    onUnmounted(() => hidePlacesLayer(placeMarkers, props.map))
+    onUnmounted(() => hidePlacesLayer(placeLayer, props.map))
 
 </script>
 <template>
-
+    <v-container>
+        <SearchField v-model="selectedValues" @update:modelValue="onSelectedNamesUpdate(selectedValues, props.sliderValue, placeLayer, placeMarkers)" :v-if="nameList.length > 0" :facet="facetName" :facetData="nameList"/>
+        <p>{{ selectedValues }}</p>
+    </v-container>
 </template>
