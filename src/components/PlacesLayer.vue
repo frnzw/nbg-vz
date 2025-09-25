@@ -32,27 +32,32 @@
                 
                 const station = stations[key]
                 //console.log(key, station)
-
-                const marker = L.marker([station.lat, station.long], {
-                title: station.stationId
-                })
-
-                
-                console.log('station.nofPersons[sliderValue]: ' + station.nofPersons[props.sliderValue])
+           
+                console.log('station.persons[sliderValue]: ' + station.persons[props.sliderValue])
                 console.log('markerBaseSize: ' + markerBaseSize)
-                const radiusScaled = station.nofPersons[props.sliderValue] ? markerBaseSize * parseInt(station.nofPersons[props.sliderValue]) : markerBaseSize
+                const radiusScaled = station.persons[props.sliderValue] ? markerBaseSize * parseInt(station.persons[props.sliderValue].count) : markerBaseSize
                 console.log('radius scaled: ' + radiusScaled)
                 const circle = L.circle([station.lat, station.long], {
-                    color: station.nofPersons[props.sliderValue] ? 'red' : 'grey',
+                    color: station.persons[props.sliderValue] ? 'red' : 'grey',
                     fillColor: '#f03',
                     fillOpacity: 0.5,
                     radius: radiusScaled * (20 - props.map.getZoom()) * 10000
                 })
 
-                // @todo include here: year, nofPersonsPresent
-                circle.data = {stationName:station.stationId, nofPersons:station.nofPersons}
+                circle.data = {stationId:station.stationId, persons:station.persons}
 
-                circle.bindPopup(`${station.stationId}`);
+
+                let popUpHtml = `<h3>${station.stationId}</h3></br>`
+                                + `<b>Anwesend laut NBG-Verzeichnis (${station.persons[props.sliderValue] ? station.persons[props.sliderValue].count : 'keine Daten'}):</b></br>`
+
+                if (station.persons[props.sliderValue]) {
+                    for (const p of station.persons[props.sliderValue].persons) {
+                        popUpHtml = popUpHtml + `${p.persId} (${p.choir})</br>`
+                    }
+                }
+                
+                circle.bindPopup(popUpHtml);
+                circle.bindTooltip(`${station.stationId}`)
 
                 placeMarkers.push(circle)
             }
@@ -66,12 +71,32 @@
 
     }
 
-        const resizePlaceMarkers = function(markers, year) {
+        const resizeMarker = function(marker, year) {
+            const radiusScaled = marker.data.persons[year] ? markerBaseSize * parseInt(marker.data.persons[year].count) : markerBaseSize;
+            marker.setRadius(radiusScaled * (20 - props.map.getZoom())) * 10000;
+            marker.setStyle({color: marker.data.persons[year] ? 'red' : 'grey'});
+        }
+
+        const updatePopUpContent = function(marker, year) {
+            let popUpHtml = `<h3>${marker.data.stationId}</h3></br>`
+                                + `<b>Anwesend laut NBG-Verzeichnis (${marker.data.persons[year] ? marker.data.persons[year].count : 'keine Daten'}):</b></br>`
+
+            if (marker.data.persons[year]) {
+                for (const p of marker.data.persons[year].persons) {
+                    popUpHtml = popUpHtml + `${p.persId} (${p.choir})</br>`
+                }
+            }
+
+            marker.setPopupContent(popUpHtml)
+        }
+
+        const updateMarkers = function(markers, year) {
             markers.forEach((marker) => {
-                const radiusScaled = marker.data.nofPersons[year] ? markerBaseSize * parseInt(marker.data.nofPersons[year]) : markerBaseSize
-                marker.setRadius(radiusScaled * (20 - props.map.getZoom())) * 10000
-                marker.setStyle({color: marker.data.nofPersons[year] ? 'red' : 'grey'})
+                resizeMarker(marker, year)
+                updatePopUpContent(marker, year)
+
             });
+
         }
 
         const applyFilters = function(sliderValue, selectedValues, layer) {
@@ -84,10 +109,12 @@
                 console.log(`Not yet filtering markers for year.`)
                 console.log(typeof(selectedValues))
                 console.log(selectedValues)
-                const filteredByNames = selectedValues.length == 0 ? filteredByYear : filteredByYear.filter(marker => selectedValues.includes(marker.data.stationName))
+                const filteredByNames = selectedValues.length == 0 ? filteredByYear : filteredByYear.filter(marker => selectedValues.includes(marker.data.stationId))
                 console.log(`Filtered markers by names ${selectedValues}: ${filteredByNames.length}`)
 
-                resizePlaceMarkers(filteredByNames, props.sliderValue)
+                updateMarkers(filteredByNames, props.sliderValue)
+
+                
                 return filteredByNames
         }
 
