@@ -3,12 +3,13 @@
   import "leaflet/dist/leaflet.css";
   import L from "leaflet";
   import PlacesLayer from './PlacesLayer.vue'
-  import Slider from './Slider.vue'
+  import TimeSlider from './TimeSlider.vue'
   import SliderWrapper from "./SliderWrapper.vue"
   import DisplayValue from "./DisplayValue.vue"
   import PersonsLayer from './PersonsLayer.vue'
   import DistantLayer from './DistantLayer.vue'
   import { useRoute } from 'vue-router'
+
 
   // import { useMapStore } from '../stores/mapStore'
 
@@ -56,6 +57,9 @@
 <v-container>
     <slider-wrapper v-model="sliderValue" class="pt-4"/>
     <display-value :value="sliderValue" />
+  </v-container>
+  <v-container>
+    <TimeSlider  class="pt-4"/>
   </v-container>
 <PlacesLayer v-if="route.path === '/map/places'" :map="globalMap" :sliderValue="sliderValue"/>
 <PersonsLayer v-if="route.path === '/map/persons'" :map="globalMap" :sliderValue="sliderValue"/>
