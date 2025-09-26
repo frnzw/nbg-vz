@@ -69,21 +69,31 @@
                 const marker = L.marker([latYear, longYear], {icon: personIcon, title: person.stations[props.sliderValue].stationId+person.personId})
                 marker.data = {year: props.sliderValue, name:person.personId}
 
-                const sortedYears = Object.keys(person.stations).sort((a, b) => a - b)
-                console.log(sortedYears)
+                // const sortedYears = Object.keys(person.stations).sort((a, b) => a - b)
+                // console.log(sortedYears)
                 
-                const currentYearPos = sortedYears.indexOf(String(props.sliderValue))
+                const currentYearPos = person.stations[props.sliderValue] ? person.stations[props.sliderValue].position : undefined //sortedYears.indexOf(String(props.sliderValue))
+                const currentYear = person.stations[props.sliderValue] ? person.sortedYears[currentYearPos] : undefined //sortedYears[currentYearPos]
+
+                let prevYear, nextYear;
+                
+                if (currentYearPos === 0) {
+                    nextYear = person.stations[props.sliderValue] ? person.sortedYears[currentYearPos + 1] : undefined
+                } else if (currentYearPos === person.stations.sortedYears.length - 1) {
+                    prevYear = person.stations[props.sliderValue] ? person.sortedYears[currentYearPos - 1] : undefined 
+                } else {
+                    nextYear = person.stations[props.sliderValue] ? person.sortedYears[currentYearPos + 1] : undefined
+                    prevYear = person.stations[props.sliderValue] ? person.sortedYears[currentYearPos - 1] : undefined 
+                }
                 console.log(currentYearPos)
-                const prevYear = sortedYears[currentYearPos - 1 ]
-                const currentYear = sortedYears[currentYearPos]
-                const nextYear = sortedYears[currentYearPos + 1 ]
                 console.log(prevYear, currentYear, nextYear)
                 let popUpHtml = `<h3>${person.personId}</h3></br>`
-                              + `<b>Vorherige (erfasste) Station aus NBG-VZ:</b></br> ${currentYearPos === 0 ? 'keine Daten' : prevYear + ': ' + person.stations[sortedYears[currentYearPos - 1 ]].stationId}</br>`
-                              + `<b>Nächste (erfasste) Station aus NBG-VZ:</b></br> ${currentYearPos === sortedYears.length - 1 ? 'keine Daten' : nextYear + ': ' + person.stations[sortedYears[currentYearPos + 1 ]].stationId}</br>`
+                              + `<b>Vorherige (erfasste) Station aus NBG-VZ:</b></br> ${!prevYear ? 'keine Daten' : prevYear + ': ' + person.stations[person.sortedYears[currentYearPos - 1 ]].stationId}</br>`
+                              + `<b>Nächste (erfasste) Station aus NBG-VZ:</b></br> ${!nextYear ? 'keine Daten' : nextYear + ': ' + person.stations[person.sortedYears[currentYearPos + 1 ]].stationId}</br>`
 
             
                 marker.bindPopup(popUpHtml);
+                marker.bindTooltip(`${person.personId}`)
 
 
                 personMarkers.push(marker)

@@ -22,8 +22,14 @@ export const usePersonsStore = defineStore('persons', () => {
             acc[entry.year] = acc[entry.year] || {stationId: entry.stationId, lat:entry.lat, long:entry.long};
             return acc;
         }, {});
+
+        const sortedYears = Object.keys(grouped).sort((a, b) => a - b)
+
+        for (const year of sortedYears) {
+            grouped[year].position = sortedYears.indexOf(String(year))
+        }
         // console.log(grouped)
-        return grouped
+        return [grouped, sortedYears]
     }
     
     async function readData(pathToDataFile) {
@@ -48,11 +54,13 @@ export const usePersonsStore = defineStore('persons', () => {
             for (const personId of personIds) {
                 // console.log(personId)
                 if (!personId) continue;
-                const stationsExtracted = extractStationsPerPerson(data, personId)
+                const [stationsExtracted, sortedYears] = extractStationsPerPerson(data, personId)
                 persons.value[personId] = {
                     personId: personId,
                     stations: stationsExtracted,
-                    nofStationsTotal: Object.keys(stationsExtracted).length
+                    nofStationsTotal: Object.keys(stationsExtracted).length,
+                    sortedYears: sortedYears
+                    
                 }
             }
             console.log(persons.value)
