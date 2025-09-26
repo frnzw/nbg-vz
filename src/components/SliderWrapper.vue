@@ -22,6 +22,7 @@ const playBack = async function() {
 
       }
       console.log(`sliderValue.value === ${sliderValue.value}`)
+      emit('update:modelValue', sliderValue.value)
       await new Promise((resolve, reject) => {
         setTimeout(resolve, 1000)
       })
@@ -50,8 +51,7 @@ const togglePlay = function() {
 
       <template v-slot:append>
           <v-btn
-            :color="color"
-            icon="mdi-plus"
+            :icon="isPlaying ? 'mdi-pause' : 'mdi-play'"
             size="small"
             variant="text"
             @click="togglePlay"
