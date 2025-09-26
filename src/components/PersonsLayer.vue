@@ -53,6 +53,34 @@
             iconAnchor: [15, 42]
     });
 
+    const createPopUpAndTooltip = function(marker, person, year) {
+
+        const currentYearPos = person.stations[year] ? person.stations[year].position : undefined
+        const currentYear = person.stations[year] ? person.sortedYears[currentYearPos] : undefined
+
+        let prevYear, nextYear;
+        
+        if (currentYearPos === 0) {
+            nextYear = person.stations[year] ? person.sortedYears[currentYearPos + 1] : undefined
+        } else if (currentYearPos === person.sortedYears.length - 1) {
+            prevYear = person.stations[year] ? person.sortedYears[currentYearPos - 1] : undefined 
+        } else {
+            nextYear = person.stations[year] ? person.sortedYears[currentYearPos + 1] : undefined
+            prevYear = person.stations[year] ? person.sortedYears[currentYearPos - 1] : undefined 
+        }
+        console.log(currentYearPos)
+        console.log(prevYear, currentYear, nextYear)
+        let popUpHtml = `<h3>${person.personId}</h3></br>`
+                        + `<b>Vorherige (erfasste) Station aus NBG-VZ:</b></br> ${!prevYear ? 'keine Daten' : prevYear + ': ' + person.stations[person.sortedYears[currentYearPos - 1 ]].stationId}</br>`
+                        + `<b>Nächste (erfasste) Station aus NBG-VZ:</b></br> ${!nextYear ? 'keine Daten' : nextYear + ': ' + person.stations[person.sortedYears[currentYearPos + 1 ]].stationId}</br>`
+
+
+        marker.bindPopup(popUpHtml);
+        marker.bindTooltip(`${person.personId}`)
+
+}
+
+
     const createPersonMarkersX = function(persons) {
         console.log("Attempting to add " + Object.keys(persons).length + " per son markers")
         const personMarkers = []
@@ -64,45 +92,19 @@
             // already have to filter by year here, cannot create marker without assigning lat/long
             const latYear = person.stations[props.sliderValue] ? person.stations[props.sliderValue].lat : undefined
             const longYear = person.stations[props.sliderValue] ? person.stations[props.sliderValue].long : undefined
-
             if (latYear && longYear) {
                 const marker = L.marker([latYear, longYear], {icon: personIcon, title: person.stations[props.sliderValue].stationId+person.personId})
                 marker.data = {year: props.sliderValue, name:person.personId}
-
-                // const sortedYears = Object.keys(person.stations).sort((a, b) => a - b)
-                // console.log(sortedYears)
-                
-                const currentYearPos = person.stations[props.sliderValue] ? person.stations[props.sliderValue].position : undefined //sortedYears.indexOf(String(props.sliderValue))
-                const currentYear = person.stations[props.sliderValue] ? person.sortedYears[currentYearPos] : undefined //sortedYears[currentYearPos]
-
-                let prevYear, nextYear;
-                
-                if (currentYearPos === 0) {
-                    nextYear = person.stations[props.sliderValue] ? person.sortedYears[currentYearPos + 1] : undefined
-                } else if (currentYearPos === person.stations.sortedYears.length - 1) {
-                    prevYear = person.stations[props.sliderValue] ? person.sortedYears[currentYearPos - 1] : undefined 
-                } else {
-                    nextYear = person.stations[props.sliderValue] ? person.sortedYears[currentYearPos + 1] : undefined
-                    prevYear = person.stations[props.sliderValue] ? person.sortedYears[currentYearPos - 1] : undefined 
-                }
-                console.log(currentYearPos)
-                console.log(prevYear, currentYear, nextYear)
-                let popUpHtml = `<h3>${person.personId}</h3></br>`
-                              + `<b>Vorherige (erfasste) Station aus NBG-VZ:</b></br> ${!prevYear ? 'keine Daten' : prevYear + ': ' + person.stations[person.sortedYears[currentYearPos - 1 ]].stationId}</br>`
-                              + `<b>Nächste (erfasste) Station aus NBG-VZ:</b></br> ${!nextYear ? 'keine Daten' : nextYear + ': ' + person.stations[person.sortedYears[currentYearPos + 1 ]].stationId}</br>`
-
-            
-                marker.bindPopup(popUpHtml);
-                marker.bindTooltip(`${person.personId}`)
-
-
+                createPopUpAndTooltip(marker, person, props.sliderValue)
                 personMarkers.push(marker)
             }
+
         }
+   
         console.log(`Found ${personMarkers.length} person markers for year ${props.sliderValue}`)
         
 
-        const filtered = applyFiltersX(selectedValues.value, personMarkers)
+        const filtered = filterByNames(selectedValues.value, personMarkers)
         personLayer = L.layerGroup(filtered);
         currentPersonMarkers = personMarkers;
         personLayer.addTo(props.map)
@@ -111,8 +113,15 @@
 }
 
 
-
-    watch(() => props.sliderValue, (sliderValue) => {
+    /**
+     * In the persons view, markers represent person. Therefore, if the year changes, a markers
+     * position may have to be updated according to the slider value. Since markers cannot be created without lat/long,
+     * an actual update is not possible. Instead, the watch function on slider value has to create all markers for 
+     * persons which have a location for the respective year, clear the layer and attach the new markers.
+     * 
+     * This already implies filtering by year, after which only filtering by name has to happen. 
+     */
+    watch(() => props.sliderValue, (year) => {
         console.log('triggered watch for slider!')
         if (currentPersonMarkers && personLayer) {
             console.log(selectedValues.value)
@@ -120,19 +129,20 @@
             for (const key of Object.keys(personsStore.persons)) {
                 const person = personsStore.persons[key];
                 // already have to filter by year here, cannot create marker without assigning lat/long
-                const latYear = person.stations[props.sliderValue] ? person.stations[props.sliderValue].lat : undefined
-                const longYear = person.stations[props.sliderValue] ? person.stations[props.sliderValue].long : undefined
+                const latYear = person.stations[year] ? person.stations[year].lat : undefined
+                const longYear = person.stations[year] ? person.stations[year].long : undefined
 
                 if (latYear && longYear) {
-                    const marker = L.marker([latYear, longYear], {icon: personIcon, title: person.stations[props.sliderValue].stationId+person.personId})
-                    marker.data = {year: props.sliderValue, name:person.personId}
+                    const marker = L.marker([latYear, longYear], {icon: personIcon, title: person.stations[year].stationId+person.personId})
+                    marker.data = {year: year, name:person.personId}
+                    createPopUpAndTooltip(marker, person, year)
                     personMarkers.push(marker)
                 }
             }
 
             if (personLayer) personLayer.clearLayers()
             console.log('removed markers')
-            const filtered = applyFiltersX(selectedValues.value, personMarkers)
+            const filtered = filterByNames(selectedValues.value, personMarkers)
             filtered.forEach(marker => marker.addTo(personLayer))
             currentPersonMarkers = personMarkers;
         }
@@ -148,7 +158,7 @@
             console.log(personMarkers)
             if (personLayer) personLayer.clearLayers()
             console.log('removed markers')
-            const filtered = applyFiltersX(selectedValues, personMarkers)
+            const filtered = filterByNames(selectedValues, personMarkers)
             filtered.forEach(marker => marker.addTo(personLayer))
 
         }
@@ -162,22 +172,7 @@
         layergroup.removeFrom(map)
     }
 
-    const applyFilters = function(sliderValue, selectedValues, layer, markers) {
-            if (layer) layer.clearLayers()
-            console.log('removed markers')
-
-            const filteredByYear = personMarkers.filter(marker => marker.data.year === sliderValue)
-            console.log(`Filtered markers for year ${sliderValue}: ${filteredByYear.length}`)
-            console.log(typeof(selectedValues))
-            console.log(selectedValues)
-            const filteredByNames = selectedValues.length == 0 ? filteredByYear : filteredByYear.filter(marker => selectedValues.includes(marker.data.name))
-            console.log(`Filtered markers by names ${selectedValues}: ${filteredByNames.length}`)
-
-            return filteredByNames
-    }
-
-    const applyFiltersX = function(selectedValues, markers) {
-
+    const filterByNames = function(selectedValues, markers) {
 
         const filteredByNames = selectedValues.length == 0 ? markers : markers.filter(marker => selectedValues.includes(marker.data.name))
         console.log(filteredByNames)

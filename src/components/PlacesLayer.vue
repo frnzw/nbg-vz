@@ -118,6 +118,13 @@
                 return filteredByNames
         }
 
+        /**
+         * In the places view, markers represent places. Therefore, if the year changes, a markers
+         * radius may have to be updated according to the slider value. Since markers are created with a standard radius if no data 
+         * is present for the respective date, they do not need to be recreated.
+         * Instead, the watch function on slider value filters the list of all place markers for date and names,
+         * clear the layer and attach the filtered markers.
+         */
         watch(() => props.sliderValue, (sliderValue) => {
                 console.log('triggered watch for slider!')
                 if (placeMarkers && placeLayer) {
