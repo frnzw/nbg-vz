@@ -10,15 +10,9 @@
   import DistantLayer from './DistantLayer.vue'
   import { useRoute } from 'vue-router'
 
-  // import { useMapStore } from '../stores/mapStore'
-
   const route = useRoute()
 
   const emit = defineEmits(['mapIsReady']) // for passing map to parent component
-
-  const center = [30, 0];
-
-  const testProp = "hello prop!";
 
   const sliderValue = ref(1828); 
 

@@ -1,10 +1,10 @@
 
 <script setup>
 import { ref } from 'vue'
+
 const props = defineProps({
   modelValue: Number,
 })
-
 
 const sliderValue = ref(props.modelValue) // suppress warning that props are read only, indirectly bind to slider v-model via this local var
 const emit = defineEmits(["update:modelValue"])
@@ -21,18 +21,19 @@ const playBack = async function() {
         sliderValue.value = sliderValue.value + 1
 
       }
-      console.log(`sliderValue.value === ${sliderValue.value}`)
+      // console.log(`sliderValue.value === ${sliderValue.value}`)
       emit('update:modelValue', sliderValue.value)
-      await new Promise((resolve, reject) => {
+      await new Promise((resolve) => {
         setTimeout(resolve, 1000)
       })
+
     }
-    console.log('Ending Playback')
+    // console.log('Ending Playback')
 }
 
 const togglePlay = function() {
     isPlaying.value = !isPlaying.value
-    console.log(`isPlaying === ${isPlaying.value}`)
+    // console.log(`isPlaying === ${isPlaying.value}`)
     if (isPlaying) playBack(isPlaying)
 }
 

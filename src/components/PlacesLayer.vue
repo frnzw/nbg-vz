@@ -1,5 +1,4 @@
 <script setup>
-    import Map from './Map.vue'
     import L from "leaflet";
     import { usePlacesStore } from '../stores/placesStore'
     import {onMounted, ref, defineProps, onUnmounted, watch} from 'vue'
@@ -21,10 +20,10 @@
     const markerBaseSize = 500
 
     const createStationMarkers = function(stations) {
-        console.log("Attempting to add " + Object.keys(stations).length + " markers")
+        // console.log("Attempting to add " + Object.keys(stations).length + " markers")
         placeMarkers = []
 
-        console.log('resizing markers for slidervalue: ' + props.sliderValue)
+        // console.log('resizing markers for slidervalue: ' + props.sliderValue)
         for (const key of Object.keys(stations)) {
             if (!key) continue
             if (stations.hasOwnProperty(key)) {
@@ -33,10 +32,10 @@
                 const station = stations[key]
                 //console.log(key, station)
            
-                console.log('station.persons[sliderValue]: ' + station.persons[props.sliderValue])
-                console.log('markerBaseSize: ' + markerBaseSize)
+                // console.log('station.persons[sliderValue]: ' + station.persons[props.sliderValue])
+                // console.log('markerBaseSize: ' + markerBaseSize)
                 const radiusScaled = station.persons[props.sliderValue] ? markerBaseSize * parseInt(station.persons[props.sliderValue].count) : markerBaseSize
-                console.log('radius scaled: ' + radiusScaled)
+                // console.log('radius scaled: ' + radiusScaled)
                 const circle = L.circle([station.lat, station.long], {
                     color: station.persons[props.sliderValue] ? 'red' : 'grey',
                     fillColor: '#f03',
@@ -66,7 +65,7 @@
         const filtered = applyFilters(props.sliderValue, selectedValues.value, placeLayer, placeMarkers)
         placeLayer = L.layerGroup(filtered);
         placeLayer.addTo(props.map)
-        console.log('markers added to layergroup')
+        // console.log('markers added to layergroup')
         
 
     }
@@ -101,16 +100,16 @@
 
         const applyFilters = function(sliderValue, selectedValues, layer) {
                 if (layer) layer.clearLayers()
-                console.log('removed markers')
+                // console.log('removed markers')
 
                 // const filteredByYear = placeMarkers.filter(marker => marker.data.year === sliderValue)
                 // console.log(`Filtered markers for year ${sliderValue}: ${filteredByYear.length}`)
                 const filteredByYear = placeMarkers
-                console.log(`Not yet filtering markers for year.`)
-                console.log(typeof(selectedValues))
-                console.log(selectedValues)
+                // console.log(`Not yet filtering markers for year.`)
+                // console.log(typeof(selectedValues))
+                // console.log(selectedValues)
                 const filteredByNames = selectedValues.length == 0 ? filteredByYear : filteredByYear.filter(marker => selectedValues.includes(marker.data.stationId))
-                console.log(`Filtered markers by names ${selectedValues}: ${filteredByNames.length}`)
+                // console.log(`Filtered markers by names ${selectedValues}: ${filteredByNames.length}`)
 
                 updateMarkers(filteredByNames, props.sliderValue)
 
@@ -126,7 +125,7 @@
          * clear the layer and attach the filtered markers.
          */
         watch(() => props.sliderValue, (sliderValue) => {
-                console.log('triggered watch for slider!')
+                // console.log('triggered watch for slider!')
                 if (placeMarkers && placeLayer) {
                     // console.log(selectedValues.value)
                     const filtered = applyFilters(sliderValue, selectedValues.value, placeLayer, placeMarkers)
@@ -138,8 +137,8 @@
 
         const onSelectedNamesUpdate = function (selectedValues, sliderValue, personLayer, personMarkers) {
             if (placeMarkers && placeLayer) {
-                console.log('On selected names update:')
-                console.log(selectedValues) // !!! selectedValues comes from template here, can access directly not via .value
+                // console.log('On selected names update:')
+                // console.log(selectedValues) // !!! selectedValues comes from template here, can access directly not via .value
                 const filtered = applyFilters(sliderValue, selectedValues, placeLayer, placeMarkers)
                 filtered.forEach(marker => marker.addTo(placeLayer))
 
@@ -157,17 +156,17 @@
     }
 
     onMounted(async () => {
-        console.log('Places view test prop: ' + props.test);
-        console.log('Places view map prop: ');
-        console.log(props.map);
-        console.log('pathToDataFile: ' + placesStore.pathToDataFile)
+        // console.log('Places view test prop: ' + props.test);
+        // console.log('Places view map prop: ');
+        // console.log(props.map);
+        // console.log('pathToDataFile: ' + placesStore.pathToDataFile)
         await placesStore.readData(placesStore.pathToDataFile)
-        console.log(placesStore.stations)
+        // console.log(placesStore.stations)
 
         if (placeMarkers === undefined) createStationMarkers(placesStore.stations, props.map)
-        console.log(Object.keys(placesStore.stations))
+        // console.log(Object.keys(placesStore.stations))
         nameList.value = Array.from(Object.keys(placesStore.stations))
-        console.log(nameList.value)
+        // console.log(nameList.value)
 
         showPlacesLayer(placeLayer, props.map);
 

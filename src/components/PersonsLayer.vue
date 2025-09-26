@@ -68,8 +68,8 @@
             nextYear = person.stations[year] ? person.sortedYears[currentYearPos + 1] : undefined
             prevYear = person.stations[year] ? person.sortedYears[currentYearPos - 1] : undefined 
         }
-        console.log(currentYearPos)
-        console.log(prevYear, currentYear, nextYear)
+        // console.log(currentYearPos)
+        // console.log(prevYear, currentYear, nextYear)
         let popUpHtml = `<h3>${person.personId}</h3></br>`
                         + `<b>Vorherige (erfasste) Station aus NBG-VZ:</b></br> ${!prevYear ? 'keine Daten' : prevYear + ': ' + person.stations[person.sortedYears[currentYearPos - 1 ]].stationId}</br>`
                         + `<b>Nächste (erfasste) Station aus NBG-VZ:</b></br> ${!nextYear ? 'keine Daten' : nextYear + ': ' + person.stations[person.sortedYears[currentYearPos + 1 ]].stationId}</br>`
@@ -82,7 +82,7 @@
 
 
     const createPersonMarkersX = function(persons) {
-        console.log("Attempting to add " + Object.keys(persons).length + " per son markers")
+        // console.log("Attempting to add " + Object.keys(persons).length + " per son markers")
         const personMarkers = []
         for (const key of Object.keys(persons)) {
             if (!key) continue
@@ -101,14 +101,14 @@
 
         }
    
-        console.log(`Found ${personMarkers.length} person markers for year ${props.sliderValue}`)
+        // console.log(`Found ${personMarkers.length} person markers for year ${props.sliderValue}`)
         
 
         const filtered = filterByNames(selectedValues.value, personMarkers)
         personLayer = L.layerGroup(filtered);
         currentPersonMarkers = personMarkers;
         personLayer.addTo(props.map)
-        console.log('markers added to layergroup')
+        // console.log('markers added to layergroup')
 
 }
 
@@ -122,9 +122,9 @@
      * This already implies filtering by year, after which only filtering by name has to happen. 
      */
     watch(() => props.sliderValue, (year) => {
-        console.log('triggered watch for slider!')
+        // console.log('triggered watch for slider!')
         if (currentPersonMarkers && personLayer) {
-            console.log(selectedValues.value)
+            // console.log(selectedValues.value)
             const personMarkers = []
             for (const key of Object.keys(personsStore.persons)) {
                 const person = personsStore.persons[key];
@@ -141,7 +141,7 @@
             }
 
             if (personLayer) personLayer.clearLayers()
-            console.log('removed markers')
+            // console.log('removed markers')
             const filtered = filterByNames(selectedValues.value, personMarkers)
             filtered.forEach(marker => marker.addTo(personLayer))
             currentPersonMarkers = personMarkers;
@@ -153,11 +153,11 @@
 
     const onSelectedNamesUpdate = function (selectedValues, sliderValue, personLayer, personMarkers) {
         if (personMarkers && personLayer) {
-            console.log('On selected names update:')
-            console.log(selectedValues) // !!! selectedValues comes from template here, can access directly not via .value
-            console.log(personMarkers)
+            // console.log('On selected names update:')
+            // console.log(selectedValues) // !!! selectedValues comes from template here, can access directly not via .value
+            // console.log(personMarkers)
             if (personLayer) personLayer.clearLayers()
-            console.log('removed markers')
+            // console.log('removed markers')
             const filtered = filterByNames(selectedValues, personMarkers)
             filtered.forEach(marker => marker.addTo(personLayer))
 
@@ -175,8 +175,8 @@
     const filterByNames = function(selectedValues, markers) {
 
         const filteredByNames = selectedValues.length == 0 ? markers : markers.filter(marker => selectedValues.includes(marker.data.name))
-        console.log(filteredByNames)
-        console.log(`Filtered markers by names ${selectedValues}: ${filteredByNames.length}`)
+        // console.log(filteredByNames)
+        // console.log(`Filtered markers by names ${selectedValues}: ${filteredByNames.length}`)
 
         return filteredByNames
     }
@@ -189,14 +189,14 @@
         if (!personsPlacesStore.loaded) await personsPlacesStore.readData(personsPlacesStore.pathToDataFile)
         if (!personsStore.loaded) await personsStore.readData(personsStore.pathToDataFile)
         //console.log(personsPlacesStore.entries)
-        console.log('personsStore.persons:')
-        console.log(personsStore.persons)
+        // console.log('personsStore.persons:')
+        // console.log(personsStore.persons)
 
         // if (personMarkers === undefined) createPersonMarkers(personsPlacesStore.entries)
         if (currentPersonMarkers === undefined) createPersonMarkersX(personsStore.persons)
         nameList.value = Array.from(Object.keys(personsStore.persons))
-        console.log('nameList from person store:')
-        console.log(nameList.value)
+        // console.log('nameList from person store:')
+        // console.log(nameList.value)
 
         showPersonsLayer(personLayer, props.map);
 
