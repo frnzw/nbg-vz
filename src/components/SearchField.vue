@@ -10,8 +10,8 @@ const props = defineProps({
 const selectedValues = ref(props.modelValue) // suppress warning that props are read only, indirectly bind to selection v-model via this local var
 const emit = defineEmits(["update:modelValue"])
 
-console.log('Facet data:')
-console.log(props.facetData)
+// console.log('Facet data:')
+// console.log(props.facetData)
 </script>
 <template>
     <v-autocomplete

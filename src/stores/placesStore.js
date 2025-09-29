@@ -36,7 +36,7 @@ export const usePlacesStore = defineStore('places', () => {
 
             const csvString = await res.text();
             const data = Papa.parse(csvString, {header:true, dynamicTyping: true}).data;
-            console.log(data);
+            // console.log(data);
             
             // reduce to hash map of unique stations
             const stationsNames = Array.from(new Set(data.map((entry) => {
@@ -60,7 +60,7 @@ export const usePlacesStore = defineStore('places', () => {
                 }
             
             }
-            console.log(stations)
+            // console.log(stations)
             loaded.value = true
 
         } catch (error) {
