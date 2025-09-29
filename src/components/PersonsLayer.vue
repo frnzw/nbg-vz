@@ -68,8 +68,8 @@
             nextYear = person.stations[year] ? person.sortedYears[currentYearPos + 1] : undefined
             prevYear = person.stations[year] ? person.sortedYears[currentYearPos - 1] : undefined 
         }
-        console.log(currentYearPos)
-        console.log(prevYear, currentYear, nextYear)
+        // console.log(currentYearPos)
+        // console.log(prevYear, currentYear, nextYear)
         let popUpHtml = `<h3>${person.personId}</h3></br>`
                         + `<b>Vorherige (erfasste) Station aus NBG-VZ:</b></br> ${!prevYear ? 'keine Daten' : prevYear + ': ' + person.stations[person.sortedYears[currentYearPos - 1 ]].stationId}</br>`
                         + `<b>Nächste (erfasste) Station aus NBG-VZ:</b></br> ${!nextYear ? 'keine Daten' : nextYear + ': ' + person.stations[person.sortedYears[currentYearPos + 1 ]].stationId}</br>`
@@ -124,7 +124,7 @@
     watch(() => props.sliderValue, (year) => {
         console.log('triggered watch for slider!')
         if (currentPersonMarkers && personLayer) {
-            console.log(selectedValues.value)
+            // console.log(selectedValues.value)
             const personMarkers = []
             for (const key of Object.keys(personsStore.persons)) {
                 const person = personsStore.persons[key];

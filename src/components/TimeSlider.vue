@@ -48,7 +48,7 @@ function formatThumbLabel(val) {
   <v-slider
     v-model="sliderValue" 
     :min="ticks[0]"
-    :max="ticks[-1]"
+    :max="ticks[ticks.length - 1]"
     label="Jahr"
     thumb-label="always"
     :tick-labels="ticks"
