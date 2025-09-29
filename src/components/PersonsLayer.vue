@@ -11,7 +11,8 @@
 
     const props = defineProps({
         map: Object,
-        sliderValue: Number
+        sliderValue: Number,
+        dateSliderValue: Number
     })
 
     let currentPersonMarkers = undefined;
@@ -100,8 +101,13 @@ const createPopUpAndTooltipDate = function(marker, person, lastStationPosition, 
         nextDate = person.sortedDates[lastStationPosition + 1]
         prevDate = person.sortedDates[lastStationPosition - 1] 
     }
-    // console.log(currentYearPos)
-    console.log(prevDate, lastRecordedDate, nextDate)
+
+    if (person.personId === 'Luttringshauser_XY') {
+        console.log(person);
+        console.log(prevDate, lastRecordedDate, nextDate)
+        
+    }    
+    
     let popUpHtml = `<h3>${person.personId}</h3></br>`
                     + `<b>Letzte (erfasste) Station aus NBG-VZ:</b></br> ${!lastRecordedDate ? 'keine Daten' :  new Date(lastRecordedDate).getFullYear() + ': ' + person.stationsDate[lastRecordedDate].stationId}</br>`
                     + `<b>Vorherige (erfasste) Station aus NBG-VZ:</b></br> ${!prevDate ? 'keine Daten' : new Date(prevDate).getFullYear() + ': ' + person.stationsDate[prevDate].stationId}</br>`
@@ -152,27 +158,47 @@ const  createPersonMarkersDate = function(persons) {
 
             const person = persons[key];
 
-            // already have to filter by year here, cannot create marker without assigning lat/long
+            // filter out person-place entries with dates higher than slider value
+            if (props.dateSliderValue >= person.sortedDates[0]) {
+                // console.log(`props.dateSliderValue: ${props.dateSliderValue} = ${new Date(props.dateSliderValue).toDateString()}`);
+                // console.log(`person.sortedDates[0]: ${person.sortedDates[0]} = ${new Date(person.sortedDates[0]).toDateString()}`);
+                // find dated entry for person that is the next smaller or equal to slider value
+                let lastStationPosition;
+                let lastRecordedDate;
+                let lastStationBeforeSelectedTime;
 
-            // find dated entry for person that is the next smaller or equal to slider value
-            let lastStationPosition;
-            let lastRecordedDate;
-            let lastStationBeforeSelectedTime;
-            for (const ts of person.sortedDates) {
-                if (ts < props.dateSliderValue) {
-                    continue;
-                } else {
-                    lastStationPosition = person.sortedDates.indexOf(ts) - 1;
-                    lastRecordedDate = person.sortedDates[lastStationPosition];
-                    lastStationBeforeSelectedTime = person.stationsDate[person.sortedDates[lastStationPosition]];
+                // console.log(person.sortedDates)
+                if (person.personId === 'Luttringshauser_XY') {
+                            console.log(`selected date: ${props.dateSliderValue} = ${new Date(props.dateSliderValue).toDateString()}`);
                 }
-            }
+                for (const ts of person.sortedDates) {
+                    if (person.personId === 'Luttringshauser_XY') {
+                            console.log(`date: ${ts} = ${new Date(ts).toDateString()}`);
+                    }
+                    if (ts < props.dateSliderValue) {
+                        continue;
+                    } else if (ts === props.dateSliderValue) {
+                        lastStationPosition = person.sortedDates.indexOf(ts);
+                        lastRecordedDate = person.sortedDates[lastStationPosition];
+                        lastStationBeforeSelectedTime = person.stationsDate[person.sortedDates[lastStationPosition]];
+                        break; 
+                    } else {
+                        lastStationPosition = person.sortedDates.indexOf(ts) - 1;
+                        lastRecordedDate = person.sortedDates[lastStationPosition];
+                        lastStationBeforeSelectedTime = person.stationsDate[person.sortedDates[lastStationPosition]];
+                        break;
+                    }
+                }
+                if (person.personId === 'Luttringshauser_XY') {
+                            console.log(`last recorded date: ${lastRecordedDate} = ${new Date(lastRecordedDate).toDateString()}`);
+                }
 
-            if (lastStationBeforeSelectedTime) {
-                const marker = L.marker([lastStationBeforeSelectedTime.lat, lastStationBeforeSelectedTime.long], {icon: personIcon, title: lastStationBeforeSelectedTime.stationId+person.personId})
-                marker.data = {date: lastStationBeforeSelectedTime.date, name:person.personId}
-                createPopUpAndTooltipDate(marker, person, lastStationPosition, lastRecordedDate)
-                personMarkers.push(marker)
+                if (lastStationBeforeSelectedTime) {
+                    const marker = L.marker([lastStationBeforeSelectedTime.lat, lastStationBeforeSelectedTime.long], {icon: personIcon, title: lastStationBeforeSelectedTime.stationId+person.personId})
+                    marker.data = {date: lastStationBeforeSelectedTime.date, name:person.personId}
+                    createPopUpAndTooltipDate(marker, person, lastStationPosition, lastRecordedDate)
+                    personMarkers.push(marker)
+                }
             }
 
         }

@@ -52,7 +52,7 @@ export const usePersonsStore = defineStore('persons', () => {
             return acc;
         }, {});
 
-        const sortedDates = Object.keys(grouped).sort((a, b) => a - b)
+        const sortedDates = Object.keys(grouped).sort((a, b) => a - b).map(d => parseInt(d))
 
         for (const date of sortedDates) {
             grouped[date].position = sortedDates.indexOf(date)
