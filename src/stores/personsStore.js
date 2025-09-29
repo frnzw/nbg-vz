@@ -46,9 +46,9 @@ export const usePersonsStore = defineStore('persons', () => {
         // intervalls but t0, ..., tn where person has changed place
         const grouped = filteredByPerson.reduce((acc, entry) => {
             // build date from year, assuming year-11-01 for NBG-VZ data (source specifies only as "end of year")
-            const d = new Date(`entry.year-11-01`)
+            const d = new Date(`${entry.year}-11-01`)
 
-            acc[d.getTime()] = acc[d.getTime()] || {stationId: entry.stationId, lat:entry.lat, long:entry.long};
+            acc[d.getTime()] = acc[d.getTime()] || {date: d, stationId: entry.stationId, lat:entry.lat, long:entry.long};
             return acc;
         }, {});
 
@@ -58,6 +58,7 @@ export const usePersonsStore = defineStore('persons', () => {
             grouped[date].position = sortedDates.indexOf(date)
         }
         // console.log(grouped)
+        // console.log(sortedDates)
         return [grouped, sortedDates]
     }
     

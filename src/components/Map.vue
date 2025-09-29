@@ -16,6 +16,8 @@
 
   const sliderValue = ref(1828); 
 
+  const dateSliderValue = ref(new Date('1828-01-01').getTime())
+
   let globalMap = undefined;
 
   const initMap = function() {
@@ -52,7 +54,7 @@
     <display-value :value="sliderValue" />
   </v-container>
   <v-container>
-    <TimeSlider  class="pt-4"/>
+    <TimeSlider  v-model="dateSliderValue"class="pt-4"/>
   </v-container>
 <PlacesLayer v-if="route.path === '/map/places'" :map="globalMap" :sliderValue="sliderValue"/>
 <PersonsLayer v-if="route.path === '/map/persons'" :map="globalMap" :sliderValue="sliderValue"/>

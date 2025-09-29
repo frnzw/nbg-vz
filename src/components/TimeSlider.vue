@@ -22,7 +22,7 @@ for (const offset of [...Array(100).keys()]) {
 }
 console.log(ticks)
 
-const sliderValue = ref(start)
+const sliderValue = ref(props.modelValue)
 
 // choose closest tick instead of real value
 watch(sliderValue, (val) => {

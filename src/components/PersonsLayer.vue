@@ -80,6 +80,38 @@
 
 }
 
+const createPopUpAndTooltipDate = function(marker, person, lastStationPosition, lastRecordedDate) {
+
+    let prevDate, nextDate;
+
+    // find the entries for the station before and after the last known station, if any
+
+    if (lastStationPosition === 0) { // last known station is first station
+
+        prevDate = undefined;
+        nextDate = person.sortedDates.length > 1 ? person.sortedDates[1] : undefined
+
+    } else if (lastStationPosition === person.sortedDates.length - 1) { // last known station is last station
+
+        prevDate = person.sortedDates.length > 1 ? person.sortedDates[lastStationPosition - 1] : undefined
+        nextDate = undefined;
+
+    } else { // last known station is intermediate station
+        nextDate = person.sortedDates[lastStationPosition + 1]
+        prevDate = person.sortedDates[lastStationPosition - 1] 
+    }
+    // console.log(currentYearPos)
+    console.log(prevDate, lastRecordedDate, nextDate)
+    let popUpHtml = `<h3>${person.personId}</h3></br>`
+                    + `<b>Letzte (erfasste) Station aus NBG-VZ:</b></br> ${!lastRecordedDate ? 'keine Daten' :  new Date(lastRecordedDate).getFullYear() + ': ' + person.stationsDate[lastRecordedDate].stationId}</br>`
+                    + `<b>Vorherige (erfasste) Station aus NBG-VZ:</b></br> ${!prevDate ? 'keine Daten' : new Date(prevDate).getFullYear() + ': ' + person.stationsDate[prevDate].stationId}</br>`
+                    + `<b>Nächste (erfasste) Station aus NBG-VZ:</b></br> ${!nextDate ? 'keine Daten' : new Date(nextDate).getFullYear() + ': ' + person.stationsDate[nextDate].stationId}</br>`
+
+
+    marker.bindPopup(popUpHtml);
+    marker.bindTooltip(`${person.personId}`)
+
+}
 
     const createPersonMarkersX = function(persons) {
         // console.log("Attempting to add " + Object.keys(persons).length + " per son markers")
@@ -96,6 +128,50 @@
                 const marker = L.marker([latYear, longYear], {icon: personIcon, title: person.stations[props.sliderValue].stationId+person.personId})
                 marker.data = {year: props.sliderValue, name:person.personId}
                 createPopUpAndTooltip(marker, person, props.sliderValue)
+                personMarkers.push(marker)
+            }
+
+        }
+   
+        // console.log(`Found ${personMarkers.length} person markers for year ${props.sliderValue}`)
+        
+
+        const filtered = filterByNames(selectedValues.value, personMarkers)
+        personLayer = L.layerGroup(filtered);
+        currentPersonMarkers = personMarkers;
+        personLayer.addTo(props.map)
+        // console.log('markers added to layergroup')
+
+}
+
+const  createPersonMarkersDate = function(persons) {
+        // console.log("Attempting to add " + Object.keys(persons).length + " per son markers")
+        const personMarkers = []
+        for (const key of Object.keys(persons)) {
+            if (!key) continue
+
+            const person = persons[key];
+
+            // already have to filter by year here, cannot create marker without assigning lat/long
+
+            // find dated entry for person that is the next smaller or equal to slider value
+            let lastStationPosition;
+            let lastRecordedDate;
+            let lastStationBeforeSelectedTime;
+            for (const ts of person.sortedDates) {
+                if (ts < props.dateSliderValue) {
+                    continue;
+                } else {
+                    lastStationPosition = person.sortedDates.indexOf(ts) - 1;
+                    lastRecordedDate = person.sortedDates[lastStationPosition];
+                    lastStationBeforeSelectedTime = person.stationsDate[person.sortedDates[lastStationPosition]];
+                }
+            }
+
+            if (lastStationBeforeSelectedTime) {
+                const marker = L.marker([lastStationBeforeSelectedTime.lat, lastStationBeforeSelectedTime.long], {icon: personIcon, title: lastStationBeforeSelectedTime.stationId+person.personId})
+                marker.data = {date: lastStationBeforeSelectedTime.date, name:person.personId}
+                createPopUpAndTooltipDate(marker, person, lastStationPosition, lastRecordedDate)
                 personMarkers.push(marker)
             }
 
@@ -189,11 +265,12 @@
         if (!personsPlacesStore.loaded) await personsPlacesStore.readData(personsPlacesStore.pathToDataFile)
         if (!personsStore.loaded) await personsStore.readData(personsStore.pathToDataFile)
         //console.log(personsPlacesStore.entries)
-        // console.log('personsStore.persons:')
-        // console.log(personsStore.persons)
+        console.log('personsStore.persons:')
+        console.log(personsStore.persons)
 
         // if (personMarkers === undefined) createPersonMarkers(personsPlacesStore.entries)
-        if (currentPersonMarkers === undefined) createPersonMarkersX(personsStore.persons)
+        // if (currentPersonMarkers === undefined) createPersonMarkersX(personsStore.persons)
+        if (currentPersonMarkers === undefined) createPersonMarkersDate(personsStore.persons)
         nameList.value = Array.from(Object.keys(personsStore.persons))
         // console.log('nameList from person store:')
         // console.log(nameList.value)
