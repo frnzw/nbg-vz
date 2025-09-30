@@ -12,8 +12,8 @@ const end = new Date("1900-01-01").getTime()
 // console.log(`slider start: ${start}`)
 // console.log(`slider end: ${end}`)
 
-// const sliderValue = ref(props.modelValue) // suppress warning that props are read only, indirectly bind to slider v-model via this local var
-// const emit = defineEmits(["update:modelValue"])
+const sliderValue = ref(props.modelValue) // suppress warning that props are read only, indirectly bind to slider v-model via this local var
+const emit = defineEmits(["update:modelValue"])
 
 const ticks = [];
 for (const offset of [...Array(100).keys()]) {
@@ -22,7 +22,6 @@ for (const offset of [...Array(100).keys()]) {
 }
 console.log(ticks)
 
-const sliderValue = ref(props.modelValue)
 
 // choose closest tick instead of real value
 watch(sliderValue, (val) => {
@@ -46,7 +45,8 @@ function formatThumbLabel(val) {
 
 <template>
   <v-slider
-    v-model="sliderValue" 
+    v-model="sliderValue"
+    @update:modelValue="val => emit('update:modelValue', val)"
     :min="ticks[0]"
     :max="ticks[ticks.length - 1]"
     label="Jahr"

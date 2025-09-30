@@ -223,33 +223,67 @@ const  createPersonMarkersDate = function(persons) {
      * 
      * This already implies filtering by year, after which only filtering by name has to happen. 
      */
-    watch(() => props.sliderValue, (year) => {
-        // console.log('triggered watch for slider!')
+    watch(() => props.dateSliderValue, (date) => {
+        console.log('triggered watch for slider!')
         if (currentPersonMarkers && personLayer) {
             // console.log(selectedValues.value)
+            if (personLayer) personLayer.clearLayers() // apparently critical for slider performance to do this before creating new markers...?
             const personMarkers = []
             for (const key of Object.keys(personsStore.persons)) {
                 const person = personsStore.persons[key];
                 // already have to filter by year here, cannot create marker without assigning lat/long
-                const latYear = person.stations[year] ? person.stations[year].lat : undefined
-                const longYear = person.stations[year] ? person.stations[year].long : undefined
+                
+            // filter out person-place entries with dates higher than slider value
+            if (date >= person.sortedDates[0]) {
+                // console.log(`date: ${date} = ${new Date(date).toDateString()}`);
+                // console.log(`person.sortedDates[0]: ${person.sortedDates[0]} = ${new Date(person.sortedDates[0]).toDateString()}`);
+                // find dated entry for person that is the next smaller or equal to slider value
+                let lastStationPosition;
+                let lastRecordedDate;
+                let lastStationBeforeSelectedTime;
 
-                if (latYear && longYear) {
-                    const marker = L.marker([latYear, longYear], {icon: personIcon, title: person.stations[year].stationId+person.personId})
-                    marker.data = {year: year, name:person.personId}
-                    createPopUpAndTooltip(marker, person, year)
+                // console.log(person.sortedDates)
+                if (person.personId === 'Luttringshauser_XY') {
+                            console.log(`selected date: ${date} = ${new Date(date).toDateString()}`);
+                }
+                for (const ts of person.sortedDates) {
+                    if (person.personId === 'Luttringshauser_XY') {
+                            console.log(`date: ${ts} = ${new Date(ts).toDateString()}`);
+                    }
+                    if (ts < date) {
+                        continue;
+                    } else if (ts === date) {
+                        lastStationPosition = person.sortedDates.indexOf(ts);
+                        lastRecordedDate = person.sortedDates[lastStationPosition];
+                        lastStationBeforeSelectedTime = person.stationsDate[person.sortedDates[lastStationPosition]];
+                        break; 
+                    } else {
+                        lastStationPosition = person.sortedDates.indexOf(ts) - 1;
+                        lastRecordedDate = person.sortedDates[lastStationPosition];
+                        lastStationBeforeSelectedTime = person.stationsDate[person.sortedDates[lastStationPosition]];
+                        break;
+                    }
+                }
+                if (person.personId === 'Luttringshauser_XY') {
+                            console.log(`last recorded date: ${lastRecordedDate} = ${new Date(lastRecordedDate).toDateString()}`);
+                }
+
+                if (lastStationBeforeSelectedTime) {
+                    const marker = L.marker([lastStationBeforeSelectedTime.lat, lastStationBeforeSelectedTime.long], {icon: personIcon, title: lastStationBeforeSelectedTime.stationId+person.personId})
+                    marker.data = {date: lastStationBeforeSelectedTime.date, name:person.personId}
+                    createPopUpAndTooltipDate(marker, person, lastStationPosition, lastRecordedDate)
                     personMarkers.push(marker)
                 }
             }
 
-            if (personLayer) personLayer.clearLayers()
+            
             // console.log('removed markers')
             const filtered = filterByNames(selectedValues.value, personMarkers)
             filtered.forEach(marker => marker.addTo(personLayer))
             currentPersonMarkers = personMarkers;
         }
 
-            
+    }    
 
     })
 
