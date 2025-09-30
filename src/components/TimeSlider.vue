@@ -23,11 +23,12 @@ for (const offset of [...Array(100).keys()]) {
 console.log(ticks)
 
 
-// choose closest tick instead of real value
+// choose closest tick instead of real value – emit update here, not on update event itself
 watch(sliderValue, (val) => {
   if (!ticks.includes(val)) {
     const closestTick = ticks.reduce((a, b) => Math.abs(b - val) < Math.abs(a - val) ? b : a)
     sliderValue.value = closestTick
+    emit('update:modelValue', sliderValue.value)
   }
 })
 
@@ -46,7 +47,6 @@ function formatThumbLabel(val) {
 <template>
   <v-slider
     v-model="sliderValue"
-    @update:modelValue="val => emit('update:modelValue', val)"
     :min="ticks[0]"
     :max="ticks[ticks.length - 1]"
     label="Jahr"

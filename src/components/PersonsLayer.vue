@@ -162,6 +162,7 @@ const  createPersonMarkersDate = function(persons) {
             if (props.dateSliderValue >= person.sortedDates[0]) {
                 // console.log(`props.dateSliderValue: ${props.dateSliderValue} = ${new Date(props.dateSliderValue).toDateString()}`);
                 // console.log(`person.sortedDates[0]: ${person.sortedDates[0]} = ${new Date(person.sortedDates[0]).toDateString()}`);
+                
                 // find dated entry for person that is the next smaller or equal to slider value
                 let lastStationPosition;
                 let lastRecordedDate;

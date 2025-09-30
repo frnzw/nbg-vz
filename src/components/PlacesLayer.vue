@@ -8,10 +8,11 @@
 
     const props = defineProps({
         map: Object,
-        sliderValue: Number
+        sliderValue: Number,
+        dateSliderValue: Number
     })
 
-    let placeMarkers = undefined;
+    let currentPlaceMarkers = undefined;
     let placeLayer = undefined;
 
     const facetName = "Stationsnamen"
@@ -19,9 +20,68 @@
     const selectedValues = ref([])
     const markerBaseSize = 500
 
-    const createStationMarkers = function(stations) {
+    const createPopUpAndTooltip = function (circle, station, lastRecordedDate, lastPersonsBeforeSelectedTime) {
+        let popUpHtml = `<h3>${station.stationId}</h3></br>`
+                      + `<b>Anwesend laut letztem erfassten NBG-Verzeichnis ${lastRecordedDate ? new Date(lastRecordedDate).getFullYear() : ''} (${lastPersonsBeforeSelectedTime ? lastPersonsBeforeSelectedTime.count : 'keine Daten'}):</b></br>`
+
+        if (lastPersonsBeforeSelectedTime) {
+            for (const p of lastPersonsBeforeSelectedTime.persons) {
+                popUpHtml = popUpHtml + `${p.persId} (${p.choir})</br>`
+            }
+        }
+                
+        circle.bindPopup(popUpHtml);
+        circle.bindTooltip(`${station.stationId}`)
+    }
+
+    const getLastRecordBeforeSelectedDate = function(station, dateSliderValue) {
+
+        // find last record before selected data of slider
+        let lastRecordPosition;
+        let lastRecordedDate;
+        let lastPersonsBeforeSelectedTime;
+        for (const ts of station.sortedDates) {
+
+            if (ts < dateSliderValue) {
+                continue;
+            } else if (ts === dateSliderValue) {
+                lastRecordPosition = station.sortedDates.indexOf(ts);
+                lastRecordedDate = station.sortedDates[lastRecordPosition];
+                lastPersonsBeforeSelectedTime = station.personsAggregatedDate[station.sortedDates[lastRecordPosition]];
+                break; 
+            } else {
+                // if ts > dateSliderValue but also only value? -> do not show marker
+                if (station.sortedDates.length === 1) break
+
+                lastRecordPosition = station.sortedDates.indexOf(ts) - 1;
+                lastRecordedDate = station.sortedDates[lastRecordPosition];
+                lastPersonsBeforeSelectedTime = station.personsAggregatedDate[station.sortedDates[lastRecordPosition]];
+                break;
+            }
+        }
+
+        return [lastRecordedDate, lastPersonsBeforeSelectedTime];
+    }
+
+    const createCircleMarker = function(station, lastPersonsBeforeSelectedTime, markerBaseSize) {
+        // scale radius according to last known record
+        const radiusScaled = lastPersonsBeforeSelectedTime ? markerBaseSize * parseInt(lastPersonsBeforeSelectedTime.count) : markerBaseSize
+        // console.log('radius scaled: ' + radiusScaled)
+        const circle = L.circle([station.lat, station.long], {
+            color: lastPersonsBeforeSelectedTime ? 'red' : 'grey',
+            fillColor: '#f03',
+            fillOpacity: 0.5,
+            radius: radiusScaled * (20 - props.map.getZoom())
+        });
+
+        circle.data = {stationId:station.stationId, persons:station.persons}
+   
+        return circle;
+    }
+
+    const createStationMarkersDate = function(stations) {
         // console.log("Attempting to add " + Object.keys(stations).length + " markers")
-        placeMarkers = []
+        const placeMarkers = []
 
         // console.log('resizing markers for slidervalue: ' + props.sliderValue)
         for (const key of Object.keys(stations)) {
@@ -34,113 +94,80 @@
            
                 // console.log('station.persons[sliderValue]: ' + station.persons[props.sliderValue])
                 // console.log('markerBaseSize: ' + markerBaseSize)
-                const radiusScaled = station.persons[props.sliderValue] ? markerBaseSize * parseInt(station.persons[props.sliderValue].count) : markerBaseSize
-                // console.log('radius scaled: ' + radiusScaled)
-                const circle = L.circle([station.lat, station.long], {
-                    color: station.persons[props.sliderValue] ? 'red' : 'grey',
-                    fillColor: '#f03',
-                    fillOpacity: 0.5,
-                    radius: radiusScaled * (20 - props.map.getZoom()) * 10000
-                })
-
-                circle.data = {stationId:station.stationId, persons:station.persons}
-
-
-                let popUpHtml = `<h3>${station.stationId}</h3></br>`
-                                + `<b>Anwesend laut NBG-Verzeichnis (${station.persons[props.sliderValue] ? station.persons[props.sliderValue].count : 'keine Daten'}):</b></br>`
-
-                if (station.persons[props.sliderValue]) {
-                    for (const p of station.persons[props.sliderValue].persons) {
-                        popUpHtml = popUpHtml + `${p.persId} (${p.choir})</br>`
-                    }
-                }
+                const [
+                    lastRecordedDate, 
+                    lastPersonsBeforeSelectedTime ] = getLastRecordBeforeSelectedDate(station, props.dateSliderValue);
                 
-                circle.bindPopup(popUpHtml);
-                circle.bindTooltip(`${station.stationId}`)
+                const circle = createCircleMarker(station, lastPersonsBeforeSelectedTime, markerBaseSize);
+                
+                createPopUpAndTooltip(circle, station, lastRecordedDate, lastPersonsBeforeSelectedTime);
 
                 placeMarkers.push(circle)
             }
 
         }
-        const filtered = applyFilters(props.sliderValue, selectedValues.value, placeLayer, placeMarkers)
+        const filtered = filterByStationId(selectedValues.value, placeMarkers)
         placeLayer = L.layerGroup(filtered);
+        currentPlaceMarkers = placeMarkers;
         placeLayer.addTo(props.map)
         // console.log('markers added to layergroup')
         
 
     }
+    
+    const filterByStationId = function(selectedValues, markers) {
 
-        const resizeMarker = function(marker, year) {
-            const radiusScaled = marker.data.persons[year] ? markerBaseSize * parseInt(marker.data.persons[year].count) : markerBaseSize;
-            marker.setRadius(radiusScaled * (20 - props.map.getZoom())) * 10000;
-            marker.setStyle({color: marker.data.persons[year] ? 'red' : 'grey'});
-        }
+        const filteredByNames = selectedValues.length == 0 ? markers : markers.filter(marker => selectedValues.includes(marker.data.stationId))
+        // console.log(filteredByNames)
+        // console.log(`Filtered markers by names ${selectedValues}: ${filteredByNames.length}`)
 
-        const updatePopUpContent = function(marker, year) {
-            let popUpHtml = `<h3>${marker.data.stationId}</h3></br>`
-                                + `<b>Anwesend laut NBG-Verzeichnis (${marker.data.persons[year] ? marker.data.persons[year].count : 'keine Daten'}):</b></br>`
+        return filteredByNames
+    }
 
-            if (marker.data.persons[year]) {
-                for (const p of marker.data.persons[year].persons) {
-                    popUpHtml = popUpHtml + `${p.persId} (${p.choir})</br>`
-                }
+watch(() => props.dateSliderValue, (dateSliderValue) => {
+    console.log('triggered watch for date slider!')
+    console.log(`selected date: ${dateSliderValue} = ${new Date(dateSliderValue).toDateString()}`)
+    if (currentPlaceMarkers && placeLayer) {
+        if (placeLayer) placeLayer.clearLayers();
+        const placeMarkers = [];                    
+            
+        for (const key of Object.keys(placesStore.stations)) {
+            if (!key) continue
+            if (placesStore.stations.hasOwnProperty(key)) {
+                //console.log(key)
+                
+                const station = placesStore.stations[key]
+                //console.log(key, station)
+           
+                // console.log('station.persons[sliderValue]: ' + station.persons[props.sliderValue])
+                // console.log('markerBaseSize: ' + markerBaseSize)
+                const [
+                    lastRecordedDate, 
+                    lastPersonsBeforeSelectedTime 
+                ] = getLastRecordBeforeSelectedDate(station, dateSliderValue);
+                
+                const circle = createCircleMarker(station, lastPersonsBeforeSelectedTime, markerBaseSize);
+                
+                createPopUpAndTooltip(circle, station, lastRecordedDate, lastPersonsBeforeSelectedTime);
+
+                placeMarkers.push(circle)
             }
 
-            marker.setPopupContent(popUpHtml)
         }
+        const filtered = filterByStationId(selectedValues.value, placeMarkers)
+        filtered.forEach(marker => marker.addTo(placeLayer))
+        currentPlaceMarkers = placeMarkers;
+    }
 
-        const updateMarkers = function(markers, year) {
-            markers.forEach((marker) => {
-                resizeMarker(marker, year)
-                updatePopUpContent(marker, year)
+})
 
-            });
-
-        }
-
-        const applyFilters = function(sliderValue, selectedValues, layer) {
-                if (layer) layer.clearLayers()
-                // console.log('removed markers')
-
-                // const filteredByYear = placeMarkers.filter(marker => marker.data.year === sliderValue)
-                // console.log(`Filtered markers for year ${sliderValue}: ${filteredByYear.length}`)
-                const filteredByYear = placeMarkers
-                // console.log(`Not yet filtering markers for year.`)
-                // console.log(typeof(selectedValues))
-                // console.log(selectedValues)
-                const filteredByNames = selectedValues.length == 0 ? filteredByYear : filteredByYear.filter(marker => selectedValues.includes(marker.data.stationId))
-                // console.log(`Filtered markers by names ${selectedValues}: ${filteredByNames.length}`)
-
-                updateMarkers(filteredByNames, props.sliderValue)
-
-                
-                return filteredByNames
-        }
-
-        /**
-         * In the places view, markers represent places. Therefore, if the year changes, a markers
-         * radius may have to be updated according to the slider value. Since markers are created with a standard radius if no data 
-         * is present for the respective date, they do not need to be recreated.
-         * Instead, the watch function on slider value filters the list of all place markers for date and names,
-         * clear the layer and attach the filtered markers.
-         */
-        watch(() => props.sliderValue, (sliderValue) => {
-                // console.log('triggered watch for slider!')
-                if (placeMarkers && placeLayer) {
-                    // console.log(selectedValues.value)
-                    const filtered = applyFilters(sliderValue, selectedValues.value, placeLayer, placeMarkers)
-                    filtered.forEach(marker => marker.addTo(placeLayer))
-
-                }
-
-            })
-
-        const onSelectedNamesUpdate = function (selectedValues, sliderValue, personLayer, personMarkers) {
-            if (placeMarkers && placeLayer) {
+        const onSelectedNamesUpdate = function (selectedValues, markers) {
+            if (markers && placeLayer) {
                 // console.log('On selected names update:')
                 // console.log(selectedValues) // !!! selectedValues comes from template here, can access directly not via .value
-                const filtered = applyFilters(sliderValue, selectedValues, placeLayer, placeMarkers)
-                filtered.forEach(marker => marker.addTo(placeLayer))
+                placeLayer.clearLayers()
+                const filteredByStationId = selectedValues.length == 0 ? markers : filterByStationId(selectedValues, markers)
+                filteredByStationId.forEach(marker => marker.addTo(placeLayer))
 
             }
         }
@@ -163,7 +190,7 @@
         await placesStore.readData(placesStore.pathToDataFile)
         // console.log(placesStore.stations)
 
-        if (placeMarkers === undefined) createStationMarkers(placesStore.stations, props.map)
+        if (currentPlaceMarkers === undefined) createStationMarkersDate(placesStore.stations, props.map)
         // console.log(Object.keys(placesStore.stations))
         nameList.value = Array.from(Object.keys(placesStore.stations))
         // console.log(nameList.value)
@@ -177,7 +204,7 @@
 </script>
 <template>
     <v-container>
-        <SearchField v-model="selectedValues" @update:modelValue="onSelectedNamesUpdate(selectedValues, props.sliderValue, placeLayer, placeMarkers)" :v-if="nameList.length > 0" :facet="facetName" :facetData="nameList"/>
+        <SearchField v-model="selectedValues" @update:modelValue="onSelectedNamesUpdate(selectedValues, currentPlaceMarkers)" :v-if="nameList.length > 0" :facet="facetName" :facetData="nameList"/>
         <p>{{ selectedValues }}</p>
     </v-container>
 </template>
