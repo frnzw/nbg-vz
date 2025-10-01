@@ -125,8 +125,8 @@
     }
 
 watch(() => props.dateSliderValue, (dateSliderValue) => {
-    console.log('triggered watch for date slider!')
-    console.log(`selected date: ${dateSliderValue} = ${new Date(dateSliderValue).toDateString()}`)
+    // console.log('triggered watch for date slider!')
+    // console.log(`selected date: ${dateSliderValue} = ${new Date(dateSliderValue).toDateString()}`)
     if (currentPlaceMarkers && placeLayer) {
         if (placeLayer) placeLayer.clearLayers();
         const placeMarkers = [];                    
