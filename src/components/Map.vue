@@ -4,7 +4,6 @@
   import L from "leaflet";
   import PlacesLayer from './PlacesLayer.vue'
   import TimeSlider from './TimeSlider.vue'
-  import SliderWrapper from "./SliderWrapper.vue"
   import DisplayValue from "./DisplayValue.vue"
   import PersonsLayer from './PersonsLayer.vue'
   import DistantLayer from './DistantLayer.vue'
@@ -49,12 +48,9 @@
 
 <template>
 <div id="mapContainer"></div>
-<v-container>
-    <slider-wrapper v-model="sliderValue" class="pt-4"/>
-    <display-value :value="sliderValue" />
-  </v-container>
   <v-container>
     <TimeSlider  v-model="dateSliderValue"class="pt-4"/>
+    <display-value :value="`${dateSliderValue}  = ${new Date(dateSliderValue).toDateString()}`" />
   </v-container>
 <PlacesLayer v-if="route.path === '/map/places'" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue"/>
 <PersonsLayer v-if="route.path === '/map/persons'" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue"/>

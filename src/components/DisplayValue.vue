@@ -1,7 +1,7 @@
 <!-- Sibling: DisplayValue.vue -->
 <script setup>
 defineProps({
-  value: Number,
+  value: String,
 })
 </script>
 
