@@ -18,7 +18,7 @@ const emit = defineEmits(["update:modelValue"])
 
 const ticks = [];
 for (const offset of [...Array(100).keys()]) {
-  const tick = new Date(`${1800 + offset}-11-01`).getTime()
+  const tick = new Date(`${1800 + offset}-12-31`).getTime()
   ticks.push(tick)
 }
 console.log(ticks)

@@ -46,7 +46,7 @@ export const usePersonsStore = defineStore('persons', () => {
         // intervalls but t0, ..., tn where person has changed place
         const grouped = filteredByPerson.reduce((acc, entry) => {
             // build date from year, assuming year-11-01 for NBG-VZ data (source specifies only as "end of year")
-            const d = new Date(`${entry.year}-11-01`)
+            const d = new Date(`${entry.year}-12-31`)
 
             acc[d.getTime()] = acc[d.getTime()] || {date: d, stationId: entry.stationId, lat:entry.lat, long:entry.long};
             return acc;

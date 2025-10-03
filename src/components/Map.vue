@@ -15,7 +15,7 @@
 
   const sliderValue = ref(1828); 
 
-  const dateSliderValue = ref(new Date('1828-11-01').getTime())
+  const dateSliderValue = ref(new Date('1828-12-31').getTime())
 
   let globalMap = undefined;
 

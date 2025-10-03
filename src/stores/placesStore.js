@@ -31,7 +31,7 @@ export const usePlacesStore = defineStore('places', () => {
         const grouped = filteredByStation.reduce((acc, entry) => {
                 
             // build date from year, assuming year-11-01 for NBG-VZ data (source specifies only as "end of year")
-            const d = new Date(`${entry.year}-11-01`)
+            const d = new Date(`${entry.year}-12-31`)
 
             if (!acc[d.getTime()]) acc[d.getTime()] = {count:0, persons:[]};
             acc[d.getTime()].count = acc[d.getTime()].count + 1
