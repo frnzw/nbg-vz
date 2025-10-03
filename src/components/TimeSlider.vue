@@ -45,24 +45,26 @@ function formatThumbLabel(val) {
 
 const playBack = async function() {
   while (isPlaying.value === true) {
-      if (sliderValue.value === end) {
-        sliderValue.value = start
-      } else {
-        const newValue = sliderValue.value + 365 * 24 * 60 * 60 * 1000
-        if (!ticks.includes(newValue)) {
-          const closestTick = ticks.reduce((a, b) => Math.abs(b - newValue) < Math.abs(a - newValue) ? b : a)
-          sliderValue.value = closestTick;
-        } else {
-          sliderValue.value = newValue;
-        }
+      const newValue = sliderValue.value + 365 * 24 * 60 * 60 * 1000
+      if (newValue >= end) {
+        sliderValue.value = start;
+        continue;
       }
-      // console.log(`sliderValue.value === ${sliderValue.value}`)
-      emit('update:modelValue', sliderValue.value)
-      await new Promise((resolve) => {
-        setTimeout(resolve, 1000)
-      })
 
-    }
+      if (!ticks.includes(newValue)) {
+        const closestTick = ticks.reduce((a, b) => Math.abs(b - newValue) < Math.abs(a - newValue) ? b : a)
+        sliderValue.value = closestTick;
+      } else {
+        sliderValue.value = newValue;
+      }
+
+    // console.log(`sliderValue.value === ${sliderValue.value}`)
+    emit('update:modelValue', sliderValue.value)
+    await new Promise((resolve) => {
+      setTimeout(resolve, 1000)
+    })
+
+  }
     // console.log('Ending Playback')
 }
 
