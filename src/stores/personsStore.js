@@ -5,7 +5,7 @@ import Papa from 'papaparse';
 export const usePersonsStore = defineStore('persons', () => {
 
     let loaded = ref(false);
-    const pathToDataFile = '/person_place_geoc.csv'
+    const pathToDataFile = `${import.meta.env.BASE_URL}person_place_geoc.csv`
     const entries = ref({});
     const persons = ref({});
     let nameList = ref([])
