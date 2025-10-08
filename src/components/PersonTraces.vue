@@ -12,7 +12,7 @@
         map: Object,
         sliderValue: Number,
         dateSliderValue: Number,
-        persId: String
+        personsSelectedFromPlace: String
     })
 
 
@@ -25,7 +25,7 @@
 
     const facetName = "Personennamen"
     let nameList = ref([])
-    const selectedValues = props.persId !== '' ? ref([props.persId]) : ref([])
+    const selectedValues = ref(props.personsSelectedFromPlace)
  
     const wrapperStyle = 'position: relative; width: 50px; height: 50px;'
 
@@ -364,12 +364,13 @@ const  createPersonMarkersDate = function(persons, wrapperStyle, iconCss) {
 
 })
 
-    const onSelectedNamesUpdate = function (selectedValues, personLayer, personMarkers) {
-        if (personMarkers && personLayer) {
-            // console.log('On selected names update:')
-            // console.log(selectedValues) 
+    const onSelectedNamesUpdate = function (selectedValues, personLayerMarkers, personLayerTraces, currentPersonMarkers, currentPersonTraces) {
+        if (currentPersonMarkers && currentPersonTraces && personLayerMarkers && personLayerTraces) {
+            console.log('On selected names update:')
+            console.log(selectedValues) 
             // console.log(personMarkers)
-            if (personLayer) personLayer.clearLayers()
+            personLayerMarkers.clearLayers()
+            personLayerTraces.clearLayers()
             // console.log('removed markers')
             const filtered = filterByNames(selectedValues, personMarkers) // !!! selectedValues comes from template here, can access directly not via .value
             filtered.forEach(marker => marker.addTo(personLayer))
@@ -426,7 +427,7 @@ const  createPersonMarkersDate = function(persons, wrapperStyle, iconCss) {
 </script>
 <template>
     <v-container>
-        <SearchField v-model="selectedValues" @update:modelValue="onSelectedNamesUpdate(selectedValues, props.sliderValue, personLayer, currentPersonMarkers)" :v-if="nameList.length > 0" :facet="facetName" :facetData="nameList"/>
+        <SearchField v-model="selectedValues" @update:modelValue="onSelectedNamesUpdate(selectedValues, personLayerMarkers, personLayerTraces, currentPersonMarkers, currentPersonTraces)" :v-if="nameList.length > 0" :facet="facetName" :facetData="nameList"/>
         <p>{{ selectedValues }}</p>
     </v-container>
 </template>

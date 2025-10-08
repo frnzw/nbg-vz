@@ -12,7 +12,6 @@
   const route = useRoute()
   const router = useRouter()
 
-  const queryPersId = ref('')
 
   watch(route, () => {
     console.log(`route changed to ${route.path} with params ${JSON.stringify(route.query)}`)
@@ -26,7 +25,7 @@
 
   let globalMap = undefined;
 
-  const personSelectedFromPlace = ref('')
+  const personsSelectedFromPlace = ref([])
 
   const initMap = function() {
     const map = L.map("mapContainer").fitWorld().zoomIn() //.setView(center, 2);
@@ -56,7 +55,7 @@
 
   const switchToPersonView = function(persId) {
     console.log('caught event person-selected!')
-    personSelectedFromPlace.value = persId
+    personsSelectedFromPlace.value = [persId]
     router.push({ name: 'traces' })
   }
 
@@ -70,7 +69,7 @@
   </v-container>
 <PlacesLayer v-if="route.path === '/map/places'" @person-selected="switchToPersonView" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue"/>
 <PersonsLayer v-if="route.path === '/map/persons'" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue"/>
-<PersonTraces v-if="route.path === '/map/traces'" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue" :persId="personSelectedFromPlace"/>
+<PersonTraces v-if="route.path === '/map/traces'" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue" :personsSelectedFromPlace="personsSelectedFromPlace"/>
 
 </template>
 
