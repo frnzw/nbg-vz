@@ -6,7 +6,7 @@
   import TimeSlider from './TimeSlider.vue'
   import DisplayValue from "./DisplayValue.vue"
   import PersonsLayer from './PersonsLayer.vue'
-  import DistantLayer from './DistantLayer.vue'
+  import PersonTraces from './PersonTraces.vue'
   import { useRoute } from 'vue-router'
 
   const route = useRoute()
@@ -54,7 +54,7 @@
   </v-container>
 <PlacesLayer v-if="route.path === '/map/places'" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue"/>
 <PersonsLayer v-if="route.path === '/map/persons'" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue"/>
-<DistantLayer v-if="route.path === '/map/distant'" :map="globalMap" :sliderValue="sliderValue"/>
+<PersonTraces v-if="route.path === '/map/persons-traces'" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue"/>
 </template>
 
 
