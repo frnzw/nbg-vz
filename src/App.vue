@@ -1,8 +1,7 @@
 <script setup>
-    import { RouterView, useRoute } from 'vue-router'
+    import { useRoute } from 'vue-router'
     import Map from './components/Map.vue'
-    import Navigation from './components/Navigation.vue'
-
+    
     const route = useRoute()
 
 </script>
@@ -25,8 +24,8 @@
           <v-tab to="/map/persons" value="/map/persons">
             Persons View
           </v-tab>
-          <v-tab to="/map/distant" value="/map/distant">
-            Distant View
+          <v-tab to="/map/persons-traces" value="/map/persons-traces">
+            Traces View
           </v-tab>
 
         </v-tabs>

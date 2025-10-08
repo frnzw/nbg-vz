@@ -1,8 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
-// import HomeView from '@/views/HomeView.vue'
 import PlacesView from '../views/PlacesView.vue'
 import PersonsView from '../views/PersonsView.vue'
-import DistantView from '../views/DistantView.vue'
+import PersonsTracesView from '../views/PersonTracesView.vue'
 //import NotFoundView from '@/views/NotFoundView.vue'
 
 const router = createRouter({
@@ -23,10 +22,15 @@ const router = createRouter({
             component: PersonsView,
         },
         {
-            path: '/map/distant',
-            name: 'distant',
-            component: DistantView,
+            path: '/map/persons-traces',
+            name: 'persons-traces',
+            component: PersonsTracesView,
         },
+        // {
+        //     path: '/map/distant',
+        //     name: 'distant',
+        //     component: DistantView,
+        // },
 
 
         // {
