@@ -1,5 +1,5 @@
 <script setup>
-  import { onMounted, ref } from 'vue'
+  import { onMounted, ref, watch } from 'vue'
   import "leaflet/dist/leaflet.css";
   import L from "leaflet";
   import PlacesLayer from './PlacesLayer.vue'
@@ -10,6 +10,13 @@
   import { useRoute } from 'vue-router'
 
   const route = useRoute()
+
+  const queryPersId = ref('')
+
+  watch(route, () => {
+    console.log(`route changed to ${route.path} with params ${JSON.stringify(route.query)}`)
+    if (route.path === '/map/traces' && route.query.persId) queryPersId.value = route.query.persId
+  });
 
   const emit = defineEmits(['mapIsReady']) // for passing map to parent component
 
@@ -54,7 +61,8 @@
   </v-container>
 <PlacesLayer v-if="route.path === '/map/places'" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue"/>
 <PersonsLayer v-if="route.path === '/map/persons'" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue"/>
-<PersonTraces v-if="route.path === '/map/persons-traces'" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue"/>
+<PersonTraces v-if="route.path === '/map/traces'" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue" :persId="queryPersId"/>
+
 </template>
 
 

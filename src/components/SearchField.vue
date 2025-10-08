@@ -5,6 +5,7 @@ const props = defineProps({
     facet: String,
     facetData: Array,
     modelValue: Array,
+    preSelected: Array
 });
 
 const selectedValues = ref(props.modelValue) // suppress warning that props are read only, indirectly bind to selection v-model via this local var

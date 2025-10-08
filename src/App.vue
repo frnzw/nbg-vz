@@ -24,7 +24,7 @@
           <v-tab to="/map/persons" value="/map/persons">
             Persons View
           </v-tab>
-          <v-tab to="/map/persons-traces" value="/map/persons-traces">
+          <v-tab to="/map/traces" value="/map/traces">
             Traces View
           </v-tab>
 

@@ -1,8 +1,12 @@
 <script setup>
     import L from "leaflet";
     import { usePlacesStore } from '../stores/placesStore'
-    import {onMounted, ref, defineProps, onUnmounted, watch} from 'vue'
+    import {onMounted, ref, defineProps, onUnmounted, watch, h, render } from 'vue'
+    import { useRouter } from 'vue-router'
     import SearchField from './SearchField.vue'
+    import PopupLinksPlace from './PopupLinksPlace.vue'
+
+    const router = useRouter()
 
     const placesStore = usePlacesStore();
 
@@ -20,18 +24,65 @@
     const selectedValues = ref([])
     const markerBaseSize = 500
 
+    // Ref für das DOM-Element, das Leaflet als Popup-Inhalt verwendet
+    const popupContainers = ref([]);
+
     const createPopUpAndTooltip = function (circle, station, lastRecordedDate, lastPersonsBeforeSelectedTime) {
+        
         let popUpHtml = `<h3>${station.stationId}</h3></br>`
                       + `<b>Anwesend laut letztem erfassten NBG-Verzeichnis ${lastRecordedDate ? new Date(lastRecordedDate).getFullYear() : ''} (${lastPersonsBeforeSelectedTime ? lastPersonsBeforeSelectedTime.count : 'keine Daten'}):</b></br>`
 
+        const popupDiv = document.createElement('div');
+        popupDiv.innerHTML = popUpHtml;
+
+
         if (lastPersonsBeforeSelectedTime) {
-            for (const p of lastPersonsBeforeSelectedTime.persons) {
-                popUpHtml = popUpHtml + `${p.persId} (${p.choir})</br>`
+            for (const [index, person] of lastPersonsBeforeSelectedTime.persons.entries()) {
+                const button = document.createElement('button');
+                button.textContent = `${person.persId} (${person.choir})`;
+                button.onclick = async function() {
+                    console.log(`Clicked on ${person.persId} (${person.choir})`);
+                    console.log(router.getRoutes().map(r => r.path))
+                    await router.push({ name: 'traces', query: { persId: person.persId } })
+                }
+                popupDiv.appendChild(button);
+                if (index < lastPersonsBeforeSelectedTime.persons.length - 1) popupDiv.appendChild(document.createElement('br'));
             }
+
         }
-                
-        circle.bindPopup(popUpHtml);
+
+        circle.bindPopup(popupDiv);
         circle.bindTooltip(`${station.stationId}`)
+
+
+        
+        // const div = document.createElement("div");
+        // div.innerHTML = popUpHtml;
+
+        // if (lastPersonsBeforeSelectedTime) {
+        //     for (const p of lastPersonsBeforeSelectedTime.persons) {
+        //         // const button = document.createElement("button");
+        //         // button.innerHTML = `${p.persId} (${p.choir})`;
+        //         // button.onclick = function() {
+        //         //     console.log(`Clicked on ${p.persId} (${p.choir})`)
+        //         // }
+        //         // div.appendChild(button);
+
+        //         const link = createVNode('router-link', {
+        //             to: { name: '/map/persons-traces', params: { id: p.persId } },
+        //             class: 'link-class',
+        //         }, `${p.persId} (${p.choir})`);
+
+                
+        //         div.appendChild(document.createElement("br"));
+
+        //         //popUpHtml = popUpHtml + `${p.persId} (${p.choir})</br>`
+        //     }
+
+        //     render(link, div);
+        // }
+                
+        
     }
 
     const getLastRecordBeforeSelectedDate = function(station, dateSliderValue) {

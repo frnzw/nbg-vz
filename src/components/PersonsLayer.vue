@@ -1,5 +1,4 @@
 <script setup>
-    import Map from './Map.vue'
     import L from "leaflet";
     import { usePersonsPlacesStore } from '../stores/personsPlacesStore'
     import { usePersonsStore } from '../stores/personsStore'
@@ -12,12 +11,11 @@
     const props = defineProps({
         map: Object,
         sliderValue: Number,
-        dateSliderValue: Number
+        dateSliderValue: Number,
     })
 
     let currentPersonMarkers = undefined;
     let personLayer = undefined;
-
 
     const facetName = "Personennamen"
     let nameList = ref([])
@@ -319,7 +317,7 @@ const  createPersonMarkersDate = function(persons) {
     }
 
     onMounted(async () => {
-        console.log('RENDERED PERSONS LAYER')
+        console.log('RENDERED PERSONS LAYER');
         //console.log('Person view map prop: ');
         //console.log(props.map);
         //console.log('pathToDataFile: ' + personsPlacesStore.pathToDataFile)
