@@ -9,7 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "predeploy" : "npm run build",
-    "deploy" : "gh-pages -d dist"
+    "deploy" : "npx gh-pages -d dist -b gh-pages --repo git@github.com:frnzw/nbg-vz.git"
   },
   "dependencies": {
     "@fontsource/roboto": "^5.2.8",
