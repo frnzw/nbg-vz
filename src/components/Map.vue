@@ -7,9 +7,10 @@
   import DisplayValue from "./DisplayValue.vue"
   import PersonsLayer from './PersonsLayer.vue'
   import PersonTraces from './PersonTraces.vue'
-  import { useRoute } from 'vue-router'
+  import { useRoute, useRouter } from 'vue-router'
 
   const route = useRoute()
+  const router = useRouter()
 
   const queryPersId = ref('')
 
@@ -21,10 +22,11 @@
   const emit = defineEmits(['mapIsReady']) // for passing map to parent component
 
   const sliderValue = ref(1828); 
-
   const dateSliderValue = ref(new Date('1828-12-31').getTime())
 
   let globalMap = undefined;
+
+  const personSelectedFromPlace = ref('')
 
   const initMap = function() {
     const map = L.map("mapContainer").fitWorld().zoomIn() //.setView(center, 2);
@@ -51,6 +53,13 @@
     emit('mapIsReady', globalMap) // pass map to parent component
   });
 
+
+  const switchToPersonView = function(persId) {
+    console.log('caught event person-selected!')
+    personSelectedFromPlace.value = persId
+    router.push({ name: 'traces' })
+  }
+
 </script>
 
 <template>
@@ -59,9 +68,9 @@
     <TimeSlider  v-model="dateSliderValue"class="pt-4"/>
     <display-value :value="`${dateSliderValue}  = ${new Date(dateSliderValue).toDateString()}`" />
   </v-container>
-<PlacesLayer v-if="route.path === '/map/places'" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue"/>
+<PlacesLayer v-if="route.path === '/map/places'" @person-selected="switchToPersonView" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue"/>
 <PersonsLayer v-if="route.path === '/map/persons'" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue"/>
-<PersonTraces v-if="route.path === '/map/traces'" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue" :persId="queryPersId"/>
+<PersonTraces v-if="route.path === '/map/traces'" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue" :persId="personSelectedFromPlace"/>
 
 </template>
 

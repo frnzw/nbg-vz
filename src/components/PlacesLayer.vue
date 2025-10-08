@@ -16,6 +16,8 @@
         dateSliderValue: Number
     })
 
+    const emit = defineEmits(['person-selected']);
+
     let currentPlaceMarkers = undefined;
     let placeLayer = undefined;
 
@@ -42,8 +44,7 @@
                 button.textContent = `${person.persId} (${person.choir})`;
                 button.onclick = async function() {
                     console.log(`Clicked on ${person.persId} (${person.choir})`);
-                    console.log(router.getRoutes().map(r => r.path))
-                    await router.push({ name: 'traces', query: { persId: person.persId } })
+                    emit('person-selected', person.persId)
                 }
                 popupDiv.appendChild(button);
                 if (index < lastPersonsBeforeSelectedTime.persons.length - 1) popupDiv.appendChild(document.createElement('br'));
