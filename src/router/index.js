@@ -23,7 +23,6 @@ const router = createRouter({
         },
         {
             path: '/map/traces',
-            props: route => ({ persId: route.query.persId  }),
             name: 'traces',
             component: PersonTracesView,
         },

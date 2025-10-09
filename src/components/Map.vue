@@ -59,6 +59,11 @@
     router.push({ name: 'traces' })
   }
 
+  const clearPreSelection = function() {
+    console.log('caught event person-pre-selection-cleared!')
+    personsSelectedFromPlace.value = []
+  }
+
 </script>
 
 <template>
@@ -69,7 +74,7 @@
   </v-container>
 <PlacesLayer v-if="route.path === '/map/places'" @person-selected="switchToPersonView" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue"/>
 <PersonsLayer v-if="route.path === '/map/persons'" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue"/>
-<PersonTraces v-if="route.path === '/map/traces'" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue" :personsSelectedFromPlace="personsSelectedFromPlace"/>
+<PersonTraces v-if="route.path === '/map/traces'" @person-pre-selection-cleared="clearPreSelection" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue" :personsSelectedFromPlace="personsSelectedFromPlace"/>
 
 </template>
 

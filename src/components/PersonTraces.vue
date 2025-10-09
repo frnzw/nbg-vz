@@ -3,7 +3,7 @@
     import 'leaflet-polylinedecorator'
     import "leaflet/dist/leaflet.css";
     import { usePersonsStore } from '../stores/personsStore'
-    import {onMounted, onUnmounted, watch, ref} from 'vue' 
+    import {onMounted, onUnmounted, watch, ref, defineEmits} from 'vue' 
     import SearchField from './SearchField.vue'
 
     // ------------------------------ SOME SHARED CONSTANTS
@@ -14,8 +14,10 @@
         map: Object,
         sliderValue: Number,
         dateSliderValue: Number,
-        personsSelectedFromPlace: String
+        personsSelectedFromPlace: Array
     })
+
+    const emit = defineEmits(['person-pre-selection-cleared']);
 
     // global layer groups that will be updated, added to / removed from map on user interaction
     let personLayerMarkers = undefined;
@@ -362,9 +364,13 @@
 
     })
 
-    const onSelectedNamesUpdate = function (selectedValues) {
+    const onSelectedNamesUpdate = function (currentlySelectedValues) {
+        // clear pre-selection prop in map component to avoid pre-selection being active next time
+        // a user navigates here via tabs
+        emit('person-pre-selection-cleared')
         if (personLayerMarkers && personLayerTraces) {
             console.log('On selected names update:')
+            console.log(currentlySelectedValues)
             console.log(selectedValues) 
             // console.log(personMarkers)
             if (true) {
@@ -417,8 +423,8 @@
         // console.log('nameList from person store:')
         // console.log(nameList.value)
 
-        console.log(`props.persId: ${props.persId}`);
-        if (props.persId) selectedValues.value = [props.persId]
+        console.log(`props.personsSelectedFromPlace: ${props.personsSelectedFromPlace}`);
+        // selectedValues.value = [props.persId]
         console.log(`mounting with selected values: ${selectedValues.value}`)
         showPersonsLayer(personLayerMarkers, personLayerTraces, props.map);
 
@@ -431,7 +437,7 @@
 </script>
 <template>
     <v-container>
-        <SearchField v-model="selectedValues" @update:modelValue="onSelectedNamesUpdate(selectedValues)" :v-if="nameList.length > 0" :facet="facetName" :facetData="nameList"/>
+        <SearchField v-model="selectedValues" @update:modelValue="onSelectedNamesUpdate" :v-if="nameList.length > 0" :facet="facetName" :facetData="nameList"/>
         <p>{{ selectedValues }}</p>
     </v-container>
 </template>
