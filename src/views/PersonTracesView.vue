@@ -1,9 +1,16 @@
 <script setup>
-import PersonsTraces from '../components/PersonTraces.vue'
+import PersonTraces from '../components/PersonTraces.vue'
+import {defineProps, onMounted} from 'vue'
+import { useRoute } from 'vue-router'
+
+// const route = useRoute()
+const props = defineProps({ persId: String });
+
+
 </script>
 
 <template>
     
-<PersonsTraces />
+<PersonTraces persId="{{props.persId}}"/>
 
 </template>

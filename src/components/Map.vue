@@ -1,5 +1,5 @@
 <script setup>
-  import { onMounted, ref } from 'vue'
+  import { onMounted, ref, watch } from 'vue'
   import "leaflet/dist/leaflet.css";
   import L from "leaflet";
   import PlacesLayer from './PlacesLayer.vue'
@@ -7,17 +7,25 @@
   import DisplayValue from "./DisplayValue.vue"
   import PersonsLayer from './PersonsLayer.vue'
   import PersonTraces from './PersonTraces.vue'
-  import { useRoute } from 'vue-router'
+  import { useRoute, useRouter } from 'vue-router'
 
   const route = useRoute()
+  const router = useRouter()
+
+
+  watch(route, () => {
+    console.log(`route changed to ${route.path} with params ${JSON.stringify(route.query)}`)
+    if (route.path === '/map/traces' && route.query.persId) queryPersId.value = route.query.persId
+  });
 
   const emit = defineEmits(['mapIsReady']) // for passing map to parent component
 
   const sliderValue = ref(1828); 
-
   const dateSliderValue = ref(new Date('1828-12-31').getTime())
 
   let globalMap = undefined;
+
+  const personsSelectedFromPlace = ref([])
 
   const initMap = function() {
     const map = L.map("mapContainer").fitWorld().zoomIn() //.setView(center, 2);
@@ -44,6 +52,13 @@
     emit('mapIsReady', globalMap) // pass map to parent component
   });
 
+
+  const switchToPersonView = function(persId) {
+    console.log('caught event person-selected!')
+    personsSelectedFromPlace.value = [persId]
+    router.push({ name: 'traces' })
+  }
+
 </script>
 
 <template>
@@ -52,9 +67,10 @@
     <TimeSlider  v-model="dateSliderValue"class="pt-4"/>
     <display-value :value="`${dateSliderValue}  = ${new Date(dateSliderValue).toDateString()}`" />
   </v-container>
-<PlacesLayer v-if="route.path === '/map/places'" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue"/>
+<PlacesLayer v-if="route.path === '/map/places'" @person-selected="switchToPersonView" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue"/>
 <PersonsLayer v-if="route.path === '/map/persons'" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue"/>
-<PersonTraces v-if="route.path === '/map/persons-traces'" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue"/>
+<PersonTraces v-if="route.path === '/map/traces'" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue" :personsSelectedFromPlace="personsSelectedFromPlace"/>
+
 </template>
 
 

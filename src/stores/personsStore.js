@@ -66,11 +66,11 @@ export const usePersonsStore = defineStore('persons', () => {
         
         // first: stations per person, ordered by date
         const filteredByPerson = data.filter((entry) => entry.person === personId).sort((a,b) => a.year - b.year);
-        if (personId === 'Teutsch_XX') {
-            console.log('---------- Aggregate stations in personsStore --------------')
-            console.log('filteredByPerson:')
-            console.log(filteredByPerson)
-        }
+        // if (personId === 'Teutsch_XX') {
+        //     console.log('---------- Aggregate stations in personsStore --------------')
+        //     console.log('filteredByPerson:')
+        //     console.log(filteredByPerson)
+        // }
         // aggregate further:
         const orderedStationsAggr = []
         const groupedStationsAggr = filteredByPerson.reduce((acc, entry) => {
@@ -85,21 +85,21 @@ export const usePersonsStore = defineStore('persons', () => {
                 const idxMax = Math.max(...idx)
                 // check if person stays in same place 
                 if (acc[entry.stationId].stationId === orderedStationsAggr[orderedStationsAggr.length - 1].stationId) {
-                    if (personId === 'Teutsch_XX') {
-                        console.log('updating station dateTo')
-                        console.log(idx)
-                        console.log(idxMax);
-                    }
+                    // if (personId === 'Teutsch_XX') {
+                    //     console.log('updating station dateTo')
+                    //     console.log(idx)
+                    //     console.log(idxMax);
+                    // }
                     // -> update .dateTo of most recent stay
                     acc[entry.stationId].stays[idxMax].dateTo = d.getTime();
 
                 } else {
-                    if (personId === 'Teutsch_XX') {
-                        console.log('updating station stays:');
-                        console.log(acc[entry.stationId]);
-                        console.log(orderedStationsAggr);
+                    // if (personId === 'Teutsch_XX') {
+                    //     console.log('updating station stays:');
+                    //     console.log(acc[entry.stationId]);
+                    //     console.log(orderedStationsAggr);
                         
-                    }
+                    // }
                     // -> add new subentry to acc with stationId+_count
                     acc[entry.stationId].stays[idxMax+1] = {
                         dateFrom: d.getTime(), dateTo: d.getTime(),
@@ -120,11 +120,11 @@ export const usePersonsStore = defineStore('persons', () => {
     
                 orderedStationsAggr.push({stationId: entry.stationId, stayIdx:0});
     
-                if (personId === 'Teutsch_XX') {
-                    console.log('adding station:')
-                    console.log(acc[entry.stationId])
-                    console.log(orderedStationsAggr)
-                }
+                // if (personId === 'Teutsch_XX') {
+                //     console.log('adding station:')
+                //     console.log(acc[entry.stationId])
+                //     console.log(orderedStationsAggr)
+                // }
                 
             }
             return acc;
