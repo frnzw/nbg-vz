@@ -3,7 +3,7 @@
     import 'leaflet-polylinedecorator'
     import "leaflet/dist/leaflet.css";
     import { usePersonsStore } from '../stores/personsStore'
-    import {onMounted, onUnmounted, watch, ref} from 'vue' 
+    import {onMounted, onUnmounted, watch, ref, defineEmits} from 'vue' 
     import SearchField from './SearchField.vue'
 
     // ------------------------------ SOME SHARED CONSTANTS
@@ -14,8 +14,10 @@
         map: Object,
         sliderValue: Number,
         dateSliderValue: Number,
-        personsSelectedFromPlace: String
-    })
+        personsSelectedFromPlace: Array
+    });
+
+    const emit = defineEmits(['place-selected', 'person-pre-selection-cleared']);
 
     // global layer groups that will be updated, added to / removed from map on user interaction
     let personLayerMarkers = undefined;
@@ -83,14 +85,26 @@
         const stationDateTo = station.stays[stay.stayIdx].dateTo
 
         const datePresent = stationDateFrom === stationDateTo ? new Date(stationDateFrom).getFullYear() : new Date(stationDateFrom).getFullYear() + '-' + new Date(stationDateTo).getFullYear()
-        let datePresentNext, datePresentPrev;
+        let datePresentNext, buttonNext, datePresentPrev, buttonPrev;
         if (nextStation) {
             const nextStationDateFrom = nextStation.stays[nextStationStay.stayIdx].dateFrom
             const nextStationDateTo = nextStation.stays[nextStationStay.stayIdx].dateFrom
             datePresentNext = nextStationDateFrom === nextStationDateTo ? new Date(nextStationDateFrom).getFullYear() : new Date(nextStationDateFrom).getFullYear() + '-' + new Date(nextStationDateTo).getFullYear()
+            buttonNext = document.createElement('button');
+            buttonNext.textContent = `${nextStation.stationId}`;
+            buttonNext.onclick = async function() {
+                console.log(`Clicked on ${nextStation.stationId}`);
+                emit('place-selected', nextStation.stationId)
+            }
         }
         if (prevStation) {
             datePresentPrev = prevStation.dateFrom === prevStation.dateTo ? new Date(prevStation.dateFrom).getFullYear() : new Date(prevStation.dateFrom).getFullYear() + '-' + new Date(prevStation.dateTo).getFullYear()
+            buttonPrev = document.createElement('button');
+            buttonPrev.textContent = `${prevStation.stationId}`;
+            buttonPrev.onclick = async function() {
+                console.log(`Clicked on ${prevStation.stationId}`);
+                emit('place-selected', prevStation.stationId)
+            }
         }
 
 
@@ -99,7 +113,63 @@
                         + `<b>Nächste (erfasste) Station aus NBG-VZ:</b></br> ${!datePresentNext ? 'keine Daten' : datePresentNext + ': ' + nextStation.stationId}</br>`
 
 
-        marker.bindPopup(popUpHtml);
+
+        const popupDiv = document.createElement('div');
+
+        const heading = document.createElement('h3')
+        heading.textContent = `${person.personId} : ${marker.data.stationIdx} (${!datePresent ? 'keine Daten' :  datePresent})`
+        
+        const subHeadingCurrent = document.createElement('b')
+        subHeadingCurrent.textContent = 'Zuletzt (erfasste) Station aus NBG-VZ:'
+
+        const buttonCurrent = document.createElement('button');
+        buttonCurrent.textContent = `${station.stationId}`;
+        buttonCurrent.onclick = async function() {
+            console.log(`Clicked on ${station.stationId}`);
+            emit('place-selected', station.stationId)
+        }
+
+        const subHeadingPrev = document.createElement('b')
+        subHeadingPrev.textContent = 'Vorherige (erfasste) Station aus NBG-VZ:'
+
+        const subHeadingNext = document.createElement('b')
+        subHeadingNext.textContent = 'Nächste (erfasste) Station aus NBG-VZ:'
+        
+        popupDiv.appendChild(heading);
+        popupDiv.appendChild(document.createElement('br'));
+        popupDiv.appendChild(subHeadingCurrent);
+        popupDiv.appendChild(document.createElement('br'));
+        if (datePresent) {
+            popupDiv.appendChild(document.createTextNode(`${datePresent}: `));
+            popupDiv.appendChild(buttonCurrent);
+        } else {
+            popupDiv.appendChild(document.createTextNode('keine Daten'));
+        }
+        popupDiv.appendChild(document.createElement('br'));
+        popupDiv.appendChild(document.createElement('br'));
+        popupDiv.appendChild(subHeadingPrev);
+        popupDiv.appendChild(document.createElement('br'));
+        if (datePresentPrev) {
+            popupDiv.appendChild(document.createTextNode(`${datePresentPrev}: `));
+            popupDiv.appendChild(buttonPrev);
+        } else {
+            popupDiv.appendChild(document.createTextNode('keine Daten'));
+        }
+        popupDiv.appendChild(document.createElement('br'));
+        popupDiv.appendChild(document.createElement('br'));
+        popupDiv.appendChild(subHeadingNext);
+        popupDiv.appendChild(document.createElement('br'));
+        if (datePresentNext) {
+            popupDiv.appendChild(document.createTextNode(`${datePresentNext}: `));
+            popupDiv.appendChild(buttonNext);
+        } else {
+            popupDiv.appendChild(document.createTextNode('keine Daten'));
+        }
+
+
+        // popupDiv.appendChild(button);
+
+        marker.bindPopup(popupDiv);
         marker.bindTooltip(`${person.personId}`)
 
     }
@@ -362,9 +432,13 @@
 
     })
 
-    const onSelectedNamesUpdate = function (selectedValues) {
+    const onSelectedNamesUpdate = function (currentlySelectedValues) {
+        // clear pre-selection prop in map component to avoid pre-selection being active next time
+        // a user navigates here via tabs
+        emit('person-pre-selection-cleared')
         if (personLayerMarkers && personLayerTraces) {
             console.log('On selected names update:')
+            console.log(currentlySelectedValues)
             console.log(selectedValues) 
             // console.log(personMarkers)
             if (true) {
@@ -417,8 +491,8 @@
         // console.log('nameList from person store:')
         // console.log(nameList.value)
 
-        console.log(`props.persId: ${props.persId}`);
-        if (props.persId) selectedValues.value = [props.persId]
+        console.log(`props.personsSelectedFromPlace: ${props.personsSelectedFromPlace}`);
+        // selectedValues.value = [props.persId]
         console.log(`mounting with selected values: ${selectedValues.value}`)
         showPersonsLayer(personLayerMarkers, personLayerTraces, props.map);
 
@@ -431,7 +505,7 @@
 </script>
 <template>
     <v-container>
-        <SearchField v-model="selectedValues" @update:modelValue="onSelectedNamesUpdate(selectedValues)" :v-if="nameList.length > 0" :facet="facetName" :facetData="nameList"/>
+        <SearchField v-model="selectedValues" @update:modelValue="onSelectedNamesUpdate" :v-if="nameList.length > 0" :facet="facetName" :facetData="nameList"/>
         <p>{{ selectedValues }}</p>
     </v-container>
 </template>
