@@ -236,7 +236,7 @@ watch(() => props.dateSliderValue, (dateSliderValue) => {
     onMounted(async () => {
         // console.log('Places view test prop: ' + props.test);
         // console.log('Places view map prop: ');
-        // console.log(props.map);
+        console.log(props.map);
         // console.log('pathToDataFile: ' + placesStore.pathToDataFile)
         await placesStore.readData(placesStore.pathToDataFile)
         // console.log(placesStore.stations)
