@@ -26,6 +26,7 @@
   let globalMap = undefined;
 
   const personsSelectedFromPlace = ref([])
+  const placesSelectedFromTrace = ref([])
 
   const initMap = function() {
     const map = L.map("mapContainer").fitWorld().zoomIn() //.setView(center, 2);
@@ -58,10 +59,22 @@
     personsSelectedFromPlace.value = [persId]
     router.push({ name: 'traces' })
   }
+  
 
-  const clearPreSelection = function() {
+  const clearPreSelectionPerson = function() {
     console.log('caught event person-pre-selection-cleared!')
     personsSelectedFromPlace.value = []
+  }
+
+  const switchToPlacesView = function(stationId) {
+    console.log('caught event place-selected!')
+    placesSelectedFromTrace.value = [stationId]
+    router.push({ name: 'places' })
+  }
+
+  const clearPreSelectionPlace = function() {
+    console.log('caught event place-pre-selection-cleared!')
+    placesSelectedFromTrace.value = []
   }
 
 </script>
@@ -72,9 +85,9 @@
     <TimeSlider  v-model="dateSliderValue"class="pt-4"/>
     <display-value :value="`${dateSliderValue}  = ${new Date(dateSliderValue).toDateString()}`" />
   </v-container>
-<PlacesLayer v-if="route.path === '/map/places'" @person-selected="switchToPersonView" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue"/>
+<PlacesLayer v-if="route.path === '/map/places'" @person-selected="switchToPersonView" @place-pre-selection-cleared="clearPreSelectionPlace" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue" :placesSelectedFromTrace="placesSelectedFromTrace"/>
 <PersonsLayer v-if="route.path === '/map/persons'" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue"/>
-<PersonTraces v-if="route.path === '/map/traces'" @person-pre-selection-cleared="clearPreSelection" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue" :personsSelectedFromPlace="personsSelectedFromPlace"/>
+<PersonTraces v-if="route.path === '/map/traces'" @place-selected="switchToPlacesView" @person-pre-selection-cleared="clearPreSelectionPerson" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue" :personsSelectedFromPlace="personsSelectedFromPlace"/>
 
 </template>
 

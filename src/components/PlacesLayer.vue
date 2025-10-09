@@ -2,32 +2,28 @@
     import L from "leaflet";
     import { usePlacesStore } from '../stores/placesStore'
     import {onMounted, ref, defineProps, onUnmounted, watch, h, render } from 'vue'
-    import { useRouter } from 'vue-router'
     import SearchField from './SearchField.vue'
-    import PopupLinksPlace from './PopupLinksPlace.vue'
-
-    const router = useRouter()
 
     const placesStore = usePlacesStore();
 
     const props = defineProps({
         map: Object,
         sliderValue: Number,
-        dateSliderValue: Number
-    })
+        dateSliderValue: Number,
+        placesSelectedFromTrace: Array
+    });
 
-    const emit = defineEmits(['person-selected']);
+    const emit = defineEmits(['person-selected', 'place-pre-selection-cleared']);
 
     let currentPlaceMarkers = undefined;
     let placeLayer = undefined;
 
     const facetName = "Stationsnamen"
     let nameList = ref([])
-    const selectedValues = ref([])
+    const selectedValues = ref(props.placesSelectedFromTrace)
     const markerBaseSize = 500
 
     // Ref für das DOM-Element, das Leaflet als Popup-Inhalt verwendet
-    const popupContainers = ref([]);
 
     const createPopUpAndTooltip = function (circle, station, lastRecordedDate, lastPersonsBeforeSelectedTime) {
         
@@ -214,6 +210,9 @@ watch(() => props.dateSliderValue, (dateSliderValue) => {
 })
 
         const onSelectedNamesUpdate = function (selectedValues, markers) {
+            // clear pre-selection prop in map component to avoid pre-selection being active next time
+            // a user navigates here via tabs
+            emit('place-pre-selection-cleared')
             if (markers && placeLayer) {
                 // console.log('On selected names update:')
                 // console.log(selectedValues) // !!! selectedValues comes from template here, can access directly not via .value
