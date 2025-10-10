@@ -51,41 +51,65 @@
     }
 
 
-    const testNativeMovingMarker = async function() {
+    // Animationsfunktion
+    function animateMarker(time, marker, startLatLng, endLatLng, duration, startTime) {
+        const t = (time - startTime) / duration; // Fortschritt 0..1
+
+        if (t >= 1) {
+            marker.setLatLng(endLatLng); // am Ende
+            return;
+        }
+
+        // 1. LatLng in Pixelkoordinaten umwandeln
+        const startPoint = props.map.latLngToLayerPoint(startLatLng);
+        const endPoint   = props.map.latLngToLayerPoint(endLatLng);
+
+        // 2. Linear interpolieren
+        const currentPoint = L.point(
+            startPoint.x + (endPoint.x - startPoint.x) * t,
+            startPoint.y + (endPoint.y - startPoint.y) * t
+        );
+
+        // 3. Zurück in LatLng
+        const currentLatLng = props.map.layerPointToLatLng(currentPoint);
+
+        // 4. Marker setzen
+        marker.setLatLng(currentLatLng);
+
+        // 5. nächsten Frame anfordern
+        requestAnimationFrame((t) => animateMarker(t, marker, startLatLng, endLatLng, duration, startTime));
+    }
+
+    const testNativeMovingMarker = async function(startLatLng, endLatLng) {
         // make a polyline for testing
+
+
+        // const testLineMedium = L.polyline([[40.730610, -73.935242], [5.839398, -55.199089]]) // nyc -> paramaribo
+        // const testLineLong = L.polyline([[40.730610, -73.935242], [48.864716, 2.349014]]) // nyc -> paris
+        // const testLineShort = L.polyline([[40.730610, -73.935242], [42.361145, -71.057083]]) // nyc -> boston
+
+        const marker = L.marker(startLatLng)
+        marker.addTo(props.map)
+        // Dauer der Animation in Millisekunden
+        const duration = 1000;
+
+        // Startzeit merken
+        const startTime = performance.now();
+
+        // Animation starten
+        requestAnimationFrame((t) => animateMarker(t, marker, startLatLng, endLatLng, duration, startTime));
+
+    }
+
+    const moveMarkers = function() {
         const newYork = [40.730610, -73.935242]
         const paramaribo = [5.839398, -55.199089]
         const boston = [42.361145, -71.057083]
+        const paris = [48.864716, 2.349014]
 
-        const testLineMedium = L.polyline([[40.730610, -73.935242], [5.839398, -55.199089]]) // nyc -> paramaribo
-        const testLineLong = L.polyline([[40.730610, -73.935242], [48.864716, 2.349014]]) // nyc -> paris
-        const testLineShort = L.polyline([[40.730610, -73.935242], [42.361145, -71.057083]]) // nyc -> boston
-
-        // extract lat/long pairs from polyline for the whole path??
-        console.log(testLineMedium)
-        // else: calculate them somehow?
-
-        // watch out for required coordinate format: lat = y, long = x
-        const generator = new GreatCircle({x: newYork[1], y:newYork[0]}, {x: paramaribo[1], y:paramaribo[0]}, {'name': 'nyc to paramaribo'})
-        const line = generator.Arc(2000, {offset: 10});
-
-        // convert back to leaflet [lat, long] format
-        const coords = line.geometries[0].coords.map(([long, lat]) => [lat, long])
-        console.log(coords);
-        // make a marker at starting point of polyline
-        const marker = L.marker(newYork);
-        
-        marker.addTo(props.map)
-        console.log(marker);
-        for (const [index, c] of coords.entries()) {
-            marker.setLatLng(c);
-            await new Promise((resolve) => {
-                console.log(`moved to coord ${index}`)
-                setTimeout(resolve, 0)
-            })
-        }
-
-        // try resetting lat/long of marker in 100ms intervall -> speed dependent on length of polyline would be better later
+        testNativeMovingMarker(newYork, paramaribo);
+        testNativeMovingMarker(newYork, boston);
+        testNativeMovingMarker(newYork, paris);
 
     }
 
@@ -102,7 +126,7 @@
 
         //showPlacesLayerDistant(placeMarkersDistant, props.map);
 
-        testNativeMovingMarker();
+        moveMarkers();
 
     })
 
