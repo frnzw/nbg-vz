@@ -184,6 +184,33 @@
         
     }
 
+    const updatePopUp = function (circle, station, lastRecordedDate, lastPersonsBeforeSelectedTime) {
+        
+        let popUpHtml = `<h3>${station.stationId}</h3></br>`
+                      + `<b>Anwesend laut letztem erfassten NBG-Verzeichnis ${lastRecordedDate ? new Date(lastRecordedDate).getFullYear() : ''} (${lastPersonsBeforeSelectedTime ? lastPersonsBeforeSelectedTime.count : 'keine Daten'}):</b></br>`
+
+        const popupDiv = document.createElement('div');
+        popupDiv.innerHTML = popUpHtml;
+
+
+        if (lastPersonsBeforeSelectedTime) {
+            for (const [index, person] of lastPersonsBeforeSelectedTime.persons.entries()) {
+                const button = document.createElement('button');
+                button.textContent = `${person.persId} (${person.choir})`;
+                button.onclick = async function() {
+                    console.log(`Clicked on ${person.persId} (${person.choir})`);
+                    emit('person-selected', person.persId)
+                }
+                popupDiv.appendChild(button);
+                if (index < lastPersonsBeforeSelectedTime.persons.length - 1) popupDiv.appendChild(document.createElement('br'));
+            }
+
+        }
+        
+        circle.setPopupContent(popupDiv);      
+        
+    }
+
     const createCircleMarker = function(station, lastPersonsBeforeSelectedTime, markerBaseSize) {
         // scale radius according to last known record
         const radiusScaled = lastPersonsBeforeSelectedTime ? markerBaseSize * parseInt(lastPersonsBeforeSelectedTime.count) : markerBaseSize
@@ -373,6 +400,26 @@
 
     watch(() => props.dateSliderValue, () => {
         console.log('triggered watch for slider!')
+        for (const key of Object.keys(placesStore.stations)) {
+            if (!key) continue;
+            const station = placesStore.stations[key];
+
+            const [
+                    lastRecordedDate, 
+                    lastPersonsBeforeSelectedTime 
+                ] = getLastRecordBeforeSelectedDate(station, props.dateSliderValue);
+
+            // this would be easier with a hashmap built upon initial marker creation
+            let stationMarker;
+            for (const m of allPlaceMarkers) {
+                if (m.data.stationId === station.stationId) stationMarker = m;
+            }
+
+            updatePopUp(stationMarker, station, lastRecordedDate, lastPersonsBeforeSelectedTime);
+
+        }
+
+
         for (const key of Object.keys(personsStore.persons)) {
             if (!key) continue
             const person = personsStore.persons[key];
