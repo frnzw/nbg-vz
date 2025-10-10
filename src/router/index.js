@@ -31,11 +31,11 @@ const router = createRouter({
             name: 'traces',
             component: MapView,
         },
-        // {
-        //     path: '/map/distant',
-        //     name: 'distant',
-        //     component: DistantView,
-        // },
+        {
+            path: '/map/distant',
+            name: 'distant',
+            component: MapView,
+        },
 
 
         {

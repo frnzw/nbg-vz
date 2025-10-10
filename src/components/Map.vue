@@ -7,45 +7,11 @@
   import DisplayValue from "./DisplayValue.vue"
   import PersonsLayer from './PersonsLayer.vue'
   import PersonTraces from './PersonTraces.vue'
+  import DistantLayer from './DistantLayer.vue'
   import { useRoute, useRouter } from 'vue-router'
 
   const route = useRoute()
   const router = useRouter()
-
-  watch(route, () => {
-    console.log(`route changed to ${route.path} with params ${JSON.stringify(route.query)}`)
-
-    if (mapReady) {
-      if (route.path === '/map/places') {
-        readyForPlaceView.value = true;
-        readyForTraceView.value = false;
-        readyForPersonView.value = false;
-        console.log('ready for place view')
-      }
-      else if (route.path === '/map/traces') {
-        readyForTraceView.value = true;
-
-        readyForPersonView.value = false;
-        readyForPlaceView.value = false;
-        console.log('ready for trace view')
-      }
-      else if (route.path === '/map/persons') {
-        readyForPersonView.value = true;
-
-        readyForPlaceView.value = false;
-        readyForTraceView.value = false;
-        console.log('ready for person view')
-      } else {
-        console.warn('map component initialized without proper sub route, no additional layers will be visible!')
-      }
-      
-      console.warn(`readyForPlaceView.value: ${readyForPlaceView.value}`)
-      console.warn(`readyForTraceView.value: ${readyForTraceView.value}`)
-      console.warn(`readyForPersonView.value: ${readyForPersonView.value}`)
-    }
-
-
-  });
 
   const emit = defineEmits(['mapIsReady']) // for passing map to parent component
 
@@ -62,6 +28,7 @@
   let readyForPlaceView = ref(false)
   let readyForTraceView = ref(false)
   let readyForPersonView = ref(false)
+  let readyForDistantView = ref(false)
 
   
 
@@ -96,8 +63,10 @@
     if (mapReady) {
       if (route.path === '/map/places') {
         readyForPlaceView.value = true;
+
         readyForTraceView.value = false;
         readyForPersonView.value = false;
+        readyForDistantView.value = false;
         console.log('ready for place view')
       }
       else if (route.path === '/map/traces') {
@@ -105,6 +74,7 @@
 
         readyForPersonView.value = false;
         readyForPlaceView.value = false;
+        readyForDistantView.value = false;
         console.log('ready for trace view')
       }
       else if (route.path === '/map/persons') {
@@ -112,7 +82,15 @@
 
         readyForPlaceView.value = false;
         readyForTraceView.value = false;
+        readyForDistantView.value = false;
         console.log('ready for person view')
+      } else if (route.path === '/map/distant') {
+        readyForDistantView.value = true;
+
+        readyForPersonView.value = false;
+        readyForPlaceView.value = false;
+        readyForTraceView.value = false;
+
       } else {
         console.warn('map component initialized without proper sub route, no additional layers will be visible!')
       }
@@ -147,6 +125,47 @@
     placesSelectedFromTrace.value = []
   }
 
+  watch(route, () => {
+    console.log(`route changed to ${route.path} with params ${JSON.stringify(route.query)}`)
+
+    if (mapReady) {
+      if (route.path === '/map/places') {
+        readyForPlaceView.value = true;
+
+        readyForTraceView.value = false;
+        readyForPersonView.value = false;
+        readyForDistantView.value = false;
+        console.log('ready for place view')
+      }
+      else if (route.path === '/map/traces') {
+        readyForTraceView.value = true;
+
+        readyForPersonView.value = false;
+        readyForPlaceView.value = false;
+        readyForDistantView.value = false;
+        console.log('ready for trace view')
+      }
+      else if (route.path === '/map/persons') {
+        readyForPersonView.value = true;
+
+        readyForPlaceView.value = false;
+        readyForTraceView.value = false;
+        readyForDistantView.value = false;
+        console.log('ready for person view')
+      } else if (route.path === '/map/distant') {
+        readyForDistantView.value = true;
+
+        readyForPersonView.value = false;
+        readyForPlaceView.value = false;
+        readyForTraceView.value = false;
+
+      } else {
+        console.warn('map component initialized without proper sub route, no additional layers will be visible!')
+      }
+    }
+
+
+  });
 </script>
 
 <template>
@@ -158,6 +177,7 @@
 <PlacesLayer v-if="readyForPlaceView" @person-selected="switchToPersonView" @place-pre-selection-cleared="clearPreSelectionPlace" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue" :placesSelectedFromTrace="placesSelectedFromTrace"/>
 <PersonsLayer v-if="readyForPersonView" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue"/>
 <PersonTraces v-if="readyForTraceView" @place-selected="switchToPlacesView" @person-pre-selection-cleared="clearPreSelectionPerson" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue" :personsSelectedFromPlace="personsSelectedFromPlace"/>
+<DistantLayer v-if="readyForDistantView" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue"/>
 
 </template>
 
