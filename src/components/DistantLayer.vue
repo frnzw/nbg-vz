@@ -3,8 +3,7 @@
     import L from "leaflet"
     // import personStore
     import { usePlacesStore } from '../stores/placesStore'
-    import {onMounted, reactive, defineProps, onUnmounted} from 'vue'
-    import { GreatCircle } from 'arc';
+    import {onMounted, watch, defineProps, onUnmounted} from 'vue'
 
     /**
      * @todo use person store as well
@@ -14,8 +13,8 @@
 
     const props = defineProps({
         map: Object,
-        sliderValue: Number
-    })
+        dateSliderValue: Number
+    });
 
     let placeMarkersDistant = undefined;
 
@@ -130,9 +129,13 @@
 
     })
 
-    
-
     onUnmounted(() => hidePlacesLayerDistant(placeMarkersDistant, props.map))
+
+    watch(() => props.dateSliderValue, () => {
+        console.log('triggered watch for slider!')
+        moveMarkers();   
+
+    })
 
 </script>
 <template>
