@@ -184,8 +184,12 @@
         
     }
 
-    const updatePopUp = function (circle, station, lastRecordedDate, lastPersonsBeforeSelectedTime) {
+    const updateMarkerAndPopUp = function (marker, station, lastRecordedDate, lastPersonsBeforeSelectedTime) {
         
+
+
+
+
         let popUpHtml = `<h3>${station.stationId}</h3></br>`
                       + `<b>Anwesend laut letztem erfassten NBG-Verzeichnis ${lastRecordedDate ? new Date(lastRecordedDate).getFullYear() : ''} (${lastPersonsBeforeSelectedTime ? lastPersonsBeforeSelectedTime.count : 'keine Daten'}):</b></br>`
 
@@ -194,6 +198,16 @@
 
 
         if (lastPersonsBeforeSelectedTime) {
+            if (["Enon", "Elim", "Genadendal", "Mamre"].includes(station.stationId)) {
+                console.log('Updating popup + marker for station, new person should be:');
+                console.log(station.stationId, lastPersonsBeforeSelectedTime.count);
+            }
+
+            // update marker with final persCount for the date, including new arrivals and deaths
+            marker.data.persCount = lastPersonsBeforeSelectedTime.count
+            marker.setRadius(updatePlaceMarkerRadius(marker.data.persCount));
+
+            // update popup accordingly
             for (const [index, person] of lastPersonsBeforeSelectedTime.persons.entries()) {
                 const button = document.createElement('button');
                 button.textContent = `${person.persId} (${person.choir})`;
@@ -207,7 +221,12 @@
 
         }
         
-        circle.setPopupContent(popupDiv);      
+        marker.setPopupContent(popupDiv);    
+        
+        if (["Enon", "Elim", "Genadendal", "Mamre"].includes(station.stationId)) {
+                console.log('Updated popup + marker for station, new person count is:');
+                console.log(station.stationId, marker.data.persCount);
+            }
         
     }
 
@@ -266,7 +285,7 @@
     }
 
     // ----------------- Animation -------------------------
-    function animateMarker(time, persMarker, markerStart, markerEnd, duration, startTime) {
+    async function animateMarker(time, persMarker, markerStart, markerEnd, duration, startTime, persId) {
 
         // progress, i.e. proportion of line that should have been 
         // passed at time since animation started [0,1]
@@ -278,9 +297,9 @@
         if (progressOnLine >= 1) {
             persMarker.setLatLng(markerEnd.getLatLng());
             // update end markers person count and radius
-            markerEnd.data.persCount += 1
-            console.log(`${markerEnd.data.stationId}: ${markerEnd.data.persCount}`)
-            markerEnd.setRadius(updatePlaceMarkerRadius(markerEnd));
+            markerEnd.data.persCount = markerEnd.data.persCount + 1
+            console.log(`${persId}: Updated marker persCount end: ${markerEnd.data.stationId}: ${markerEnd.data.persCount}`)
+            markerEnd.setRadius(updatePlaceMarkerRadius(markerEnd.data.persCount));
             persMarker.removeFrom(props.map)
             return; // end animation
             
@@ -304,14 +323,14 @@
         persMarker.setLatLng(currentLatLng);
 
         // call animation function again
-        requestAnimationFrame((progressOnLine) => animateMarker(progressOnLine, persMarker, markerStart, markerEnd, duration, startTime));
+        requestAnimationFrame(async (progressOnLine) => await animateMarker(progressOnLine, persMarker, markerStart, markerEnd, duration, startTime, persId));
     }
 
-    const updatePlaceMarkerRadius = function(marker) {
-        if (marker.data.persCount === 0) {
+    const updatePlaceMarkerRadius = function(persCount) {
+        if (persCount === 0) {
             return markerBaseSize
         } else {
-            return markerBaseSize * marker.data.persCount * (20 - props.map.getZoom())
+            return markerBaseSize * persCount * (20 - props.map.getZoom())
         }
     }
 
@@ -333,12 +352,12 @@
         // update start markers radius here?
         if (markerStart.data.persCount > 0) markerStart.data.persCount =  markerStart.data.persCount - 1;
         console.log(`${markerStart.data.name}: ${markerStart.data.persCount}`)
-        markerStart.setRadius(updatePlaceMarkerRadius(markerStart));
-        requestAnimationFrame((t) => animateMarker(t, persMarker, markerStart, markerEnd, duration, startTime));
+        markerStart.setRadius(updatePlaceMarkerRadius(markerStart.data.persCount));
+        requestAnimationFrame((t) => animateMarker(t, persMarker, markerStart, markerEnd, duration, startTime, persId));
 
     }
 
-    const createNativeMovingMarker = async function(markerStart, markerEnd) {
+    const createNativeMovingMarker = async function(markerStart, markerEnd, persId) {
         
         // a temporary person marker that will be moved across the map
         const persMarker = L.circle(markerStart.getLatLng(), {
@@ -354,10 +373,17 @@
 
         // start animation
         // update start markers radius here?
+        console.log(`${persId}: Initial marker persCount start: ${markerStart.data.stationId}: ${markerStart.data.persCount}`)
+        console.log(`${persId}: Initial marker persCount end: ${markerEnd.data.stationId}: ${markerEnd.data.persCount}`)
         if (markerStart.data.persCount > 0) markerStart.data.persCount =  markerStart.data.persCount - 1;
-        console.log(`${markerStart.data.stationId}: ${markerStart.data.persCount}`)
-        markerStart.setRadius(updatePlaceMarkerRadius(markerStart));
-        requestAnimationFrame((t) => animateMarker(t, persMarker, markerStart, markerEnd, duration, startTime));
+        console.log(`${persId}: Updated marker persCount start: ${markerStart.data.stationId}: ${markerStart.data.persCount}`)
+        // console.log(`${markerStart.data.stationId}: ${markerStart.data.persCount}`)
+        markerStart.setRadius(updatePlaceMarkerRadius(markerStart.data.persCount));
+        requestAnimationFrame(async (t) => await animateMarker(t, persMarker, markerStart, markerEnd, duration, startTime, persId));
+
+        return new Promise((resolve) => {
+            setTimeout(resolve, 500)
+        });
 
     }
 
@@ -398,8 +424,54 @@
 
     onUnmounted(() => hidePlacesLayer(placeLayer, props.map));
 
-    watch(() => props.dateSliderValue, () => {
+    watch(() => props.dateSliderValue, async () => {
         console.log('triggered watch for slider!')
+
+        const animateMarkerPromises = [];
+        for (const key of Object.keys(personsStore.persons)) {
+            if (!key) continue
+            const person = personsStore.persons[key];
+            const [currentStation, previousStation] = getPersonsCurrentAndPreviousStation(person);
+
+            if (!previousStation) continue; // if person has np previous recorded place, go to next person
+
+            // if (person.personId === 'Teutsch_XX') {
+            //     console.log(previousStation.stationId, currentStation.stationId);
+            // }
+
+            
+
+            // if person has changed place, trigger animation
+            if (previousStation.stationId != currentStation.stationId) {
+                
+                // get the actual markers for the previous and the next station
+                // this would be easier with a hashmap built upon initial marker creation
+                let currentMarker;
+                let previousMarker;
+                for (const m of allPlaceMarkers) {
+                    if (m.data.stationId === previousStation.stationId) previousMarker = m;
+                    if (m.data.stationId === currentStation.stationId) currentMarker = m;
+                }
+
+                // if (previousMarker.data.stationId === 'Elim') {
+                //     console.log(previousMarker.data);
+                //     console.log(currentMarker.data);
+                // }
+                console.log(`Trigger animation for ${person.personId} from ${JSON.stringify(previousMarker.data)} to ${JSON.stringify(currentMarker.data)}`);
+                // if (person.personId === 'Teutsch_XX') {
+                //     console.log(previousMarker.data);
+                //     console.log(currentMarker.data);
+                // }
+                animateMarkerPromises.push(createNativeMovingMarker(previousMarker, currentMarker, person.personId));
+
+
+            }
+        }
+
+        await Promise.all(animateMarkerPromises);
+
+        console.log('animations finished!')
+
         for (const key of Object.keys(placesStore.stations)) {
             if (!key) continue;
             const station = placesStore.stations[key];
@@ -415,45 +487,8 @@
                 if (m.data.stationId === station.stationId) stationMarker = m;
             }
 
-            updatePopUp(stationMarker, station, lastRecordedDate, lastPersonsBeforeSelectedTime);
+            updateMarkerAndPopUp(stationMarker, station, lastRecordedDate, lastPersonsBeforeSelectedTime);
 
-        }
-
-
-        for (const key of Object.keys(personsStore.persons)) {
-            if (!key) continue
-            const person = personsStore.persons[key];
-            const [currentStation, previousStation] = getPersonsCurrentAndPreviousStation(person);
-
-            if (!previousStation) continue; // if person has np previous recorded place, go to next person
-
-            if (person.personId === 'Teutsch_XX') {
-                console.log(previousStation.stationId, currentStation.stationId);
-            }
-
-            
-
-            // if person has changed place, trigger animation
-            if (previousStation.stationId != currentStation.stationId) {
-
-                // get the actual markers for the previous and the next station
-                // this would be easier with a hashmap built upon initial marker creation
-                let currentMarker;
-                let previousMarker;
-                for (const m of allPlaceMarkers) {
-                    if (m.data.stationId === previousStation.stationId) previousMarker = m;
-                    if (m.data.stationId === currentStation.stationId) currentMarker = m;
-                }
-
-                if (person.personId === 'Teutsch_XX') {
-                    console.log(previousMarker.data);
-                    console.log(currentMarker.data);
-                    // createNativeMovingMarker(previousMarker, currentMarker)
-                }
-                createNativeMovingMarker(previousMarker, currentMarker);
-
-
-            }
         }
            
 
