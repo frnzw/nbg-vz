@@ -82,17 +82,22 @@
                 lastRecordPosition = station.sortedDates.indexOf(ts);
                 lastRecordedDate = station.sortedDates[lastRecordPosition];
                 lastPersonsBeforeSelectedTime = station.personsAggregatedDate[station.sortedDates[lastRecordPosition]];
-                break; 
+                break;
             } else {
                 // if ts > dateSliderValue but also only value? -> do not show marker
-                if (station.sortedDates.length === 1) break
+                if (station.sortedDates.length === 1) break;
 
+                // found a date > selected value -> select the date before
                 lastRecordPosition = station.sortedDates.indexOf(ts) - 1;
                 lastRecordedDate = station.sortedDates[lastRecordPosition];
                 lastPersonsBeforeSelectedTime = station.personsAggregatedDate[station.sortedDates[lastRecordPosition]];
+
+
                 break;
             }
         }
+
+        // all recorded dates are smaller than selected date -> show no data
 
         return [lastRecordedDate, lastPersonsBeforeSelectedTime];
     }
@@ -127,7 +132,9 @@
                 if (person.sortedDates.length === 1) {
                     lastStationBeforeSelectedTime = undefined;
                     previousStationBeforeSelectedTime = undefined;
+
                 } else {
+
                     lastRecordPosition = person.sortedDates.indexOf(ts) - 1;
                     lastRecordedDate = person.sortedDates[lastRecordPosition];
                     lastStationBeforeSelectedTime = person.stationsDate[lastRecordedDate];
@@ -193,15 +200,22 @@
         let popUpHtml = `<h3>${station.stationId}</h3></br>`
                       + `<b>Anwesend laut letztem erfassten NBG-Verzeichnis ${lastRecordedDate ? new Date(lastRecordedDate).getFullYear() : ''} (${lastPersonsBeforeSelectedTime ? lastPersonsBeforeSelectedTime.count : 'keine Daten'}):</b></br>`
 
+        if (!lastPersonsBeforeSelectedTime) popUpHtml = popUpHtml + '<p>Gewähltes Datum liegt außerhalb des erfassten Zeitraums.</p>'
         const popupDiv = document.createElement('div');
         popupDiv.innerHTML = popUpHtml;
 
+        // if (station.stationId === 'Genadendal') {
+        //         console.log('Updating marker for Genadendal:');
+        //         console.log(lastPersonsBeforeSelectedTime);
+        //         console.log(lastRecordedDate);
+        // }
+
 
         if (lastPersonsBeforeSelectedTime) {
-            if (["Enon", "Elim", "Genadendal", "Mamre"].includes(station.stationId)) {
-                console.log('Updating popup + marker for station, new person should be:');
-                console.log(station.stationId, lastPersonsBeforeSelectedTime.count);
-            }
+            // if (["Enon", "Elim", "Genadendal", "Mamre"].includes(station.stationId)) {
+            //     console.log('Updating popup + marker for station, new person should be:');
+            //     console.log(station.stationId, lastPersonsBeforeSelectedTime.count);
+            // }
 
             // update marker with final persCount for the date, including new arrivals and deaths
             marker.data.persCount = lastPersonsBeforeSelectedTime.count
@@ -219,14 +233,20 @@
                 if (index < lastPersonsBeforeSelectedTime.persons.length - 1) popupDiv.appendChild(document.createElement('br'));
             }
 
+        } else {
+            marker.setStyle({
+                color: lastPersonsBeforeSelectedTime ? 'red' : 'grey',
+            });
+            marker.setRadius(updatePlaceMarkerRadius(0));
+
         }
         
         marker.setPopupContent(popupDiv);    
         
-        if (["Enon", "Elim", "Genadendal", "Mamre"].includes(station.stationId)) {
-                console.log('Updated popup + marker for station, new person count is:');
-                console.log(station.stationId, marker.data.persCount);
-            }
+        // if (["Enon", "Elim", "Genadendal", "Mamre"].includes(station.stationId)) {
+        //         console.log('Updated popup + marker for station, new person count is:');
+        //         console.log(station.stationId, marker.data.persCount);
+        //     }
         
     }
 
@@ -298,7 +318,7 @@
             persMarker.setLatLng(markerEnd.getLatLng());
             // update end markers person count and radius
             markerEnd.data.persCount = markerEnd.data.persCount + 1
-            console.log(`${persId}: Updated marker persCount end: ${markerEnd.data.stationId}: ${markerEnd.data.persCount}`)
+            // console.log(`${persId}: Updated marker persCount end: ${markerEnd.data.stationId}: ${markerEnd.data.persCount}`)
             markerEnd.setRadius(updatePlaceMarkerRadius(markerEnd.data.persCount));
             persMarker.removeFrom(props.map)
             return; // end animation
@@ -373,10 +393,10 @@
 
         // start animation
         // update start markers radius here?
-        console.log(`${persId}: Initial marker persCount start: ${markerStart.data.stationId}: ${markerStart.data.persCount}`)
-        console.log(`${persId}: Initial marker persCount end: ${markerEnd.data.stationId}: ${markerEnd.data.persCount}`)
+        // console.log(`${persId}: Initial marker persCount start: ${markerStart.data.stationId}: ${markerStart.data.persCount}`)
+        // console.log(`${persId}: Initial marker persCount end: ${markerEnd.data.stationId}: ${markerEnd.data.persCount}`)
         if (markerStart.data.persCount > 0) markerStart.data.persCount =  markerStart.data.persCount - 1;
-        console.log(`${persId}: Updated marker persCount start: ${markerStart.data.stationId}: ${markerStart.data.persCount}`)
+        // console.log(`${persId}: Updated marker persCount start: ${markerStart.data.stationId}: ${markerStart.data.persCount}`)
         // console.log(`${markerStart.data.stationId}: ${markerStart.data.persCount}`)
         markerStart.setRadius(updatePlaceMarkerRadius(markerStart.data.persCount));
         requestAnimationFrame(async (t) => await animateMarker(t, persMarker, markerStart, markerEnd, duration, startTime, persId));
@@ -433,11 +453,13 @@
             const person = personsStore.persons[key];
             const [currentStation, previousStation] = getPersonsCurrentAndPreviousStation(person);
 
-            if (!previousStation) continue; // if person has np previous recorded place, go to next person
+            if (person.personId === 'Teutsch_XX') {
+                console.log(previousStation, currentStation);
+            }
 
-            // if (person.personId === 'Teutsch_XX') {
-            //     console.log(previousStation.stationId, currentStation.stationId);
-            // }
+            if (!previousStation) continue; // if person has no previous recorded place, go to next person
+
+
 
             
 
@@ -457,7 +479,7 @@
                 //     console.log(previousMarker.data);
                 //     console.log(currentMarker.data);
                 // }
-                console.log(`Trigger animation for ${person.personId} from ${JSON.stringify(previousMarker.data)} to ${JSON.stringify(currentMarker.data)}`);
+                // console.log(`Trigger animation for ${person.personId} from ${JSON.stringify(previousMarker.data)} to ${JSON.stringify(currentMarker.data)}`);
                 // if (person.personId === 'Teutsch_XX') {
                 //     console.log(previousMarker.data);
                 //     console.log(currentMarker.data);

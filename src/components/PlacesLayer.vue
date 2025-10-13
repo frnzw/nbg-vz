@@ -176,7 +176,7 @@ watch(() => props.dateSliderValue, (dateSliderValue) => {
         currentPlaceMarkers = placeMarkers;
     }
 
-})
+});
 
         const onSelectedNamesUpdate = function (selectedValues, markers) {
             // clear pre-selection prop in map component to avoid pre-selection being active next time
