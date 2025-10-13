@@ -110,6 +110,9 @@
         let previousRecordedDate;
         let previousStationBeforeSelectedTime;
 
+        let nextRecordedDate;
+        let nextStationAfterSelectedTime;
+
         for (const ts of person.sortedDates) {
 
             if (ts < props.dateSliderValue) {
@@ -121,9 +124,20 @@
 
                 if (lastRecordPosition === 0) {
                     previousStationBeforeSelectedTime = undefined;
+                    nextRecordedDate = person.sortedDates[lastRecordPosition + 1];
+                    nextStationAfterSelectedTime = person.stationsDate[nextRecordedDate];
+                    
+                } else if (lastRecordPosition === person.sortedDates.length - 1) {
+                    previousRecordedDate = person.sortedDates[lastRecordPosition - 1];
+                    previousStationBeforeSelectedTime = person.sortedDates[previousRecordedDate];
+
+                    nextStationAfterSelectedTime = undefined;
                 } else {
                     previousRecordedDate = person.sortedDates[lastRecordPosition - 1];
                     previousStationBeforeSelectedTime = person.stationsDate[previousRecordedDate];
+                    
+                    nextRecordedDate = person.sortedDates[lastRecordPosition + 1];
+                    nextStationAfterSelectedTime = person.stationsDate[nextRecordedDate];
                 }
 
                 break; 
@@ -132,6 +146,8 @@
                 if (person.sortedDates.length === 1) {
                     lastStationBeforeSelectedTime = undefined;
                     previousStationBeforeSelectedTime = undefined;
+                    nextRecordedDate = undefined;
+                    nextStationAfterSelectedTime = undefined;
 
                 } else {
 
@@ -141,13 +157,22 @@
 
                     previousRecordedDate = person.sortedDates[lastRecordPosition - 1];
                     previousStationBeforeSelectedTime = person.stationsDate[previousRecordedDate];
+
+                    if (lastRecordPosition === person.sortedDates.length - 1) {
+                        // no next station recorded
+                        nextRecordedDate = undefined;
+                        nextStationAfterSelectedTime = undefined;
+                    } else {
+                        nextRecordedDate = person.sortedDates[lastRecordPosition + 1];
+                        nextStationAfterSelectedTime = person.stationsDate[nextRecordedDate];
+                    }
                 }
 
                 break;
             }
         }
 
-        return [lastStationBeforeSelectedTime, previousStationBeforeSelectedTime];
+        return [lastStationBeforeSelectedTime, previousStationBeforeSelectedTime, nextStationAfterSelectedTime];
 
     }
 
@@ -444,50 +469,84 @@
 
     onUnmounted(() => hidePlacesLayer(placeLayer, props.map));
 
-    watch(() => props.dateSliderValue, async () => {
-        console.log('triggered watch for slider!')
+    watch(() => props.dateSliderValue, async (newDateSliderValue, oldDateSliderValue) => {
+        console.log(`triggered watch for slider! old = ${oldDateSliderValue}, new = ${newDateSliderValue}`)
 
         const animateMarkerPromises = [];
         for (const key of Object.keys(personsStore.persons)) {
             if (!key) continue
             const person = personsStore.persons[key];
-            const [currentStation, previousStation] = getPersonsCurrentAndPreviousStation(person);
+            const [currentStation, previousStation, nextStation] = getPersonsCurrentAndPreviousStation(person);
 
             if (person.personId === 'Teutsch_XX') {
                 console.log(previousStation, currentStation);
             }
 
-            if (!previousStation) continue; // if person has no previous recorded place, go to next person
+            // animation FORWARD in time
+            if (newDateSliderValue >= oldDateSliderValue) {
+                if (!(previousStation && currentStation)) continue; // if person has no previous recorded place, go to next person
+
+                // if person has changed place, trigger animation
+                if (previousStation.stationId != currentStation.stationId) {
+                    
+                    // get the actual markers for the previous and the next station
+                    // this would be easier with a hashmap built upon initial marker creation
+                    let currentMarker;
+                    let previousMarker;
+                    for (const m of allPlaceMarkers) {
+                        if (m.data.stationId === previousStation.stationId) previousMarker = m;
+                        if (m.data.stationId === currentStation.stationId) currentMarker = m;
+                    }
+
+                    // if (previousMarker.data.stationId === 'Elim') {
+                    //     console.log(previousMarker.data);
+                    //     console.log(currentMarker.data);
+                    // }
+                    // console.log(`Trigger animation for ${person.personId} from ${JSON.stringify(previousMarker.data)} to ${JSON.stringify(currentMarker.data)}`);
+                    // if (person.personId === 'Teutsch_XX') {
+                    //     console.log(previousMarker.data);
+                    //     console.log(currentMarker.data);
+                    // }
+                    animateMarkerPromises.push(createNativeMovingMarker(previousMarker, currentMarker, person.personId));
+
+
+                }
+            } else { // animation BACKWARD in time
+                if (! (nextStation && currentStation)) continue; // if person has no previous recorded place, go to next person
+
+                // if person has changed place, trigger animation
+                if (nextStation.stationId != currentStation.stationId) {
+                    
+                    // get the actual markers for the previous and the next station
+                    // this would be easier with a hashmap built upon initial marker creation
+                    let currentMarker;
+                    let nextMarker;
+                    for (const m of allPlaceMarkers) {
+                        if (m.data.stationId === nextStation.stationId) nextMarker = m;
+                        if (m.data.stationId === currentStation.stationId) currentMarker = m;
+                    }
+
+                    // if (previousMarker.data.stationId === 'Elim') {
+                    //     console.log(previousMarker.data);
+                    //     console.log(currentMarker.data);
+                    // }
+                    // console.log(`Trigger animation for ${person.personId} from ${JSON.stringify(previousMarker.data)} to ${JSON.stringify(currentMarker.data)}`);
+                    // if (person.personId === 'Teutsch_XX') {
+                    //     console.log(previousMarker.data);
+                    //     console.log(currentMarker.data);
+                    // }
+                    animateMarkerPromises.push(createNativeMovingMarker(nextMarker, currentMarker, person.personId));
+
+
+                }
+            }
+            
 
 
 
             
 
-            // if person has changed place, trigger animation
-            if (previousStation.stationId != currentStation.stationId) {
-                
-                // get the actual markers for the previous and the next station
-                // this would be easier with a hashmap built upon initial marker creation
-                let currentMarker;
-                let previousMarker;
-                for (const m of allPlaceMarkers) {
-                    if (m.data.stationId === previousStation.stationId) previousMarker = m;
-                    if (m.data.stationId === currentStation.stationId) currentMarker = m;
-                }
 
-                // if (previousMarker.data.stationId === 'Elim') {
-                //     console.log(previousMarker.data);
-                //     console.log(currentMarker.data);
-                // }
-                // console.log(`Trigger animation for ${person.personId} from ${JSON.stringify(previousMarker.data)} to ${JSON.stringify(currentMarker.data)}`);
-                // if (person.personId === 'Teutsch_XX') {
-                //     console.log(previousMarker.data);
-                //     console.log(currentMarker.data);
-                // }
-                animateMarkerPromises.push(createNativeMovingMarker(previousMarker, currentMarker, person.personId));
-
-
-            }
         }
 
         await Promise.all(animateMarkerPromises);
