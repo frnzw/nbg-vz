@@ -52,33 +52,6 @@
             iconAnchor: [15, 42]
     });
 
-    const createPopUpAndTooltip = function(marker, person, year) {
-
-        const currentYearPos = person.stations[year] ? person.stations[year].position : undefined
-        const currentYear = person.stations[year] ? person.sortedYears[currentYearPos] : undefined
-
-        let prevYear, nextYear;
-        
-        if (currentYearPos === 0) {
-            nextYear = person.stations[year] ? person.sortedYears[currentYearPos + 1] : undefined
-        } else if (currentYearPos === person.sortedYears.length - 1) {
-            prevYear = person.stations[year] ? person.sortedYears[currentYearPos - 1] : undefined 
-        } else {
-            nextYear = person.stations[year] ? person.sortedYears[currentYearPos + 1] : undefined
-            prevYear = person.stations[year] ? person.sortedYears[currentYearPos - 1] : undefined 
-        }
-        // console.log(currentYearPos)
-        // console.log(prevYear, currentYear, nextYear)
-        let popUpHtml = `<h3>${person.personId}</h3></br>`
-                        + `<b>Vorherige (erfasste) Station aus NBG-VZ:</b></br> ${!prevYear ? 'keine Daten' : prevYear + ': ' + person.stations[person.sortedYears[currentYearPos - 1 ]].stationId}</br>`
-                        + `<b>Nächste (erfasste) Station aus NBG-VZ:</b></br> ${!nextYear ? 'keine Daten' : nextYear + ': ' + person.stations[person.sortedYears[currentYearPos + 1 ]].stationId}</br>`
-
-
-        marker.bindPopup(popUpHtml);
-        marker.bindTooltip(`${person.personId}`)
-
-}
-
 const createPopUpAndTooltipDate = function(marker, person, lastStationPosition, lastRecordedDate) {
 
     let prevDate, nextDate;
@@ -114,37 +87,6 @@ const createPopUpAndTooltipDate = function(marker, person, lastStationPosition, 
 
     marker.bindPopup(popUpHtml);
     marker.bindTooltip(`${person.personId}`)
-
-}
-
-    const createPersonMarkersX = function(persons) {
-        // console.log("Attempting to add " + Object.keys(persons).length + " per son markers")
-        const personMarkers = []
-        for (const key of Object.keys(persons)) {
-            if (!key) continue
-
-            const person = persons[key];
-
-            // already have to filter by year here, cannot create marker without assigning lat/long
-            const latYear = person.stations[props.sliderValue] ? person.stations[props.sliderValue].lat : undefined
-            const longYear = person.stations[props.sliderValue] ? person.stations[props.sliderValue].long : undefined
-            if (latYear && longYear) {
-                const marker = L.marker([latYear, longYear], {icon: personIcon, title: person.stations[props.sliderValue].stationId+person.personId})
-                marker.data = {year: props.sliderValue, name:person.personId}
-                createPopUpAndTooltip(marker, person, props.sliderValue)
-                personMarkers.push(marker)
-            }
-
-        }
-   
-        // console.log(`Found ${personMarkers.length} person markers for year ${props.sliderValue}`)
-        
-
-        const filtered = filterByNames(selectedValues.value, personMarkers)
-        personLayer = L.layerGroup(filtered);
-        currentPersonMarkers = personMarkers;
-        personLayer.addTo(props.map)
-        // console.log('markers added to layergroup')
 
 }
 
