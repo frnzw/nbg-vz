@@ -1,7 +1,9 @@
 <script setup>
     import L from "leaflet"
-    import { usePersonsStore } from '../stores/personsStore'
-    import { usePlacesStore } from '../stores/placesStore'
+    // import { usePersonsStore } from '../stores/personsStore'
+    import { usePersonsStore } from '../stores/personsStoreNew'
+    // import { usePlacesStore } from '../stores/placesStore'
+    import { usePlacesStore } from '../stores/placesStoreNew'
     import {onMounted, watch, defineProps, onUnmounted} from 'vue'
 
     // ----------------- Setup / Component Scope Constants -------------------------
@@ -403,8 +405,8 @@
         console.log('Distant view map prop: ');
         console.log(props.map);
         console.log('pathToDataFile: ' + placesStore.pathToDataFile)
-        if (!placesStore.loaded) await placesStore.readData(placesStore.pathToDataFile);
-        if (!personsStore.loaded) await personsStore.readData(personsStore.pathToDataFile);
+        if (!placesStore.loaded) await placesStore.readData(placesStore.pathToDataFilePlaces, placesStore.pathToDataFilePersonsPlaces);
+        if (!personsStore.loaded) await personsStore.readData(personsStore.pathToDataFilePersons, personsStore.pathToDataFilePersonsPlaces);
 
         console.log(placesStore.stations)
         console.log(personsStore.persons)

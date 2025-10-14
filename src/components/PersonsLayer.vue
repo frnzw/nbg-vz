@@ -1,6 +1,7 @@
 <script setup>
     import L from "leaflet";
-    import { usePersonsStore } from '../stores/personsStore'
+    // import { usePersonsStore } from '../stores/personsStore'
+    import { usePersonsStore } from '../stores/personsStoreNew'
     import {onMounted, onUnmounted, watch, ref} from 'vue' 
     import SearchField from './SearchField.vue'
 
@@ -254,7 +255,7 @@ const  createPersonMarkersDate = function(persons) {
         console.log('RENDERED PERSONS LAYER');
         //console.log('Person view map prop: ');
         //console.log(props.map);
-        if (!personsStore.loaded) await personsStore.readData(personsStore.pathToDataFile)
+        if (!personsStore.loaded) await personsStore.readData(personsStore.pathToDataFilePersons, personsStore.pathToDataFilePersonsPlaces);
         console.log('personsStore.persons:')
         console.log(personsStore.persons)
 

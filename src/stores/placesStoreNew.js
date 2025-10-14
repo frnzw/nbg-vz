@@ -51,7 +51,6 @@ export const usePlacesStore = defineStore('places', () => {
             }
             const csvStringPlaces = await placesRes.text();
             const dataPlaces = Papa.parse(csvStringPlaces, {header:true, dynamicTyping: true}).data;
-            console.log
 
             // await second data set (should be ready by now), parse from csv to JSON
             const personsPlacesRes = await personsPlacesResPromise;
@@ -62,7 +61,7 @@ export const usePlacesStore = defineStore('places', () => {
             const dataPersonsPlaces = Papa.parse(csvStringPersonsPlaces, {header:true, dynamicTyping: true}).data;
 
         
-            // create initial top level entry in store, adding metadata about the place
+            // create entry in store, adding metadata about the place
             for (const station of dataPlaces) {
                 if (!station.stationId) continue;
 

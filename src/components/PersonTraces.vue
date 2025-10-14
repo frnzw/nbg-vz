@@ -2,7 +2,8 @@
     import L from "leaflet";
     import 'leaflet-polylinedecorator'
     import "leaflet/dist/leaflet.css";
-    import { usePersonsStore } from '../stores/personsStore'
+    // import { usePersonsStore } from '../stores/personsStore'
+    import { usePersonsStore } from '../stores/personsStoreNew'
     import {onMounted, onUnmounted, watch, ref, defineEmits} from 'vue' 
     import SearchField from './SearchField.vue'
 
@@ -481,7 +482,7 @@
         //console.log('Person view map prop: ');
         //console.log(props.map);
 
-        if (!personsStore.loaded) await personsStore.readData(personsStore.pathToDataFile)
+        if (!personsStore.loaded) await personsStore.readData(personsStore.pathToDataFilePersons, personsStore.pathToDataFilePersonsPlaces)
 
         console.log('personsStore.persons:')
         console.log(personsStore.persons)
