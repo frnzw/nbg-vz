@@ -1,7 +1,8 @@
 <script setup>
     import L from "leaflet";
-    import { usePlacesStore } from '../stores/placesStore'
-    import {onMounted, ref, defineProps, onUnmounted, watch, h, render } from 'vue'
+    // import { usePlacesStore } from '../stores/placesStore'
+    import { usePlacesStore } from '../stores/placesStoreNew'
+    import {onMounted, ref, defineProps, onUnmounted, watch} from 'vue'
     import SearchField from './SearchField.vue'
 
     const placesStore = usePlacesStore();
@@ -207,7 +208,7 @@ watch(() => props.dateSliderValue, (dateSliderValue) => {
         // console.log('Places view map prop: ');
         console.log(props.map);
         // console.log('pathToDataFile: ' + placesStore.pathToDataFile)
-        await placesStore.readData(placesStore.pathToDataFile)
+        await placesStore.readData(placesStore.pathToDataFilePlaces, placesStore.pathToDataFilePersonsPlaces)
         // console.log(placesStore.stations)
 
         if (currentPlaceMarkers === undefined) createStationMarkersDate(placesStore.stations, props.map)
