@@ -1,5 +1,5 @@
 <script setup>
-    import { useRoute } from 'vue-router'
+    import { useRoute, RouterView } from 'vue-router'
     import Map from './components/Map.vue'
     
     const route = useRoute()
@@ -27,6 +27,9 @@
           <v-tab to="/map/traces" value="/map/traces">
             Traces View
           </v-tab>
+          <v-tab to="/map/distant" value="/map/distant">
+            Distant View
+          </v-tab>
 
         </v-tabs>
 
@@ -37,9 +40,10 @@
       
         <!-- Global Map Instance for all map views-->
         <!-- When bringing in other views (About, Data): use v-if / v-else to render map -->
-        <Map />
+        <!-- <Map /> -->
+
       
-        <!-- <RouterView /> -->
+        <RouterView />
 
       </v-main>
 

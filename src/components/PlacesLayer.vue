@@ -23,8 +23,6 @@
     const selectedValues = ref(props.placesSelectedFromTrace)
     const markerBaseSize = 500
 
-    // Ref für das DOM-Element, das Leaflet als Popup-Inhalt verwendet
-
     const createPopUpAndTooltip = function (circle, station, lastRecordedDate, lastPersonsBeforeSelectedTime) {
         
         let popUpHtml = `<h3>${station.stationId}</h3></br>`
@@ -49,36 +47,7 @@
         }
 
         circle.bindPopup(popupDiv);
-        circle.bindTooltip(`${station.stationId}`)
-
-
-        
-        // const div = document.createElement("div");
-        // div.innerHTML = popUpHtml;
-
-        // if (lastPersonsBeforeSelectedTime) {
-        //     for (const p of lastPersonsBeforeSelectedTime.persons) {
-        //         // const button = document.createElement("button");
-        //         // button.innerHTML = `${p.persId} (${p.choir})`;
-        //         // button.onclick = function() {
-        //         //     console.log(`Clicked on ${p.persId} (${p.choir})`)
-        //         // }
-        //         // div.appendChild(button);
-
-        //         const link = createVNode('router-link', {
-        //             to: { name: '/map/persons-traces', params: { id: p.persId } },
-        //             class: 'link-class',
-        //         }, `${p.persId} (${p.choir})`);
-
-                
-        //         div.appendChild(document.createElement("br"));
-
-        //         //popUpHtml = popUpHtml + `${p.persId} (${p.choir})</br>`
-        //     }
-
-        //     render(link, div);
-        // }
-                
+        circle.bindTooltip(`${station.stationId}`)           
         
     }
 
@@ -207,7 +176,7 @@ watch(() => props.dateSliderValue, (dateSliderValue) => {
         currentPlaceMarkers = placeMarkers;
     }
 
-})
+});
 
         const onSelectedNamesUpdate = function (selectedValues, markers) {
             // clear pre-selection prop in map component to avoid pre-selection being active next time
@@ -236,7 +205,7 @@ watch(() => props.dateSliderValue, (dateSliderValue) => {
     onMounted(async () => {
         // console.log('Places view test prop: ' + props.test);
         // console.log('Places view map prop: ');
-        // console.log(props.map);
+        console.log(props.map);
         // console.log('pathToDataFile: ' + placesStore.pathToDataFile)
         await placesStore.readData(placesStore.pathToDataFile)
         // console.log(placesStore.stations)
