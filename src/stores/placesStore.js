@@ -81,7 +81,7 @@ export const usePlacesStore = defineStore('places', () => {
                         stationId: entry.stationId,
                         lat: entry.lat,
                         long: entry.long,
-                        persons: aggregatePersonsPerStation(data, entry.stationId),
+                        // persons: aggregatePersonsPerStation(data, entry.stationId),
                         personsAggregatedDate: personsAggregatedDate,
                         sortedDates: sortedDates
                     }

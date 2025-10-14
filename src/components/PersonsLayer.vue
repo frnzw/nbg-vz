@@ -1,11 +1,9 @@
 <script setup>
     import L from "leaflet";
-    import { usePersonsPlacesStore } from '../stores/personsPlacesStore'
     import { usePersonsStore } from '../stores/personsStore'
     import {onMounted, onUnmounted, watch, ref} from 'vue' 
     import SearchField from './SearchField.vue'
 
-    const personsPlacesStore = usePersonsPlacesStore();
     const personsStore = usePersonsStore();
 
     const props = defineProps({
@@ -20,12 +18,6 @@
     const facetName = "Personennamen"
     let nameList = ref([])
     const selectedValues = ref([])
-
-
-    const markerCss = 'background-color:#c30b82; '
-                            + 'width: 50px; height: 50px; '
-                            + 'transform: rotate(-45deg); '
-                            + 'border-radius: 50% 50% 50% 0; '
  
     const wrapperStyle = 'position: relative; width: 50px; height: 50px;'
 
@@ -262,15 +254,10 @@ const  createPersonMarkersDate = function(persons) {
         console.log('RENDERED PERSONS LAYER');
         //console.log('Person view map prop: ');
         //console.log(props.map);
-        //console.log('pathToDataFile: ' + personsPlacesStore.pathToDataFile)
-        if (!personsPlacesStore.loaded) await personsPlacesStore.readData(personsPlacesStore.pathToDataFile)
         if (!personsStore.loaded) await personsStore.readData(personsStore.pathToDataFile)
-        //console.log(personsPlacesStore.entries)
         console.log('personsStore.persons:')
         console.log(personsStore.persons)
 
-        // if (personMarkers === undefined) createPersonMarkers(personsPlacesStore.entries)
-        // if (currentPersonMarkers === undefined) createPersonMarkersX(personsStore.persons)
         if (currentPersonMarkers === undefined) createPersonMarkersDate(personsStore.persons)
         nameList.value = Array.from(Object.keys(personsStore.persons))
         // console.log('nameList from person store:')
