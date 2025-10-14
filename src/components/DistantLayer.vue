@@ -1,5 +1,4 @@
 <script setup>
-    import Map from './Map.vue'
     import L from "leaflet"
     import { usePersonsStore } from '../stores/personsStore'
     import { usePlacesStore } from '../stores/placesStore'
@@ -17,53 +16,7 @@
     let allPlaceMarkers = undefined;
     let placeLayer = undefined;
 
-    const markerBaseSize = 500
-
-    // ----------------- Hardcoded Markers for Testing -------------------------
-    const newYork = [40.730610, -73.935242]
-        const paramaribo = [5.839398, -55.199089]
-        const boston = [42.361145, -71.057083]
-        const paris = [48.864716, 2.349014]
-
-        const persCountNewYork = 100;
-        const markerNewYork = L.circle(newYork, {
-            color:  'red',
-            fillColor: '#f03',
-            fillOpacity: 0.5,
-            radius: markerBaseSize * persCountNewYork * (20 - props.map.getZoom())
-        });
-        markerNewYork.data = { persCount: persCountNewYork, name: 'New york'}
-        markerNewYork.addTo(props.map)
-
-        const persCountParis = 3;
-        const markerParis = L.circle(paris, {
-            color:  'red',
-            fillColor: '#f03',
-            fillOpacity: 0.5,
-            radius: markerBaseSize * persCountParis * (20 - props.map.getZoom())
-        });
-        markerParis.data = { persCount: persCountParis, name: 'Paris'}
-        markerParis.addTo(props.map)
-
-        const persCountParamaribo = 5;
-        const markerParamaribo = L.circle(paramaribo, {
-            color:  'red',
-            fillColor: '#f03',
-            fillOpacity: 0.5,
-            radius: markerBaseSize * persCountParamaribo * (20 - props.map.getZoom())
-        });
-        markerParamaribo.data = { persCount: persCountParamaribo, name: 'Paramaribo'};
-        markerParamaribo.addTo(props.map);
-
-        const persCountBoston = 5;
-        const markerBoston = L.circle(boston, {
-            color:  'red',
-            fillColor: '#f03',
-            fillOpacity: 0.5,
-            radius: markerBaseSize * persCountBoston * (20 - props.map.getZoom())
-        });
-        markerBoston.data = { persCount: persCountBoston, name: 'Boston'};
-        markerBoston.addTo(props.map);
+    const markerBaseSize = 500;
 
 
     // ----------------- Filtering and Updating -------------------------
@@ -102,7 +55,7 @@
         return [lastRecordedDate, lastPersonsBeforeSelectedTime];
     }
 
-    const getPersonsCurrentAndPreviousStation = function(person) {
+    const getPersonsCurrentPreviousNextStation = function(person, oldDateSliderValue) {
         let lastRecordPosition;
         let lastRecordedDate;
         let lastStationBeforeSelectedTime;
@@ -121,25 +74,47 @@
                 lastRecordPosition = person.sortedDates.indexOf(ts);
                 lastRecordedDate = person.sortedDates[lastRecordPosition];
                 lastStationBeforeSelectedTime = person.stationsDate[lastRecordedDate];
+                if (['Ulbricht_XX', 'Ulbricht_XY', 'Mehlhose_XX', 'Mehlhose_XY', 'Herbrich_XY', 'Richter_XY'].includes(person.personId)) {
+                    console.log(`caught exact match for selected date: ${new Date(ts)}`)
+                    console.log(person.personId)
+                }
+
 
                 if (lastRecordPosition === 0) {
+                    if (['Ulbricht_XX', 'Ulbricht_XY', 'Mehlhose_XX', 'Mehlhose_XY', 'Herbrich_XY', 'Richter_XY'].includes(person.personId)) {
+                        console.log('last record position is 0')
+                    }
                     previousStationBeforeSelectedTime = undefined;
                     nextRecordedDate = person.sortedDates[lastRecordPosition + 1];
                     nextStationAfterSelectedTime = person.stationsDate[nextRecordedDate];
                     
                 } else if (lastRecordPosition === person.sortedDates.length - 1) {
+
                     previousRecordedDate = person.sortedDates[lastRecordPosition - 1];
-                    previousStationBeforeSelectedTime = person.sortedDates[previousRecordedDate];
+                    previousStationBeforeSelectedTime = person.stationsDate[previousRecordedDate];
+
+                    if (['Ulbricht_XX', 'Ulbricht_XY', 'Mehlhose_XX', 'Mehlhose_XY', 'Herbrich_XY', 'Richter_XY'].includes(person.personId)) {
+                        console.log('last record position is last of array, previousStationBeforeSelectedTime should be defined');
+                        console.log(`last record position = ${lastRecordPosition}`);
+                        console.log(`previousStationBeforeSelectedTime = ${JSON.stringify(person.stationsDate[previousRecordedDate])}`);
+                        console.log(`sortedDates = ${person.sortedDates}`);
+                        console.log(`stationsDate = ${person.sortedDates}`);
+                    }
 
                     nextStationAfterSelectedTime = undefined;
                 } else {
+                    if (['Ulbricht_XX', 'Ulbricht_XY', 'Mehlhose_XX', 'Mehlhose_XY', 'Herbrich_XY', 'Richter_XY'].includes(person.personId)) {
+                        console.log('last record position is in between, previousStationBeforeSelectedTime should be defined')
+                    }
                     previousRecordedDate = person.sortedDates[lastRecordPosition - 1];
                     previousStationBeforeSelectedTime = person.stationsDate[previousRecordedDate];
                     
                     nextRecordedDate = person.sortedDates[lastRecordPosition + 1];
                     nextStationAfterSelectedTime = person.stationsDate[nextRecordedDate];
                 }
-
+                if (['Ulbricht_XX', 'Ulbricht_XY', 'Mehlhose_XX', 'Mehlhose_XY', 'Herbrich_XY', 'Richter_XY'].includes(person.personId)) {
+                    console.log(`from ${JSON.stringify(previousStationBeforeSelectedTime)} to ${JSON.stringify(lastStationBeforeSelectedTime)}`)
+                }
                 break; 
             } else {
                 // if ts > dateSliderValue but also only value? -> do not show marker
@@ -172,19 +147,16 @@
             }
         }
 
+        // special rule for navigating backwards on slider:
+        // only set nextStation if it was visible on the date user is navigating from
+        if (nextRecordedDate) {
+            if (nextRecordedDate > oldDateSliderValue) {
+                nextStationAfterSelectedTime = undefined;
+            }
+        }
+
         return [lastStationBeforeSelectedTime, previousStationBeforeSelectedTime, nextStationAfterSelectedTime];
 
-    }
-
-
-
-    const filterByStationId = function(selectedValues, markers) {
-
-        const filteredByNames = selectedValues.length == 0 ? markers : markers.filter(marker => selectedValues.includes(marker.data.stationId))
-        // console.log(filteredByNames)
-        // console.log(`Filtered markers by names ${selectedValues}: ${filteredByNames.length}`)
-
-        return filteredByNames
     }
 
     // ----------------- Marker and Popup Creation -------------------------
@@ -217,9 +189,6 @@
     }
 
     const updateMarkerAndPopUp = function (marker, station, lastRecordedDate, lastPersonsBeforeSelectedTime) {
-        
-
-
 
 
         let popUpHtml = `<h3>${station.stationId}</h3></br>`
@@ -229,18 +198,7 @@
         const popupDiv = document.createElement('div');
         popupDiv.innerHTML = popUpHtml;
 
-        // if (station.stationId === 'Genadendal') {
-        //         console.log('Updating marker for Genadendal:');
-        //         console.log(lastPersonsBeforeSelectedTime);
-        //         console.log(lastRecordedDate);
-        // }
-
-
         if (lastPersonsBeforeSelectedTime) {
-            // if (["Enon", "Elim", "Genadendal", "Mamre"].includes(station.stationId)) {
-            //     console.log('Updating popup + marker for station, new person should be:');
-            //     console.log(station.stationId, lastPersonsBeforeSelectedTime.count);
-            // }
 
             // update marker with final persCount for the date, including new arrivals and deaths
             marker.data.persCount = lastPersonsBeforeSelectedTime.count
@@ -259,19 +217,15 @@
             }
 
         } else {
-            marker.setStyle({
-                color: lastPersonsBeforeSelectedTime ? 'red' : 'grey',
-            });
+
             marker.setRadius(updatePlaceMarkerRadius(0));
 
         }
         
+        marker.setStyle({
+                color: lastPersonsBeforeSelectedTime ? 'red' : 'grey',
+            });
         marker.setPopupContent(popupDiv);    
-        
-        // if (["Enon", "Elim", "Genadendal", "Mamre"].includes(station.stationId)) {
-        //         console.log('Updated popup + marker for station, new person count is:');
-        //         console.log(station.stationId, marker.data.persCount);
-        //     }
         
     }
 
@@ -330,6 +284,15 @@
     }
 
     // ----------------- Animation -------------------------
+    
+    // Actual animation function animateMarker will be repeatedly called as a callback wrapped by
+    // Javascript function requestAnimationFrame. requestAnimationFrame hands over a time stamp to the 
+    // callback, which is used in conjunction with a fixed animation duration to determine
+    // when the animation is over. requestAnimationFrame will execute the callback in sync with the
+    // browser's refresh rate. See: https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame.
+    // In the callback, a Leaflet marker's position is updated to make it move along a line. Finally, the 
+    // destination's place marker is updated to reflect the newly arrived person in its radius.
+
     async function animateMarker(time, persMarker, markerStart, markerEnd, duration, startTime, persId) {
 
         // progress, i.e. proportion of line that should have been 
@@ -343,7 +306,6 @@
             persMarker.setLatLng(markerEnd.getLatLng());
             // update end markers person count and radius
             markerEnd.data.persCount = markerEnd.data.persCount + 1
-            // console.log(`${persId}: Updated marker persCount end: ${markerEnd.data.stationId}: ${markerEnd.data.persCount}`)
             markerEnd.setRadius(updatePlaceMarkerRadius(markerEnd.data.persCount));
             persMarker.removeFrom(props.map)
             return; // end animation
@@ -394,9 +356,8 @@
         const startTime = performance.now();
 
         // start animation
-        // update start markers radius here?
+        // update start markers radius here
         if (markerStart.data.persCount > 0) markerStart.data.persCount =  markerStart.data.persCount - 1;
-        console.log(`${markerStart.data.name}: ${markerStart.data.persCount}`)
         markerStart.setRadius(updatePlaceMarkerRadius(markerStart.data.persCount));
         requestAnimationFrame((t) => animateMarker(t, persMarker, markerStart, markerEnd, duration, startTime, persId));
 
@@ -417,26 +378,14 @@
         const startTime = performance.now();
 
         // start animation
-        // update start markers radius here?
-        // console.log(`${persId}: Initial marker persCount start: ${markerStart.data.stationId}: ${markerStart.data.persCount}`)
-        // console.log(`${persId}: Initial marker persCount end: ${markerEnd.data.stationId}: ${markerEnd.data.persCount}`)
+        // update start markers radius here
         if (markerStart.data.persCount > 0) markerStart.data.persCount =  markerStart.data.persCount - 1;
-        // console.log(`${persId}: Updated marker persCount start: ${markerStart.data.stationId}: ${markerStart.data.persCount}`)
-        // console.log(`${markerStart.data.stationId}: ${markerStart.data.persCount}`)
         markerStart.setRadius(updatePlaceMarkerRadius(markerStart.data.persCount));
         requestAnimationFrame(async (t) => await animateMarker(t, persMarker, markerStart, markerEnd, duration, startTime, persId));
 
         return new Promise((resolve) => {
             setTimeout(resolve, 500)
         });
-
-    }
-
-    const moveMarkers = function() {
-
-        testNativeMovingMarker(markerNewYork, markerParamaribo);
-        testNativeMovingMarker(markerNewYork, markerBoston);
-        testNativeMovingMarker(markerNewYork, markerParis);
 
     }
 
@@ -458,12 +407,11 @@
         if (!personsStore.loaded) await personsStore.readData(personsStore.pathToDataFile);
 
         console.log(placesStore.stations)
+        console.log(personsStore.persons)
 
         if (allPlaceMarkers === undefined) createStationMarkersDate(placesStore.stations, props.map)
 
         showPlacesLayer(placeLayer, props.map);
-
-        //moveMarkers();
 
     })
 
@@ -476,14 +424,18 @@
         for (const key of Object.keys(personsStore.persons)) {
             if (!key) continue
             const person = personsStore.persons[key];
-            const [currentStation, previousStation, nextStation] = getPersonsCurrentAndPreviousStation(person);
+            const [currentStation, previousStation, nextStation] = getPersonsCurrentPreviousNextStation(person, oldDateSliderValue);
 
-            if (person.personId === 'Teutsch_XX') {
-                console.log(previousStation, currentStation);
+            if (person.personId === 'deFries_XY') {
+                console.log(previousStation, currentStation, nextStation);
             }
 
             // animation FORWARD in time
             if (newDateSliderValue >= oldDateSliderValue) {
+
+                // if (person.personId === 'Richter_XY') {
+                //     console.log('FORWARDS!');
+                // }
                 if (!(previousStation && currentStation)) continue; // if person has no previous recorded place, go to next person
 
                 // if person has changed place, trigger animation
@@ -498,20 +450,21 @@
                         if (m.data.stationId === currentStation.stationId) currentMarker = m;
                     }
 
-                    // if (previousMarker.data.stationId === 'Elim') {
-                    //     console.log(previousMarker.data);
-                    //     console.log(currentMarker.data);
-                    // }
                     // console.log(`Trigger animation for ${person.personId} from ${JSON.stringify(previousMarker.data)} to ${JSON.stringify(currentMarker.data)}`);
                     // if (person.personId === 'Teutsch_XX') {
                     //     console.log(previousMarker.data);
                     //     console.log(currentMarker.data);
+                    //     animateMarkerPromises.push(createNativeMovingMarker(previousMarker, currentMarker, person.personId));
                     // }
                     animateMarkerPromises.push(createNativeMovingMarker(previousMarker, currentMarker, person.personId));
 
 
                 }
             } else { // animation BACKWARD in time
+
+                if (person.personId === 'Richter_XY') {
+                    console.log('BACKWARDS!');
+                }
                 if (! (nextStation && currentStation)) continue; // if person has no previous recorded place, go to next person
 
                 // if person has changed place, trigger animation
@@ -526,29 +479,29 @@
                         if (m.data.stationId === currentStation.stationId) currentMarker = m;
                     }
 
-                    // if (previousMarker.data.stationId === 'Elim') {
-                    //     console.log(previousMarker.data);
+                    // console.log(`Trigger animation for ${person.personId} from ${JSON.stringify(nextMarker.data)} to ${JSON.stringify(currentMarker.data)}`);
+                    // if (person.personId === 'Richter_XY') {
+                    //     console.log(nextMarker.data);
                     //     console.log(currentMarker.data);
-                    // }
-                    // console.log(`Trigger animation for ${person.personId} from ${JSON.stringify(previousMarker.data)} to ${JSON.stringify(currentMarker.data)}`);
-                    // if (person.personId === 'Teutsch_XX') {
-                    //     console.log(previousMarker.data);
-                    //     console.log(currentMarker.data);
+                    //     animateMarkerPromises.push(createNativeMovingMarker(nextMarker, currentMarker, person.personId));
+
                     // }
                     animateMarkerPromises.push(createNativeMovingMarker(nextMarker, currentMarker, person.personId));
 
 
                 }
             }
-            
 
-
-
-            
 
 
         }
 
+        // sort of a hack: await Promises with timeout equal to animation length 
+        // for each animation, to have async animations finished before setting final marker 
+        // properties for the currently selected date
+        // --- this is necessary since persons previously unrecorded may pop up at stations,
+        // others may have died or not properly recoreded elsewhere after moving – both 
+        // need to be taken into account for total person count on a particular date
         await Promise.all(animateMarkerPromises);
 
         console.log('animations finished!')
