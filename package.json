@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@fontsource/roboto": "^5.2.8",
-    "arc": "^0.2.0",
     "leaflet": "^1.9.4",
     "leaflet-polylinedecorator": "^1.6.0",
     "pinia": "^3.0.3",
