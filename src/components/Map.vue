@@ -5,7 +5,6 @@
   import PlacesLayer from './PlacesLayer.vue'
   import TimeSlider from './TimeSlider.vue'
   import DisplayValue from "./DisplayValue.vue"
-  import PersonsLayer from './PersonsLayer.vue'
   import PersonTraces from './PersonTraces.vue'
   import DistantLayer from './DistantLayer.vue'
   import { useRoute, useRouter } from 'vue-router'
@@ -175,7 +174,6 @@
     <display-value :value="`${dateSliderValue}  = ${new Date(dateSliderValue).toDateString()}`" />
   </v-container>
 <PlacesLayer v-if="readyForPlaceView" @person-selected="switchToPersonView" @place-pre-selection-cleared="clearPreSelectionPlace" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue" :placesSelectedFromTrace="placesSelectedFromTrace"/>
-<PersonsLayer v-if="readyForPersonView" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue"/>
 <PersonTraces v-if="readyForTraceView" @place-selected="switchToPlacesView" @person-pre-selection-cleared="clearPreSelectionPerson" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue" :personsSelectedFromPlace="personsSelectedFromPlace"/>
 <DistantLayer v-if="readyForDistantView" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue"/>
 

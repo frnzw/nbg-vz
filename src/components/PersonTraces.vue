@@ -9,6 +9,8 @@
 
     // ------------------------------ SOME SHARED CONSTANTS
 
+    const markerBaseSize = 500
+
     const personsStore = usePersonsStore();
 
     const props = defineProps({
@@ -23,6 +25,7 @@
     // global layer groups that will be updated, added to / removed from map on user interaction
     let personLayerMarkers = undefined;
     let personLayerTraces = undefined;
+    let personLayerPlaces = undefined;
 
     // constants for initializing SearchField Component as a person search
     const facetName = "Personennamen"
@@ -106,7 +109,7 @@
         heading.textContent = `${person.persId} : ${marker.data.stationIdx} (${!datePresent ? 'keine Daten' :  datePresent})`
         
         const subHeadingCurrent = document.createElement('b')
-        subHeadingCurrent.textContent = 'Zuletzt (erfasste) Station aus NBG-VZ:'
+        subHeadingCurrent.textContent = 'Letzte (erfasste) Station aus NBG-VZ:'
 
         const [buttonCurrent, iconCurrent] = createPlaceViewLinkAndIcon(station.stationId)
 
@@ -229,20 +232,13 @@
     }
 
 
-    const createMarkersAndArrowTraces = function(orderedStationsAggr, groupedStationsAggr, person, opacityStep, markers, traces, wrapperStyle, iconCss) {
+    const createMarkersAndArrowTraces = function(orderedStationsAggr, groupedStationsAggr, person, markers, traces, places, wrapperStyle, iconCss) {
         let check = ''
 
         // if (person.persId === 'Teutsch_XX') console.log(`${person}`);
         for (let i = 0; i < orderedStationsAggr.length; i += 1) {
-            const stay = orderedStationsAggr[i]
-            // console.log(`stay: ${JSON.stringify(stay)}`);
-            const station = groupedStationsAggr.filter(s => s.stationId === orderedStationsAggr[i].stationId)[0]
-            // console.log(`station: ${station}`);
-            const opacity = (i+1) * opacityStep;
-            const marker = createTraceMarker(person, station, opacity, wrapperStyle, iconCss);
-            marker.data = {dateFrom: station.dateFrom, dateTo: station.dateTo, name:person.persId, stationIdx: `${orderedStationsAggr[i].stationId}_${orderedStationsAggr[i].stayIdx}`};
 
-            
+            const station = groupedStationsAggr.filter(s => s.stationId === orderedStationsAggr[i].stationId)[0]
             // find previous and next station
             // ! next station is not in filtered values!
             const nextStation = person.orderedStationsAggr[i+1] ? person.groupedStationsAggr[person.orderedStationsAggr[i+1].stationId] : undefined;
@@ -250,29 +246,68 @@
             const prevStation = person.orderedStationsAggr[i-1] ? person.groupedStationsAggr[person.orderedStationsAggr[i-1].stationId] : undefined;
             const prevStationStay = person.orderedStationsAggr[i-1]
 
-            if (person.persId === 'Teutsch_XX') {
-                // console.log(`previous station: ${(prevStation) ? prevStation.stationId : undefined}`);
-                // console.log(`station: ${station.stationId}`);
-                // console.log(station);
-                // console.log(`next station id index: ${i+1}; orderedStationsAggr.length: ${orderedStationsAggr.length}`);
-                // console.log(`next station: ${(nextStation) ? nextStation.stationId : undefined}`);
+            const placeMarkerOpacity = person.orderedStationsAggr.length > 0 ? 1 / person.orderedStationsAggr.length : undefined
+            // only create marker for most current station
+            if (i === orderedStationsAggr.length - 1) {
+                const stay = orderedStationsAggr[i]
+                // console.log(`stay: ${JSON.stringify(stay)}`);
+
+                // console.log(`station: ${station}`);
+                const marker = createTraceMarker(person, station, 1, wrapperStyle, iconCss);
+                marker.data = {dateFrom: station.dateFrom, dateTo: station.dateTo, name:person.persId, stationIdx: `${orderedStationsAggr[i].stationId}_${orderedStationsAggr[i].stayIdx}`};
+
+                if (person.persId === 'Teutsch_XX') {
+                    // console.log(`previous station: ${(prevStation) ? prevStation.stationId : undefined}`);
+                    // console.log(`station: ${station.stationId}`);
+                    // console.log(station);
+                    // console.log(`next station id index: ${i+1}; orderedStationsAggr.length: ${orderedStationsAggr.length}`);
+                    // console.log(`next station: ${(nextStation) ? nextStation.stationId : undefined}`);
+                }
+
+                createPopUpAndTooltipDate(marker, person, prevStation, prevStationStay, station, stay, nextStation, nextStationStay);
+                markers.push(marker);
+            } else {
+                // create regular place marker with simple tooltip / popup
+                const circle = L.circle([station.lat, station.long], {
+                    color:'red',
+                    fillColor: '#f03',
+                    fillOpacity: placeMarkerOpacity,
+                    opacity: placeMarkerOpacity,
+                    radius: markerBaseSize * (20 - props.map.getZoom())
+                });
+                circle.data = {name: person.persId}
+                circle.bindTooltip(station.stationId)
+
+                const [button, icon] = createPlaceViewLinkAndIcon(station.stationId)
+                const popupDiv = document.createElement('div');
+                popupDiv.appendChild(button);
+                popupDiv.appendChild(icon);
+                circle.bindPopup(popupDiv)
+
+                traces.push(circle);
             }
 
-            createPopUpAndTooltipDate(marker, person, prevStation, prevStationStay, station, stay, nextStation, nextStationStay);
-            markers.push(marker);
-
-            if (i < orderedStationsAggr.length - 1) {
+            // opacity of traces calculated from total number of station changes
+            const nofChanges = person.orderedStationsAggr.length - 1;
+            const traceOpacity = nofChanges > 0 ? 1 / nofChanges : undefined
+            if (person.persId === 'Teutsch_XX') {
+                console.log(`nofChanges: ${JSON.stringify(person.orderedStationsAggr)}:`);
+                console.log(`nofChanges: ${nofChanges}:`);
+                console.log(`traceOpacity: ${traceOpacity}:`);        
+            }
+            // create traces for all changes of station
+            if (nofChanges > 0 && i < orderedStationsAggr.length - 1) {
                 // if (person.persId === 'Teutsch_XX') {
                 //     console.log(`line to: ${nextStation.stationId}:`);
-                //     check += `${station.stationId}-->`
+                //     // check += `${station.stationId}-->`
                     
                 // }
                 const from = [station.lat, station.long]
                 const to = [nextStation.lat, nextStation.long]
-                const line = L.polyline([from, to], {color: 'black', opacity: opacity+opacityStep})
+                const line = L.polyline([from, to], {color: 'black', opacity: traceOpacity})
                 const arrowHead = L.polylineDecorator(line, {
                     patterns: [
-                        {offset: '100%', repeat: 0, symbol: L.Symbol.arrowHead({pixelSize: 25, polygon: false, pathOptions: {stroke: true, color: 'black', opacity:opacity+opacityStep}})}
+                        {offset: '100%', repeat: 0, symbol: L.Symbol.arrowHead({pixelSize: 25, polygon: false, pathOptions: {stroke: true, color: 'black', opacity:traceOpacity}})}
                     ]
                 });
                 const arrow = L.layerGroup([line, arrowHead]);
@@ -294,6 +329,7 @@
         // console.log("Attempting to add " + Object.keys(persons).length + " per son markers")
         const personMarkers = [];
         const personTraces = [];
+        const placeMarkers = [];
 
         // ------ iterate over persons from store
 
@@ -339,10 +375,6 @@
                     console.log(groupedStationsAggr)
                 }
 
-
-                // calculate different opacity values for the range of past stations
-                const opacityStep = 1 / (orderedStationsAggr.length)
-
                 // if (person.persId === 'Teutsch_XX') {
                 //     console.log(`grouped stations ${orderedStationsAggr}:`);
                 //     console.log(groupedStationsAggr);
@@ -352,11 +384,13 @@
                 // create markers and polylines
                 const markers = []
                 const traces = []
-                createMarkersAndArrowTraces(orderedStationsAggr, groupedStationsAggr, person, opacityStep, markers, traces, wrapperStyle, iconCss)
+                const places = []
+                createMarkersAndArrowTraces(orderedStationsAggr, groupedStationsAggr, person, markers, traces, places, wrapperStyle, iconCss)
 
 
                 markers.forEach(m => personMarkers.push(m))
                 traces.forEach(t => personTraces.push(t))
+                places.forEach(p => placeMarkers.push(p))
 
                 // console.log(`length markers ${person.persId}: ${markers.length}`);
                 // console.log(`length traces ${person.persId} : ${traces.length}`);
@@ -374,13 +408,14 @@
         // console.log(personTraces)
 
         // filter station by selected names
-        const [markersFilteredName, tracesFilteredName] = filterByNames(selectedValues.value, personMarkers, personTraces)
+        const [markersFilteredName, tracesFilteredName, placesFilteredName] = filterByNames(selectedValues.value, personMarkers, personTraces, placeMarkers)
 
         // create layer groups from initial markers
         console.log(markersFilteredName)
         console.log(tracesFilteredName)
         personLayerMarkers = L.layerGroup(markersFilteredName);
         personLayerTraces = L.layerGroup(tracesFilteredName)
+        personLayerPlaces = L.layerGroup(placesFilteredName)
 
         // console.log('markers added to layergroup')
 
@@ -388,14 +423,15 @@
 
     // ------------------------------ FILTER FUNCTIONS
 
-    const filterByNames = function(selectedValues, markers, traces) {
+    const filterByNames = function(selectedValues, markers, traces, places) {
 
         const markersFilteredName = selectedValues.length == 0 ? markers : markers.filter(marker => selectedValues.includes(marker.data.name))
         const tracesFilteredName = selectedValues.length == 0 ? traces : traces.filter(trace => selectedValues.includes(trace.data.name))
+        const placesFilteredName = selectedValues.length == 0 ? traces : places.filter(place => selectedValues.includes(place.data.name))
         // console.log(filteredByNames)
         // console.log(`Filtered markers by names ${selectedValues}: ${filteredByNames.length}`)
 
-        return [markersFilteredName, tracesFilteredName]
+        return [markersFilteredName, tracesFilteredName, placesFilteredName]
     }
 
     const findStationsTillSelectedAggr = function(person) {
@@ -476,10 +512,11 @@
             console.log('old layers present')
             // console.log(selectedValues.value)
             personLayerMarkers.clearLayers() // apparently critical for slider performance to do this before creating new markers...?
-            personLayerTraces.clearLayers() 
+            personLayerTraces.clearLayers()
+            personLayerPlaces.clearLayers()
 
             createPersonMarkersDate(personsStore.persons, wrapperStyle, iconCss);
-            showPersonsLayer(personLayerMarkers, personLayerTraces, props.map);
+            showPersonsLayer(personLayerMarkers, personLayerTraces, personLayerPlaces, props.map);
   
 
         }    
@@ -490,7 +527,7 @@
         // clear pre-selection prop in map component to avoid pre-selection being active next time
         // a user navigates here via tabs
         emit('person-pre-selection-cleared')
-        if (personLayerMarkers && personLayerTraces) {
+        if (personLayerMarkers && personLayerTraces && personLayerPlaces) {
             console.log('On selected names update:')
             console.log(currentlySelectedValues)
             console.log(selectedValues) 
@@ -502,6 +539,7 @@
                 }
             personLayerMarkers.clearLayers()
             personLayerTraces.clearLayers()
+            personLayerPlaces.clearLayers()
             console.log('removed markers')
 
             createPersonMarkersDate(personsStore.persons, wrapperStyle, iconCss);
@@ -510,21 +548,24 @@
                     console.log(personLayerMarkers.getLayers())
                     console.log(personLayerTraces.getLayers())
                 }
-            showPersonsLayer(personLayerMarkers, personLayerTraces, props.map);
+            showPersonsLayer(personLayerMarkers, personLayerTraces, personLayerPlaces, props.map);
 
         }
     }
 
 
 
-    const showPersonsLayer = function(markerLayerGroup, traceLayerGroup, map) {
+    const showPersonsLayer = function(markerLayerGroup, traceLayerGroup, personLayerPlaces, map) {
         markerLayerGroup.addTo(map)
         traceLayerGroup.addTo(map)
+        personLayerPlaces.addTo(map)
     }
 
-    const hidePersonsLayer = function(markerLayerGroup, traceLayerGroup, map) {
+    const hidePersonsLayer = function(markerLayerGroup, traceLayerGroup, personLayerPlaces, map) {
         markerLayerGroup.removeFrom(map)
         traceLayerGroup.removeFrom(map)
+        personLayerPlaces.removeFrom(map)
+
     }
 
 
@@ -548,12 +589,12 @@
         console.log(`props.personsSelectedFromPlace: ${props.personsSelectedFromPlace}`);
         // selectedValues.value = [props.persId]
         console.log(`mounting with selected values: ${selectedValues.value}`)
-        showPersonsLayer(personLayerMarkers, personLayerTraces, props.map);
+        showPersonsLayer(personLayerMarkers, personLayerTraces, personLayerPlaces, props.map);
 
 
     })
 
-    onUnmounted(() => hidePersonsLayer(personLayerMarkers, personLayerTraces, props.map))
+    onUnmounted(() => hidePersonsLayer(personLayerMarkers, personLayerTraces, personLayerPlaces, props.map))
 
 
 </script>
