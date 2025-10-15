@@ -22,11 +22,6 @@ const router = createRouter({
             component: MapView,
         },
         {
-            path: '/map/persons',
-            name: 'persons',
-            component: MapView,
-        },
-        {
             path: '/map/traces',
             name: 'traces',
             component: MapView,
@@ -36,8 +31,6 @@ const router = createRouter({
             name: 'distant',
             component: MapView,
         },
-
-
         {
             path: '/:catchAll(.*)*',
             name: 'not-found',

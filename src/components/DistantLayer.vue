@@ -15,6 +15,8 @@
         dateSliderValue: Number
     });
 
+    const emit = defineEmits(['person-selected', 'place-selected']);
+
     let allPlaceMarkers = undefined;
     let placeLayer = undefined;
 
@@ -162,24 +164,65 @@
     }
 
     // ----------------- Marker and Popup Creation -------------------------
+
+    const createPlaceViewLinkAndIcon = function(stationId) {
+        const button = document.createElement('button');
+        button.style.color = '#0078A8';            
+        button.style.textDecoration = 'underline';
+        button.title ='View Place in Place View';
+        button.textContent = `${stationId}`;
+        button.onclick = async function() {
+            console.log(`Clicked on ${stationId}`);
+            emit('place-selected', stationId)
+        }
+
+        const icon = document.createElement('i');
+        icon.classList.add('mdi', 'mdi-map-marker');
+        icon.style.paddingLeft = '3px';
+
+        return [button, icon]
+    }
+
+    const createPersonViewLinkAndIcon = function(persId) {
+        const button = document.createElement('button');
+        button.style.color = '#0078A8';            
+        button.style.textDecoration = 'underline';
+        button.title ='View Person in Person View';
+        button.textContent = `${persId}`;
+        button.onclick = async function() {
+            console.log(`Clicked on ${persId}`);
+            emit('person-selected', persId)
+        }
+
+        const icon = document.createElement('i');
+        icon.classList.add('mdi', 'mdi-account-outline');
+        icon.style.paddingLeft = '3px';
+
+        return [button, icon]
+    }
+
     const createPopUpAndTooltip = function (circle, station, lastRecordedDate, lastPersonsBeforeSelectedTime) {
         
-        let popUpHtml = `<h3>${station.stationId}</h3></br>`
-                      + `<b>Anwesend laut letztem erfassten NBG-Verzeichnis ${lastRecordedDate ? new Date(lastRecordedDate).getFullYear() : ''} (${lastPersonsBeforeSelectedTime ? lastPersonsBeforeSelectedTime.count : 'keine Daten'}):</b></br>`
+        const [button, icon] = createPlaceViewLinkAndIcon(station.stationId);
+        const heading = document.createElement('h3')
+        heading.appendChild(button);
+        heading.appendChild(icon);
+
+        const subheading = document.createElement('b');
+        subheading.textContent = `Anwesend laut letztem erfassten NBG-Verzeichnis ${lastRecordedDate ? new Date(lastRecordedDate).getFullYear() : ''} (${lastPersonsBeforeSelectedTime ? lastPersonsBeforeSelectedTime.count : 'keine Daten'}):`
 
         const popupDiv = document.createElement('div');
-        popupDiv.innerHTML = popUpHtml;
+        popupDiv.appendChild(heading);
+        popupDiv.appendChild(document.createElement('br'));
+        popupDiv.appendChild(subheading);
+        popupDiv.appendChild(document.createElement('br'));
 
 
         if (lastPersonsBeforeSelectedTime) {
             for (const [index, person] of lastPersonsBeforeSelectedTime.persons.entries()) {
-                const button = document.createElement('button');
-                button.textContent = `${person.persId} (${person.choir})`;
-                button.onclick = async function() {
-                    console.log(`Clicked on ${person.persId} (${person.choir})`);
-                    emit('person-selected', person.persId)
-                }
+                const [button, icon] = createPersonViewLinkAndIcon(person.persId)
                 popupDiv.appendChild(button);
+                popupDiv.appendChild(icon);
                 if (index < lastPersonsBeforeSelectedTime.persons.length - 1) popupDiv.appendChild(document.createElement('br'));
             }
 
@@ -193,12 +236,19 @@
     const updateMarkerAndPopUp = function (marker, station, lastRecordedDate, lastPersonsBeforeSelectedTime) {
 
 
-        let popUpHtml = `<h3>${station.stationId}</h3></br>`
-                      + `<b>Anwesend laut letztem erfassten NBG-Verzeichnis ${lastRecordedDate ? new Date(lastRecordedDate).getFullYear() : ''} (${lastPersonsBeforeSelectedTime ? lastPersonsBeforeSelectedTime.count : 'keine Daten'}):</b></br>`
+        const [button, icon] = createPlaceViewLinkAndIcon(station.stationId);
+        const heading = document.createElement('h3')
+        heading.appendChild(button);
+        heading.appendChild(icon);
 
-        if (!lastPersonsBeforeSelectedTime) popUpHtml = popUpHtml + '<p>Gewähltes Datum liegt außerhalb des erfassten Zeitraums.</p>'
+        const subheading = document.createElement('b');
+        subheading.textContent = `Anwesend laut letztem erfassten NBG-Verzeichnis ${lastRecordedDate ? new Date(lastRecordedDate).getFullYear() : ''} (${lastPersonsBeforeSelectedTime ? lastPersonsBeforeSelectedTime.count : 'keine Daten'}):`
+
         const popupDiv = document.createElement('div');
-        popupDiv.innerHTML = popUpHtml;
+        popupDiv.appendChild(heading);
+        popupDiv.appendChild(document.createElement('br'));
+        popupDiv.appendChild(subheading);
+        popupDiv.appendChild(document.createElement('br'));
 
         if (lastPersonsBeforeSelectedTime) {
 
@@ -208,13 +258,9 @@
 
             // update popup accordingly
             for (const [index, person] of lastPersonsBeforeSelectedTime.persons.entries()) {
-                const button = document.createElement('button');
-                button.textContent = `${person.persId} (${person.choir})`;
-                button.onclick = async function() {
-                    console.log(`Clicked on ${person.persId} (${person.choir})`);
-                    emit('person-selected', person.persId)
-                }
+                const [button, icon] = createPersonViewLinkAndIcon(person.persId)
                 popupDiv.appendChild(button);
+                popupDiv.appendChild(icon);
                 if (index < lastPersonsBeforeSelectedTime.persons.length - 1) popupDiv.appendChild(document.createElement('br'));
             }
 
