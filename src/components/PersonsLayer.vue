@@ -66,20 +66,20 @@ const createPopUpAndTooltipDate = function(marker, person, lastStationPosition, 
         prevDate = person.sortedDates[lastStationPosition - 1] 
     }
 
-    if (person.personId === 'Luttringshauser_XY') {
+    if (person.persId === 'Luttringshauser_XY') {
         console.log(person);
         console.log(prevDate, lastRecordedDate, nextDate)
         
     }    
     
-    let popUpHtml = `<h3>${person.personId}</h3></br>`
+    let popUpHtml = `<h3>${person.persId}</h3></br>`
                     + `<b>Letzte (erfasste) Station aus NBG-VZ:</b></br> ${!lastRecordedDate ? 'keine Daten' :  new Date(lastRecordedDate).getFullYear() + ': ' + person.stationsDate[lastRecordedDate].stationId}</br>`
                     + `<b>Vorherige (erfasste) Station aus NBG-VZ:</b></br> ${!prevDate ? 'keine Daten' : new Date(prevDate).getFullYear() + ': ' + person.stationsDate[prevDate].stationId}</br>`
                     + `<b>Nächste (erfasste) Station aus NBG-VZ:</b></br> ${!nextDate ? 'keine Daten' : new Date(nextDate).getFullYear() + ': ' + person.stationsDate[nextDate].stationId}</br>`
 
 
     marker.bindPopup(popUpHtml);
-    marker.bindTooltip(`${person.personId}`)
+    marker.bindTooltip(`${person.persId}`)
 
 }
 
@@ -102,11 +102,11 @@ const  createPersonMarkersDate = function(persons) {
                 let lastStationBeforeSelectedTime;
 
                 // console.log(person.sortedDates)
-                if (person.personId === 'Luttringshauser_XY') {
+                if (person.persId === 'Luttringshauser_XY') {
                             console.log(`selected date: ${props.dateSliderValue} = ${new Date(props.dateSliderValue).toDateString()}`);
                 }
                 for (const ts of person.sortedDates) {
-                    if (person.personId === 'Luttringshauser_XY') {
+                    if (person.persId === 'Luttringshauser_XY') {
                             console.log(`date: ${ts} = ${new Date(ts).toDateString()}`);
                     }
                     if (ts < props.dateSliderValue) {
@@ -123,13 +123,13 @@ const  createPersonMarkersDate = function(persons) {
                         break;
                     }
                 }
-                if (person.personId === 'Luttringshauser_XY') {
+                if (person.persId === 'Luttringshauser_XY') {
                             console.log(`last recorded date: ${lastRecordedDate} = ${new Date(lastRecordedDate).toDateString()}`);
                 }
 
                 if (lastStationBeforeSelectedTime) {
-                    const marker = L.marker([lastStationBeforeSelectedTime.lat, lastStationBeforeSelectedTime.long], {icon: personIcon, title: lastStationBeforeSelectedTime.stationId+person.personId})
-                    marker.data = {date: lastStationBeforeSelectedTime.date, name:person.personId}
+                    const marker = L.marker([lastStationBeforeSelectedTime.lat, lastStationBeforeSelectedTime.long], {icon: personIcon, title: lastStationBeforeSelectedTime.stationId+person.persId})
+                    marker.data = {date: lastStationBeforeSelectedTime.date, name:person.persId}
                     createPopUpAndTooltipDate(marker, person, lastStationPosition, lastRecordedDate)
                     personMarkers.push(marker)
                 }
@@ -177,11 +177,11 @@ const  createPersonMarkersDate = function(persons) {
                 let lastStationBeforeSelectedTime;
 
                 // console.log(person.sortedDates)
-                if (person.personId === 'Luttringshauser_XY') {
+                if (person.persId === 'Luttringshauser_XY') {
                             console.log(`selected date: ${date} = ${new Date(date).toDateString()}`);
                 }
                 for (const ts of person.sortedDates) {
-                    if (person.personId === 'Luttringshauser_XY') {
+                    if (person.persId === 'Luttringshauser_XY') {
                             console.log(`date: ${ts} = ${new Date(ts).toDateString()}`);
                     }
                     if (ts < date) {
@@ -198,13 +198,13 @@ const  createPersonMarkersDate = function(persons) {
                         break;
                     }
                 }
-                if (person.personId === 'Luttringshauser_XY') {
+                if (person.persId === 'Luttringshauser_XY') {
                             console.log(`last recorded date: ${lastRecordedDate} = ${new Date(lastRecordedDate).toDateString()}`);
                 }
 
                 if (lastStationBeforeSelectedTime) {
-                    const marker = L.marker([lastStationBeforeSelectedTime.lat, lastStationBeforeSelectedTime.long], {icon: personIcon, title: lastStationBeforeSelectedTime.stationId+person.personId})
-                    marker.data = {date: lastStationBeforeSelectedTime.date, name:person.personId}
+                    const marker = L.marker([lastStationBeforeSelectedTime.lat, lastStationBeforeSelectedTime.long], {icon: personIcon, title: lastStationBeforeSelectedTime.stationId+person.persId})
+                    marker.data = {date: lastStationBeforeSelectedTime.date, name:person.persId}
                     createPopUpAndTooltipDate(marker, person, lastStationPosition, lastRecordedDate)
                     personMarkers.push(marker)
                 }

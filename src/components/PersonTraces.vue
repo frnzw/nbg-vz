@@ -63,10 +63,10 @@
         });
 
 
-        const marker = L.marker([station.lat, station.long], {icon: icon, title: station.stationId+person.personId})
-        marker.data = {date: station.date, name:person.personId}
+        const marker = L.marker([station.lat, station.long], {icon: icon, title: station.stationId+person.persId})
+        marker.data = {date: station.date, name:person.persId}
 
-        if (person.personId === 'Teutsch_XX') {
+        if (person.persId === 'Teutsch_XX') {
             // console.log(`created marker for station: ${station.stationId} (${marker.data}):`);
             // console.log(marker);
         }
@@ -77,7 +77,7 @@
 
     const createPopUpAndTooltipDate = function(marker, person, prevStation, prevStationStay, station, stay, nextStation, nextStationStay) {
 
-        // if (person.personId === 'Genth_XX') {
+        // if (person.persId === 'Genth_XX') {
         //     console.log('createPopUpAndTooltipDate:')
         //     console.log(person);
             
@@ -109,7 +109,7 @@
         }
 
 
-        let popUpHtml = `<h3>${person.personId} : ${marker.data.stationIdx} (${!datePresent ? 'keine Daten' :  datePresent}) </h3></br>`
+        let popUpHtml = `<h3>${person.persId} : ${marker.data.stationIdx} (${!datePresent ? 'keine Daten' :  datePresent}) </h3></br>`
                         + `<b>Vorherige (erfasste) Station aus NBG-VZ:</b></br> ${!datePresentPrev ? 'keine Daten' : datePresentPrev + ': ' + prevStation.stationId}</br>`
                         + `<b>Nächste (erfasste) Station aus NBG-VZ:</b></br> ${!datePresentNext ? 'keine Daten' : datePresentNext + ': ' + nextStation.stationId}</br>`
 
@@ -118,7 +118,7 @@
         const popupDiv = document.createElement('div');
 
         const heading = document.createElement('h3')
-        heading.textContent = `${person.personId} : ${marker.data.stationIdx} (${!datePresent ? 'keine Daten' :  datePresent})`
+        heading.textContent = `${person.persId} : ${marker.data.stationIdx} (${!datePresent ? 'keine Daten' :  datePresent})`
         
         const subHeadingCurrent = document.createElement('b')
         subHeadingCurrent.textContent = 'Zuletzt (erfasste) Station aus NBG-VZ:'
@@ -171,7 +171,7 @@
         // popupDiv.appendChild(button);
 
         marker.bindPopup(popupDiv);
-        marker.bindTooltip(`${person.personId}`)
+        marker.bindTooltip(`${person.persId}`)
 
     }
 
@@ -179,7 +179,7 @@
     const createMarkersAndArrowTraces = function(orderedStationsAggr, groupedStationsAggr, person, opacityStep, markers, traces, wrapperStyle, iconCss) {
         let check = ''
 
-        // if (person.personId === 'Teutsch_XX') console.log(`${person}`);
+        // if (person.persId === 'Teutsch_XX') console.log(`${person}`);
         for (let i = 0; i < orderedStationsAggr.length; i += 1) {
             const stay = orderedStationsAggr[i]
             // console.log(`stay: ${JSON.stringify(stay)}`);
@@ -187,7 +187,7 @@
             // console.log(`station: ${station}`);
             const opacity = (i+1) * opacityStep;
             const marker = createTraceMarker(person, station, opacity, wrapperStyle, iconCss);
-            marker.data = {dateFrom: station.dateFrom, dateTo: station.dateTo, name:person.personId, stationIdx: `${orderedStationsAggr[i].stationId}_${orderedStationsAggr[i].stayIdx}`};
+            marker.data = {dateFrom: station.dateFrom, dateTo: station.dateTo, name:person.persId, stationIdx: `${orderedStationsAggr[i].stationId}_${orderedStationsAggr[i].stayIdx}`};
 
             
             // find previous and next station
@@ -197,7 +197,7 @@
             const prevStation = person.orderedStationsAggr[i-1] ? person.groupedStationsAggr[person.orderedStationsAggr[i-1].stationId] : undefined;
             const prevStationStay = person.orderedStationsAggr[i-1]
 
-            if (person.personId === 'Teutsch_XX') {
+            if (person.persId === 'Teutsch_XX') {
                 // console.log(`previous station: ${(prevStation) ? prevStation.stationId : undefined}`);
                 // console.log(`station: ${station.stationId}`);
                 // console.log(station);
@@ -209,7 +209,7 @@
             markers.push(marker);
 
             if (i < orderedStationsAggr.length - 1) {
-                // if (person.personId === 'Teutsch_XX') {
+                // if (person.persId === 'Teutsch_XX') {
                 //     console.log(`line to: ${nextStation.stationId}:`);
                 //     check += `${station.stationId}-->`
                     
@@ -223,13 +223,13 @@
                     ]
                 });
                 const arrow = L.layerGroup([line, arrowHead]);
-                arrow.data = {name:person.personId, fromStation:station.stationId, toStation:nextStation.stationId}
+                arrow.data = {name:person.persId, fromStation:station.stationId, toStation:nextStation.stationId}
                 traces.push(arrow)
             }
             if (i === orderedStationsAggr.length - 1) check += station.stationId
         }
 
-        // if (person.personId === 'Teutsch_XX') {
+        // if (person.persId === 'Teutsch_XX') {
         //                     console.log(`person.stations:`);
         //                     console.log(person.stations);
         //                     console.log(`check:`);
@@ -252,7 +252,7 @@
             // ------ find every station entry the person has up to the currently selected slider value
             // ------ & find dated entry for person that is the next smaller or equal to slider value
             const [stationsTillSelected, stationsIdsTillSelected] = findStationsTillSelectedAggr(person)
-            if (person.personId === 'Teutsch_XX') {
+            if (person.persId === 'Teutsch_XX') {
                 console.log(`stationsTillSelectedX: ${stationsTillSelected}`);
             }
 
@@ -265,13 +265,13 @@
                 // console.log(`person.sortedDates[0]: ${person.sortedDates[0]} = ${new Date(person.sortedDates[0]).toDateString()}`);
                 // console.log(`stationsTillSelected.length = ${stationsTillSelected.length}; opacityStep = ${opacityStep}`)
                 // console.log(person.sortedDates)
-                // if (person.personId === 'Teutsch_XX') {
+                // if (person.persId === 'Teutsch_XX') {
                 //             console.log(`selected date: ${props.dateSliderValue} = ${new Date(props.dateSliderValue).toDateString()}`);
                 // }
 
 
 
-                // if (person.personId === 'Teutsch_XX') {
+                // if (person.persId === 'Teutsch_XX') {
                 //     console.log(`stations till selected date: ${JSON.stringify(stationsTillSelected)}`);
                 // }
 
@@ -280,7 +280,7 @@
 
                 const orderedStationsAggr = stationsIdsTillSelected;
                 const groupedStationsAggr = stationsTillSelected;
-                if (person.personId === 'Teutsch_XX') {
+                if (person.persId === 'Teutsch_XX') {
                     console.log('reduced aggregated stations per person:')
                     console.log(orderedStationsAggr)
                     console.log(groupedStationsAggr)
@@ -290,7 +290,7 @@
                 // calculate different opacity values for the range of past stations
                 const opacityStep = 1 / (orderedStationsAggr.length)
 
-                // if (person.personId === 'Teutsch_XX') {
+                // if (person.persId === 'Teutsch_XX') {
                 //     console.log(`grouped stations ${orderedStationsAggr}:`);
                 //     console.log(groupedStationsAggr);
                 //     console.log(`length grouped stations: ${orderedStationsAggr.length} opacity step ${opacityStep}`);
@@ -305,10 +305,10 @@
                 markers.forEach(m => personMarkers.push(m))
                 traces.forEach(t => personTraces.push(t))
 
-                // console.log(`length markers ${person.personId}: ${markers.length}`);
-                // console.log(`length traces ${person.personId} : ${traces.length}`);
+                // console.log(`length markers ${person.persId}: ${markers.length}`);
+                // console.log(`length traces ${person.persId} : ${traces.length}`);
 
-                // if (person.personId === 'Teutsch_XX') {
+                // if (person.persId === 'Teutsch_XX') {
                 //     console.log(markers);
                 // }
             }
@@ -347,7 +347,7 @@
 
     const findStationsTillSelectedAggr = function(person) {
 
-        // if (person.personId === 'Teutsch_XX') console.log(`orderedStationsAggr: ${person.orderedStationsAggr}`);
+        // if (person.persId === 'Teutsch_XX') console.log(`orderedStationsAggr: ${person.orderedStationsAggr}`);
         const stationsTillSelected = [];
         const stationsIdsTillSelected = [];
 
@@ -364,34 +364,34 @@
             const station = person.groupedStationsAggr[stationId]
             const ts = station.stays[stayIdx].dateFrom
 
-            // if (person.personId === 'Teutsch_XX') console.log(`stay: ${JSON.stringify(person.orderedStationsAggr[i])}`);
-            // if (person.personId === 'Teutsch_XX') console.log(`station: ${station.stationId}`);
-            // if (person.personId === 'Teutsch_XX') console.log(`stay from: ${ts}`);
+            // if (person.persId === 'Teutsch_XX') console.log(`stay: ${JSON.stringify(person.orderedStationsAggr[i])}`);
+            // if (person.persId === 'Teutsch_XX') console.log(`station: ${station.stationId}`);
+            // if (person.persId === 'Teutsch_XX') console.log(`stay from: ${ts}`);
 
             // if a stay with dateFrom <= sliderValue is found: add to stationsTillSelected
             if (ts < props.dateSliderValue) {
-                if (person.personId === 'Teutsch_XX') console.log(`date ${new Date(ts).toDateString()} < slider ${new Date(props.dateSliderValue).toDateString()}`)    
+                if (person.persId === 'Teutsch_XX') console.log(`date ${new Date(ts).toDateString()} < slider ${new Date(props.dateSliderValue).toDateString()}`)    
 
                 stationsTillSelected.push(station);
                 stationsIdsTillSelected.push(person.orderedStationsAggr[i]);
-                // if (person.personId === 'Teutsch_XX') console.log(`added station, moving to next station`);
+                // if (person.persId === 'Teutsch_XX') console.log(`added station, moving to next station`);
 
 
-                    // if (person.personId === 'Teutsch_XX') console.log(`index i in ordered stations: ${i}`);
-                    // if (person.personId === 'Teutsch_XX') console.log(`person.orderedStationsAggr.length - 1: ${person.orderedStationsAggr.length - 1}`);
+                    // if (person.persId === 'Teutsch_XX') console.log(`index i in ordered stations: ${i}`);
+                    // if (person.persId === 'Teutsch_XX') console.log(`person.orderedStationsAggr.length - 1: ${person.orderedStationsAggr.length - 1}`);
                     if (i === person.orderedStationsAggr.length - 1) {
-                        // if (person.personId === 'Teutsch_XX') console.log('stay is last stay in persons stations');
+                        // if (person.persId === 'Teutsch_XX') console.log('stay is last stay in persons stations');
                         break;
                     }
                     
                     
                 } else if (ts === props.dateSliderValue) {
-                    // if (person.personId === 'Teutsch_XX') console.log(`date ${new Date(ts).toDateString()} === slider ${new Date(props.dateSliderValue).toDateString()}`)
+                    // if (person.persId === 'Teutsch_XX') console.log(`date ${new Date(ts).toDateString()} === slider ${new Date(props.dateSliderValue).toDateString()}`)
 
                     stationsTillSelected.push(station);
                     stationsIdsTillSelected.push(person.orderedStationsAggr[i]);
 
-                    // if (person.personId === 'Teutsch_XX') console.log(`added station, moving to next station`);
+                    // if (person.persId === 'Teutsch_XX') console.log(`added station, moving to next station`);
                     break;
                 } else {
                     break; // since stays are ordered, there should be no earlier stay listed after the first one after the selected time
