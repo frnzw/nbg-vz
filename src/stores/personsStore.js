@@ -5,7 +5,8 @@ import Papa from 'papaparse';
 export const usePersonsStore = defineStore('persons', () => {
 
     let loaded = ref(false);
-    const pathToDataFile = `${import.meta.env.BASE_URL}person_place_geoc.csv`
+    const pathToDataFilePersons = `${import.meta.env.BASE_URL}persons_vis.csv`
+    const pathToDataFilePersonsPlaces = `${import.meta.env.BASE_URL}persons_places_vis.csv`    
     const persons = ref({});
 
 
@@ -21,8 +22,8 @@ export const usePersonsStore = defineStore('persons', () => {
      * @returns 
      */
     function extractStationsPerPersonDate(data, personId) {
-        const filteredByPerson = data.filter((entry) => entry.person === personId);
-
+        const filteredByPerson = data.filter((entry) => entry.persId === personId);
+        // console.log(`Filtering for ${personId}: ${filteredByPerson.length} entries.`)
         const grouped = filteredByPerson.reduce((acc, entry) => {
             // build date from year, assuming year-12-31 for NBG-VZ data (source specifies only as "end of year")
             const d = new Date(`${entry.year}-12-31`)
@@ -52,7 +53,7 @@ export const usePersonsStore = defineStore('persons', () => {
 
         
         // first: stations per person, ordered by date
-        const filteredByPerson = data.filter((entry) => entry.person === personId).sort((a,b) => a.year - b.year);
+        const filteredByPerson = data.filter((entry) => entry.persId === personId).sort((a,b) => a.year - b.year);
         // aggregate further:
         const orderedStationsAggr = []
         const groupedStationsAggr = filteredByPerson.reduce((acc, entry) => {
@@ -98,45 +99,68 @@ export const usePersonsStore = defineStore('persons', () => {
         return [orderedStationsAggr, groupedStationsAggr]
     }
     
-    async function readData(pathToDataFile) {
+    async function readData(pathToDataFilePersons, pathToDataFilePersonsPlaces) {
         try {
-            const res = await fetch(pathToDataFile, {
+            // kick off async data loading
+            const personsResPromise = fetch(pathToDataFilePersons, {
                 method: 'get',
-                });
-            if (!res.ok) {
-                throw Error(`Failed to read data from local file ${pathToDataFile}`);
+            });
+
+            console.log(pathToDataFilePersonsPlaces)
+            const personsPlacesResPromise = fetch(pathToDataFilePersonsPlaces, {
+                method: 'get',
+            });
+
+
+
+
+            // await first data set, parse from csv to JSON
+            const personsRes = await personsResPromise;
+            if (!personsRes.ok) {
+                throw Error(`Failed to read data from local file ${pathToDataFilePersons}`);
             }
-            const csvString = await res.text()
-            const data = Papa.parse(csvString, {header:true, dynamicTyping: true}).data;
+            const csvStringPersons = await personsRes.text()
+            const dataPersons = Papa.parse(csvStringPersons, {header:true, dynamicTyping: true}).data;
 
-            // reduce to hash map of unique personIds
-            const personIds = Array.from(new Set(data.map((entry) => {
-                return entry.person;
-            })))
+            // await second data set (should be ready by now), parse from csv to JSON
+            const personsPlacesRes = await personsPlacesResPromise;
+            if (!personsPlacesRes.ok) {
+                throw Error(`Failed to read data from local file ${pathToDataFilePersonsPlaces}`);
+            }
+            const csvStringPersonsPlaces = await personsPlacesRes.text();
+            const dataPersonsPlaces = Papa.parse(csvStringPersonsPlaces, {header:true, dynamicTyping: true}).data;
+            
+            console.log(dataPersonsPlaces)
+            //console.log(dataPersons)
+            // create entry in store, adding metadata about the place
+            for (const person of dataPersons) {
+                if (!person.persId) continue;
 
-            // console.log('personIds in person store:')
-            // console.log(personIds)
- 
-            for (const personId of personIds) {
-                // console.log(personId)
-                if (!personId) continue;
-
+                // some aggregation
                 // different structures for same data – redundant, but saves time filtering / aggregation
                 // for interaction / animations
                 // these redundant structures should come from a backend in the future, only being loaded here
-                const [stationsExtractedDate, sortedDates] = extractStationsPerPersonDate(data, personId)
-                const [orderedStationsAggr, groupedStationsAggr] = aggregateStations(data, personId)
-                persons.value[personId] = {
-                    personId: personId,
+                const [stationsExtractedDate, sortedDates] = extractStationsPerPersonDate(dataPersonsPlaces, person.persId)
+                const [orderedStationsAggr, groupedStationsAggr] = aggregateStations(dataPersonsPlaces, person.persId)
+
+                persons.value[person.persId] = {
+                    persId: person.persId,
+                    wdId: person.wdId,
+                    familyName: person.familyName,
+                    birthName: person.birthName,
+                    givenName: person.givenName,
+                    widowed: person.widowed,
+                    gender: person.gender,
+
                     stationsDate: stationsExtractedDate,
                     sortedDates: sortedDates,
                     groupedStationsAggr: groupedStationsAggr,
-                    orderedStationsAggr: orderedStationsAggr                   
+                    orderedStationsAggr: orderedStationsAggr  
                 }
             }
 
-
             console.log('Loaded personsStore')
+            console.log(persons.value)
             loaded.value = true
 
         } catch (error) {
@@ -151,5 +175,5 @@ export const usePersonsStore = defineStore('persons', () => {
     
     
   
-    return { pathToDataFile, readData, loaded, persons }
+    return { pathToDataFilePersons, pathToDataFilePersonsPlaces, readData, loaded, persons }
   })

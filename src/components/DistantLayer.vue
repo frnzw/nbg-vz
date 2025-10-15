@@ -1,9 +1,9 @@
 <script setup>
     import L from "leaflet"
     // import { usePersonsStore } from '../stores/personsStore'
-    import { usePersonsStore } from '../stores/personsStoreNew'
+    import { usePersonsStore } from '../stores/personsStore'
     // import { usePlacesStore } from '../stores/placesStore'
-    import { usePlacesStore } from '../stores/placesStoreNew'
+    import { usePlacesStore } from '../stores/placesStore'
     import {onMounted, watch, defineProps, onUnmounted} from 'vue'
 
     // ----------------- Setup / Component Scope Constants -------------------------

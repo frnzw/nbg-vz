@@ -1,7 +1,7 @@
 <script setup>
     import L from "leaflet";
     // import { usePlacesStore } from '../stores/placesStore'
-    import { usePlacesStore } from '../stores/placesStoreNew'
+    import { usePlacesStore } from '../stores/placesStore'
     import {onMounted, ref, defineProps, onUnmounted, watch} from 'vue'
     import SearchField from './SearchField.vue'
 

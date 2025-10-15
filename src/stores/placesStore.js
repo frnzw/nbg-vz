@@ -5,7 +5,8 @@ import Papa from 'papaparse';
 export const usePlacesStore = defineStore('places', () => {
 
     let loaded = ref(false);
-    const pathToDataFile = `${import.meta.env.BASE_URL}person_place_geoc.csv`
+    const pathToDataFilePlaces = `${import.meta.env.BASE_URL}places_vis.csv`;
+    const pathToDataFilePersonsPlaces = `${import.meta.env.BASE_URL}persons_places_vis.csv`;
     const stations = ref({});
 
     function aggregatePersonsPerStationDate(data, stationId) {
@@ -14,64 +15,76 @@ export const usePlacesStore = defineStore('places', () => {
         // group by year using reduce
         const grouped = filteredByStation.reduce((acc, entry) => {
                 
-            // build date from year, assuming year-11-01 for NBG-VZ data (source specifies only as "end of year")
+            // build date from year, assuming year-12-31 for NBG-VZ data (source specifies only as "end of year")
             const d = new Date(`${entry.year}-12-31`)
 
             if (!acc[d.getTime()]) acc[d.getTime()] = {count:0, persons:[]};
-            acc[d.getTime()].count = acc[d.getTime()].count + 1
-            acc[d.getTime()].persons.push({persId: entry.person, choir:entry.choir})
+            acc[d.getTime()].count = acc[d.getTime()].count + 1 // @todo: check if this is used at all
+            acc[d.getTime()].persons.push({persId: entry.persId, choir:entry.choir})
             
             return acc;
         }, {});
 
         const sortedDates = Object.keys(grouped).sort((a, b) => a - b).map(d => parseInt(d))
         for (const date of sortedDates) {
-            grouped[date].position = sortedDates.indexOf(date)
+            grouped[date].position = sortedDates.indexOf(date) // @todo: check if this is used at all
         }
         // console.log(grouped)
         // console.log(sortedDates)
         return [grouped, sortedDates]
     }
 
-    async function readData(pathToDataFile) {
+    async function readData(pathToDataFilePlaces, pathToDataFilePersonsPlaces) {
         try {
-            const res = await fetch(pathToDataFile, {
+            // kick off async data loading
+            const placesResPromise = fetch(pathToDataFilePlaces, {
+                method: 'get',
+            });
+            const personsPlacesResPromise = fetch(pathToDataFilePersonsPlaces, {
                 method: 'get',
             });
 
-            if (!res.ok) {
-                throw Error(`Failed to read data from local file ${pathToDataFile}`);
+            // await first data set, parse from csv to JSON
+            const placesRes = await placesResPromise;
+            if (!placesRes.ok) {
+                throw Error(`Failed to read data from local file ${pathToDataFilePlaces}`);
             }
+            const csvStringPlaces = await placesRes.text();
+            const dataPlaces = Papa.parse(csvStringPlaces, {header:true, dynamicTyping: true}).data;
 
-            const csvString = await res.text();
-            const data = Papa.parse(csvString, {header:true, dynamicTyping: true}).data;
-            // console.log(data);
-            
-            // reduce to hash map of unique stations
-            const stationsNames = Array.from(new Set(data.map((entry) => {
-                entry.stationId;
-            })));
-            for (const stationName of stationsNames) {
-                if (!stationName) continue;
-                stations.value[stationName] = {}
+            // await second data set (should be ready by now), parse from csv to JSON
+            const personsPlacesRes = await personsPlacesResPromise;
+            if (!personsPlacesRes.ok) {
+                throw Error(`Failed to read data from local file ${pathToDataFilePlaces}`);
             }
+            const csvStringPersonsPlaces = await personsPlacesRes.text();
+            const dataPersonsPlaces = Papa.parse(csvStringPersonsPlaces, {header:true, dynamicTyping: true}).data;
 
+        
+            // create entry in store, adding metadata about the place
+            for (const station of dataPlaces) {
+                if (!station.stationId) continue;
 
-            for (const entry of data) {
-                if (entry.stationId === null) continue;
-                const [personsAggregatedDate, sortedDates] = aggregatePersonsPerStationDate(data, entry.stationId)
-                if (!stations.value[entry.stationId]) {
-                    stations.value[entry.stationId] = {
-                        stationId: entry.stationId,
-                        lat: entry.lat,
-                        long: entry.long,
-                        personsAggregatedDate: personsAggregatedDate,
-                        sortedDates: sortedDates
-                    }
+                const [personsAggregatedDate, sortedDates] = aggregatePersonsPerStationDate(dataPersonsPlaces, station.stationId);
+
+                stations.value[station.stationId] = {
+                    stationId: station.stationId, // custom unique name ID without whitespace & punctuation
+                    lat: station.lat,
+                    long: station.long,
+                    wdId: station.wdId,       // wikidata ID
+                    altName: station.altName, // alternative / full station name
+                    region: station.region,
+                    yFounded: station.yFounded,
+                    yRenewed: station.yRenewed,
+                    personsAggregatedDate: personsAggregatedDate, // 
+                    sortedDates: sortedDates
+
                 }
-            
+
             }
-            // console.log(stations)
+
+            console.log('Loaded placesStore.');
+            console.log(stations.value)
             loaded.value = true
 
         } catch (error) {
@@ -86,5 +99,5 @@ export const usePlacesStore = defineStore('places', () => {
     
     
   
-    return { pathToDataFile, readData, stations }
+    return { pathToDataFilePlaces, pathToDataFilePersonsPlaces, readData, stations }
   })

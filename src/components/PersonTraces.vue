@@ -3,7 +3,7 @@
     import 'leaflet-polylinedecorator'
     import "leaflet/dist/leaflet.css";
     // import { usePersonsStore } from '../stores/personsStore'
-    import { usePersonsStore } from '../stores/personsStoreNew'
+    import { usePersonsStore } from '../stores/personsStore'
     import {onMounted, onUnmounted, watch, ref, defineEmits} from 'vue' 
     import SearchField from './SearchField.vue'
 
