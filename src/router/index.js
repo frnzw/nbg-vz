@@ -31,8 +31,6 @@ const router = createRouter({
             name: 'distant',
             component: MapView,
         },
-
-
         {
             path: '/:catchAll(.*)*',
             name: 'not-found',

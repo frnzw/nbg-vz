@@ -175,7 +175,7 @@
   </v-container>
 <PlacesLayer v-if="readyForPlaceView" @person-selected="switchToPersonView" @place-pre-selection-cleared="clearPreSelectionPlace" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue" :placesSelectedFromTrace="placesSelectedFromTrace"/>
 <PersonTraces v-if="readyForTraceView" @place-selected="switchToPlacesView" @person-pre-selection-cleared="clearPreSelectionPerson" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue" :personsSelectedFromPlace="personsSelectedFromPlace"/>
-<DistantLayer v-if="readyForDistantView" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue"/>
+<DistantLayer v-if="readyForDistantView" @person-selected="switchToPersonView" @place-selected="switchToPlacesView" :map="globalMap" :sliderValue="sliderValue" :dateSliderValue="dateSliderValue"/>
 
 </template>
 
