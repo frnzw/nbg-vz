@@ -1,14 +1,14 @@
 <script setup>
     import L from "leaflet"
-    // import { usePersonsStore } from '../stores/personsStore'
     import { usePersonsStore } from '../stores/personsStore'
-    // import { usePlacesStore } from '../stores/placesStore'
     import { usePlacesStore } from '../stores/placesStore'
+    import { useMapStore } from '../stores/mapStore'
     import {onMounted, watch, defineProps, onUnmounted} from 'vue'
 
     // ----------------- Setup / Component Scope Constants -------------------------
     const placesStore = usePlacesStore();
     const personsStore = usePersonsStore();
+    const mapStore = useMapStore();
 
     const props = defineProps({
         map: Object,
@@ -20,7 +20,6 @@
     let allPlaceMarkers = undefined;
     let placeLayer = undefined;
 
-    const markerBaseSize = 500;
 
 
     // ----------------- Filtering and Updating -------------------------
@@ -183,23 +182,23 @@
         return [button, icon]
     }
 
-    const createPersonViewLinkAndIcon = function(persId) {
-        const button = document.createElement('button');
-        button.style.color = '#0078A8';            
-        button.style.textDecoration = 'underline';
-        button.title ='View Person in Person View';
-        button.textContent = `${persId}`;
-        button.onclick = async function() {
-            console.log(`Clicked on ${persId}`);
-            emit('person-selected', persId)
-        }
+    // const createPersonViewLinkAndIcon = function(persId) {
+    //     const button = document.createElement('button');
+    //     button.style.color = '#0078A8';            
+    //     button.style.textDecoration = 'underline';
+    //     button.title ='View Person in Person View';
+    //     button.textContent = `${persId}`;
+    //     button.onclick = async function() {
+    //         console.log(`Clicked on ${persId}`);
+    //         emit('person-selected', persId)
+    //     }
 
-        const icon = document.createElement('i');
-        icon.classList.add('mdi', 'mdi-account-outline');
-        icon.style.paddingLeft = '3px';
+    //     const icon = document.createElement('i');
+    //     icon.classList.add('mdi', 'mdi-account-outline');
+    //     icon.style.paddingLeft = '3px';
 
-        return [button, icon]
-    }
+    //     return [button, icon]
+    // }
 
     const createPopUpAndTooltip = function (circle, station, lastRecordedDate, lastPersonsBeforeSelectedTime) {
         
@@ -220,7 +219,7 @@
 
         if (lastPersonsBeforeSelectedTime) {
             for (const [index, person] of lastPersonsBeforeSelectedTime.persons.entries()) {
-                const [button, icon] = createPersonViewLinkAndIcon(person.persId)
+                const [button, icon] = mapStore.createPersonViewLinkAndIcon(person.persId)
                 popupDiv.appendChild(button);
                 popupDiv.appendChild(icon);
                 if (index < lastPersonsBeforeSelectedTime.persons.length - 1) popupDiv.appendChild(document.createElement('br'));
@@ -258,7 +257,7 @@
 
             // update popup accordingly
             for (const [index, person] of lastPersonsBeforeSelectedTime.persons.entries()) {
-                const [button, icon] = createPersonViewLinkAndIcon(person.persId)
+                const [button, icon] = mapStore.createPersonViewLinkAndIcon(person.persId)
                 popupDiv.appendChild(button);
                 popupDiv.appendChild(icon);
                 if (index < lastPersonsBeforeSelectedTime.persons.length - 1) popupDiv.appendChild(document.createElement('br'));
@@ -277,9 +276,9 @@
         
     }
 
-    const createCircleMarker = function(station, lastPersonsBeforeSelectedTime, markerBaseSize) {
+    const createCircleMarker = function(station, lastPersonsBeforeSelectedTime) {
         // scale radius according to last known record
-        const radiusScaled = lastPersonsBeforeSelectedTime ? markerBaseSize * parseInt(lastPersonsBeforeSelectedTime.count) : markerBaseSize
+        const radiusScaled = lastPersonsBeforeSelectedTime ? mapStore.markerBaseSize * parseInt(lastPersonsBeforeSelectedTime.count) : mapStore.markerBaseSize
         // console.log('radius scaled: ' + radiusScaled)
         const circle = L.circle([station.lat, station.long], {
             color: lastPersonsBeforeSelectedTime ? 'red' : 'grey',
@@ -307,12 +306,12 @@
                 //console.log(key, station)
            
                 // console.log('station.persons[sliderValue]: ' + station.persons[props.sliderValue])
-                // console.log('markerBaseSize: ' + markerBaseSize)
+                // console.log('mapStore.markerBaseSize: ' + mapStore.markerBaseSize)
                 const [
                     lastRecordedDate, 
                     lastPersonsBeforeSelectedTime ] = getLastRecordBeforeSelectedDate(station, props.dateSliderValue);
                 
-                const circle = createCircleMarker(station, lastPersonsBeforeSelectedTime, markerBaseSize);
+                const circle = createCircleMarker(station, lastPersonsBeforeSelectedTime);
                 
                 createPopUpAndTooltip(circle, station, lastRecordedDate, lastPersonsBeforeSelectedTime);
 
@@ -383,9 +382,9 @@
 
     const updatePlaceMarkerRadius = function(persCount) {
         if (persCount === 0) {
-            return markerBaseSize
+            return mapStore.markerBaseSize
         } else {
-            return markerBaseSize * persCount * (20 - props.map.getZoom())
+            return mapStore.markerBaseSize * persCount * (20 - props.map.getZoom())
         }
     }
 

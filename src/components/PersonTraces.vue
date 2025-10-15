@@ -2,16 +2,15 @@
     import L from "leaflet";
     import 'leaflet-polylinedecorator'
     import "leaflet/dist/leaflet.css";
-    // import { usePersonsStore } from '../stores/personsStore'
+    import { useMapStore } from '../stores/mapStore'
     import { usePersonsStore } from '../stores/personsStore'
     import {onMounted, onUnmounted, watch, ref, defineEmits} from 'vue' 
     import SearchField from './SearchField.vue'
 
     // ------------------------------ SOME SHARED CONSTANTS
 
-    const markerBaseSize = 500
-
     const personsStore = usePersonsStore();
+    const mapStore = useMapStore();
 
     const props = defineProps({
         map: Object,
@@ -273,7 +272,7 @@
                     fillColor: '#f03',
                     fillOpacity: placeMarkerOpacity,
                     opacity: placeMarkerOpacity,
-                    radius: markerBaseSize * (20 - props.map.getZoom())
+                    radius: mapStore.markerBaseSize * (20 - props.map.getZoom())
                 });
                 circle.data = {name: person.persId}
                 circle.bindTooltip(station.stationId)

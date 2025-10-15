@@ -1,11 +1,13 @@
 <script setup>
     import L from "leaflet";
-    // import { usePlacesStore } from '../stores/placesStore'
+    import { useMapStore } from '../stores/mapStore'
     import { usePlacesStore } from '../stores/placesStore'
+    import { createPersonViewLinkAndIcon } from '../mapHelpers.js'
     import {onMounted, ref, defineProps, onUnmounted, watch} from 'vue'
     import SearchField from './SearchField.vue'
 
     const placesStore = usePlacesStore();
+    const mapStore = useMapStore();
 
     const props = defineProps({
         map: Object,
@@ -22,25 +24,6 @@
     const facetName = "Stationsnamen"
     let nameList = ref([])
     const selectedValues = ref(props.placesSelectedFromTrace)
-    const markerBaseSize = 500
-
-    const createPersonViewLinkAndIcon = function(persId) {
-        const button = document.createElement('button');
-        button.style.color = '#0078A8';            
-        button.style.textDecoration = 'underline';
-        button.title ='View Person in Person View';
-        button.textContent = `${persId}`;
-        button.onclick = async function() {
-            console.log(`Clicked on ${persId}`);
-            emit('person-selected', persId)
-        }
-
-        const icon = document.createElement('i');
-        icon.classList.add('mdi', 'mdi-account-outline');
-        icon.style.paddingLeft = '3px';
-
-        return [button, icon]
-    }
 
     const createPopUpAndTooltip = function (circle, station, lastRecordedDate, lastPersonsBeforeSelectedTime) {
         
@@ -53,7 +36,7 @@
 
         if (lastPersonsBeforeSelectedTime) {
             for (const [index, person] of lastPersonsBeforeSelectedTime.persons.entries()) {
-                const [button, icon] = createPersonViewLinkAndIcon(person.persId)
+                const [button, icon] = createPersonViewLinkAndIcon(person.persId, emit)
                 popupDiv.appendChild(button);
                 popupDiv.appendChild(icon);
                 if (index < lastPersonsBeforeSelectedTime.persons.length - 1) popupDiv.appendChild(document.createElement('br'));
@@ -95,9 +78,9 @@
         return [lastRecordedDate, lastPersonsBeforeSelectedTime];
     }
 
-    const createCircleMarker = function(station, lastPersonsBeforeSelectedTime, markerBaseSize) {
+    const createCircleMarker = function(station, lastPersonsBeforeSelectedTime) {
         // scale radius according to last known record
-        const radiusScaled = lastPersonsBeforeSelectedTime ? markerBaseSize * parseInt(lastPersonsBeforeSelectedTime.count) : markerBaseSize
+        const radiusScaled = lastPersonsBeforeSelectedTime ? mapStore.markerBaseSize * parseInt(lastPersonsBeforeSelectedTime.count) : mapStore.markerBaseSize
         // console.log('radius scaled: ' + radiusScaled)
         const circle = L.circle([station.lat, station.long], {
             color: lastPersonsBeforeSelectedTime ? 'red' : 'grey',
@@ -125,12 +108,12 @@
                 //console.log(key, station)
            
                 // console.log('station.persons[sliderValue]: ' + station.persons[props.sliderValue])
-                // console.log('markerBaseSize: ' + markerBaseSize)
+                // console.log('mapStore.markerBaseSize: ' + mapStore.markerBaseSize)
                 const [
                     lastRecordedDate, 
                     lastPersonsBeforeSelectedTime ] = getLastRecordBeforeSelectedDate(station, props.dateSliderValue);
                 
-                const circle = createCircleMarker(station, lastPersonsBeforeSelectedTime, markerBaseSize);
+                const circle = createCircleMarker(station, lastPersonsBeforeSelectedTime);
                 
                 createPopUpAndTooltip(circle, station, lastRecordedDate, lastPersonsBeforeSelectedTime);
 
@@ -172,13 +155,13 @@ watch(() => props.dateSliderValue, (dateSliderValue) => {
                 //console.log(key, station)
            
                 // console.log('station.persons[sliderValue]: ' + station.persons[props.sliderValue])
-                // console.log('markerBaseSize: ' + markerBaseSize)
+                // console.log('mapStore.markerBaseSize: ' + mapStore.markerBaseSize)
                 const [
                     lastRecordedDate, 
                     lastPersonsBeforeSelectedTime 
                 ] = getLastRecordBeforeSelectedDate(station, dateSliderValue);
                 
-                const circle = createCircleMarker(station, lastPersonsBeforeSelectedTime, markerBaseSize);
+                const circle = createCircleMarker(station, lastPersonsBeforeSelectedTime);
                 
                 createPopUpAndTooltip(circle, station, lastRecordedDate, lastPersonsBeforeSelectedTime);
 
