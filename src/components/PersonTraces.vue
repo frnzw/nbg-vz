@@ -86,34 +86,19 @@
         const stationDateTo = station.stays[stay.stayIdx].dateTo
 
         const datePresent = stationDateFrom === stationDateTo ? new Date(stationDateFrom).getFullYear() : new Date(stationDateFrom).getFullYear() + '-' + new Date(stationDateTo).getFullYear()
-        let datePresentNext, buttonNext, datePresentPrev, buttonPrev;
+        let datePresentNext, buttonNext, iconNext, datePresentPrev, buttonPrev, iconPrev;
         if (nextStation) {
             const nextStationDateFrom = nextStation.stays[nextStationStay.stayIdx].dateFrom
-            const nextStationDateTo = nextStation.stays[nextStationStay.stayIdx].dateFrom
-            datePresentNext = nextStationDateFrom === nextStationDateTo ? new Date(nextStationDateFrom).getFullYear() : new Date(nextStationDateFrom).getFullYear() + '-' + new Date(nextStationDateTo).getFullYear()
-            buttonNext = document.createElement('button');
-            buttonNext.textContent = `${nextStation.stationId}`;
-            buttonNext.onclick = async function() {
-                console.log(`Clicked on ${nextStation.stationId}`);
-                emit('place-selected', nextStation.stationId)
-            }
+            const nextStationDateTo = nextStation.stays[nextStationStay.stayIdx].dateTo
+            datePresentNext = nextStationDateFrom === nextStationDateTo ? new Date(nextStationDateFrom).getFullYear() : new Date(nextStationDateFrom).getFullYear() + '-' + new Date(nextStationDateTo).getFullYear();
+            [buttonNext, iconNext] = createPlaceViewLinkAndIcon(nextStation.stationId);
         }
         if (prevStation) {
-            datePresentPrev = prevStation.dateFrom === prevStation.dateTo ? new Date(prevStation.dateFrom).getFullYear() : new Date(prevStation.dateFrom).getFullYear() + '-' + new Date(prevStation.dateTo).getFullYear()
-            buttonPrev = document.createElement('button');
-            buttonPrev.textContent = `${prevStation.stationId}`;
-            buttonPrev.onclick = async function() {
-                console.log(`Clicked on ${prevStation.stationId}`);
-                emit('place-selected', prevStation.stationId)
-            }
+            const prevStationDateFrom = prevStation.stays[prevStationStay.stayIdx].dateFrom
+            const prevStationDateTo = prevStation.stays[prevStationStay.stayIdx].dateTo
+            datePresentPrev = prevStationDateFrom === prevStationDateTo ? new Date(prevStationDateFrom).getFullYear() : new Date(prevStationDateFrom).getFullYear() + '-' + new Date(prevStationDateTo).getFullYear();
+            [buttonPrev, iconPrev] = createPlaceViewLinkAndIcon(prevStation.stationId);
         }
-
-
-        let popUpHtml = `<h3>${person.persId} : ${marker.data.stationIdx} (${!datePresent ? 'keine Daten' :  datePresent}) </h3></br>`
-                        + `<b>Vorherige (erfasste) Station aus NBG-VZ:</b></br> ${!datePresentPrev ? 'keine Daten' : datePresentPrev + ': ' + prevStation.stationId}</br>`
-                        + `<b>Nächste (erfasste) Station aus NBG-VZ:</b></br> ${!datePresentNext ? 'keine Daten' : datePresentNext + ': ' + nextStation.stationId}</br>`
-
-
 
         const popupDiv = document.createElement('div');
 
@@ -123,12 +108,7 @@
         const subHeadingCurrent = document.createElement('b')
         subHeadingCurrent.textContent = 'Zuletzt (erfasste) Station aus NBG-VZ:'
 
-        const buttonCurrent = document.createElement('button');
-        buttonCurrent.textContent = `${station.stationId}`;
-        buttonCurrent.onclick = async function() {
-            console.log(`Clicked on ${station.stationId}`);
-            emit('place-selected', station.stationId)
-        }
+        const [buttonCurrent, iconCurrent] = createPlaceViewLinkAndIcon(station.stationId)
 
         const subHeadingPrev = document.createElement('b')
         subHeadingPrev.textContent = 'Vorherige (erfasste) Station aus NBG-VZ:'
@@ -143,6 +123,7 @@
         if (datePresent) {
             popupDiv.appendChild(document.createTextNode(`${datePresent}: `));
             popupDiv.appendChild(buttonCurrent);
+            popupDiv.appendChild(iconCurrent);
         } else {
             popupDiv.appendChild(document.createTextNode('keine Daten'));
         }
@@ -153,6 +134,7 @@
         if (datePresentPrev) {
             popupDiv.appendChild(document.createTextNode(`${datePresentPrev}: `));
             popupDiv.appendChild(buttonPrev);
+            popupDiv.appendChild(iconPrev);
         } else {
             popupDiv.appendChild(document.createTextNode('keine Daten'));
         }
@@ -163,16 +145,87 @@
         if (datePresentNext) {
             popupDiv.appendChild(document.createTextNode(`${datePresentNext}: `));
             popupDiv.appendChild(buttonNext);
+            popupDiv.appendChild(iconNext);
         } else {
             popupDiv.appendChild(document.createTextNode('keine Daten'));
         }
 
+        const subHeadingPerson = document.createElement('b');
+        subHeadingPerson.textContent = 'Zur Person:';
 
+        popupDiv.appendChild(document.createElement('br'));
+        popupDiv.appendChild(document.createElement('br'));
+        popupDiv.appendChild(subHeadingPerson);
+        popupDiv.appendChild(document.createElement('br'));
+        if (person.familyName) {
+            popupDiv.appendChild(document.createTextNode(`Nachname: ${person.familyName}`));
+            popupDiv.appendChild(document.createElement('br'));
+        }
+        if (person.givenName) {
+            popupDiv.appendChild(document.createTextNode(`Vorname: ${person.givenName}`));
+            popupDiv.appendChild(document.createElement('br'));
+        }
+        if (person.gender) {
+            popupDiv.appendChild(document.createTextNode(`Gender: ${person.gender}`));
+            popupDiv.appendChild(document.createElement('br'));
+        }
+        if (person.birthName) {
+            popupDiv.appendChild(document.createTextNode(`geboren: ${person.birthName}`));
+            popupDiv.appendChild(document.createElement('br'));
+        }
+        if (person.widowed) {
+            popupDiv.appendChild(document.createTextNode(`verwitwet: ${person.widowed}`));
+            popupDiv.appendChild(document.createElement('br'));
+        }
+        if (person.choir) {
+            popupDiv.appendChild(document.createTextNode(`Chor: ${person.choir}`));
+            popupDiv.appendChild(document.createElement('br'));
+        }
+        if (person.wdId) {
+            const [a, icon] = createWikidataLinkAndIcon(person.wdId)
+            popupDiv.appendChild(document.createTextNode('Wikidata: '));
+            popupDiv.appendChild(a);
+            popupDiv.appendChild(icon)
+            popupDiv.appendChild(document.createElement('br'));
+
+        }
         // popupDiv.appendChild(button);
 
         marker.bindPopup(popupDiv);
         marker.bindTooltip(`${person.persId}`)
 
+    }
+
+    const createWikidataLinkAndIcon = function(wdId) {
+        const a = document.createElement('a');
+        const linkText = document.createTextNode(wdId);
+        a.appendChild(linkText);
+        a.title = 'Link to Wikidata Page';
+        a.href = `https://www.wikidata.org/wiki/${wdId}`;
+        a.target = '_blank';
+        const icon = document.createElement('i');
+        icon.classList.add('mdi', 'mdi-open-in-new');
+        icon.style.paddingLeft = '3px'
+
+        return [a, icon]
+    }
+
+    const createPlaceViewLinkAndIcon = function(stationId) {
+        const button = document.createElement('button');
+        button.style.color = '#0078A8';            
+        button.style.textDecoration = 'underline';
+        button.title ='View Place in Place View';
+        button.textContent = `${stationId}`;
+        button.onclick = async function() {
+            console.log(`Clicked on ${stationId}`);
+            emit('place-selected', stationId)
+        }
+
+        const icon = document.createElement('i');
+        icon.classList.add('mdi', 'mdi-map-marker');
+        icon.style.paddingLeft = '3px';
+
+        return [button, icon]
     }
 
 
