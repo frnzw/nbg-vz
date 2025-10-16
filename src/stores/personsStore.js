@@ -23,24 +23,35 @@ export const usePersonsStore = defineStore('persons', () => {
      */
     function extractStationsPerPersonDate(data, personId) {
         const filteredByPerson = data.filter((entry) => entry.persId === personId);
-        // console.log(`Filtering for ${personId}: ${filteredByPerson.length} entries.`)
-        const grouped = filteredByPerson.reduce((acc, entry) => {
+        const stationsByDate = filteredByPerson.reduce((acc, entry) => {
             // build date from year, assuming year-12-31 for NBG-VZ data (source specifies only as "end of year")
             const d = new Date(`${entry.year}-12-31`)
 
-            // if date already exists, use the existing entries for station and choir, else create them for the date
-            acc.stations[d.getTime()] = acc.stations[d.getTime()] || {date: d, stationId: entry.stationId, lat:entry.lat, long:entry.long};
-            acc.choir[d.getTime()] = acc.choir[d.getTime()] || {date: d, choir: entry.choir};
+            // if date already exists, use the existing entries for station, else create them for the date
+            acc[d.getTime()] = {date: d, stationId: entry.stationId, lat:entry.lat, long:entry.long};
+
             return acc;
-        }, {stations: {}, choir: {}});
+        }, {});
 
-        // assuming dates are the same for stations and choirs, as is determined by the data at the moment
-        const sortedDates = Object.keys(grouped.stations).sort((a, b) => a - b).map(d => parseInt(d))
 
-        // for (const date of sortedDates) {
-        //     grouped[date].position = sortedDates.indexOf(date)
-        // }
-        return [grouped, sortedDates]
+        const sortedDates = Object.keys({...stationsByDate}).sort((a, b) => a - b).map(d => parseInt(d))
+        return [stationsByDate, sortedDates]
+    }
+
+    function extractChoirPerPersonDate(data, personId) {
+        const filteredByPerson = data.filter((entry) => entry.persId === personId);
+        const choirByDate = filteredByPerson.reduce((acc, entry) => {
+            // build date from year, assuming year-12-31 for NBG-VZ data (source specifies only as "end of year")
+            const d = new Date(`${entry.year}-12-31`)
+
+            // if date already exists, use the existing entries for choir, else create them for the date
+            acc[d.getTime()] = {date: d, choir: entry.choir};
+            return acc;
+        }, {});
+
+        const sortedDatesChoir = Object.keys({...choirByDate}).sort((a, b) => a - b).map(d => parseInt(d))
+
+        return [choirByDate, sortedDatesChoir]
     }
 
     /**
@@ -109,7 +120,6 @@ export const usePersonsStore = defineStore('persons', () => {
                 method: 'get',
             });
 
-            console.log(pathToDataFilePersonsPlaces)
             const personsPlacesResPromise = fetch(pathToDataFilePersonsPlaces, {
                 method: 'get',
             });
@@ -133,8 +143,6 @@ export const usePersonsStore = defineStore('persons', () => {
             const csvStringPersonsPlaces = await personsPlacesRes.text();
             const dataPersonsPlaces = Papa.parse(csvStringPersonsPlaces, {header:true, dynamicTyping: true}).data;
             
-            console.log(dataPersonsPlaces)
-            //console.log(dataPersons)
             // create entry in store, adding metadata about the place
             for (const person of dataPersons) {
                 if (!person.persId) continue;
@@ -143,7 +151,8 @@ export const usePersonsStore = defineStore('persons', () => {
                 // different structures for same data – redundant, but saves time filtering / aggregation
                 // for interaction / animations
                 // these redundant structures should come from a backend in the future, only being loaded here
-                const [stationsAndChoirDate, sortedDates] = extractStationsPerPersonDate(dataPersonsPlaces, person.persId)
+                const [stationsByDate, sortedDatesStation] = extractStationsPerPersonDate(dataPersonsPlaces, person.persId)
+                const [choirByDate, sortedDatesChoir] = extractChoirPerPersonDate(dataPersonsPlaces, person.persId)
                 const [orderedStationsAggr, groupedStationsAggr] = aggregateStations(dataPersonsPlaces, person.persId)
 
                 persons.value[person.persId] = {
@@ -154,17 +163,20 @@ export const usePersonsStore = defineStore('persons', () => {
                     givenName: person.givenName,
                     widowed: person.widowed,
                     gender: person.gender,
-
-                    stationsDate: stationsAndChoirDate.stations,
-                    choirDate: stationsAndChoirDate.choir,
-                    sortedDates: sortedDates,
+                    stationsDate: stationsByDate,
+                    sortedDatesStation: sortedDatesStation,
+                    choirDate: choirByDate,
+                    sortedDatesChoir: sortedDatesChoir,
                     groupedStationsAggr: groupedStationsAggr,
                     orderedStationsAggr: orderedStationsAggr  
                 }
+
             }
 
+
+              
             console.log('Loaded personsStore')
-            console.log(persons.value)
+
             loaded.value = true
 
         } catch (error) {

@@ -21,7 +21,6 @@ for (const offset of [...Array(100).keys()]) {
   const tick = new Date(`${1800 + offset}-12-31`).getTime()
   ticks.push(tick)
 }
-console.log(ticks)
 
 
 // choose closest tick instead of real value – emit update here, not on update event itself

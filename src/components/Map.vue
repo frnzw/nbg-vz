@@ -57,8 +57,7 @@
 
   onMounted(() => {
     initMap();
-    console.log(mapReady);
-    console.log(route.path);
+
     if (mapReady) {
       if (route.path === '/map/places') {
         readyForPlaceView.value = true;
@@ -96,8 +95,7 @@
       
       
     }
-    console.log(globalMap)
-    // emit('mapIsReady', globalMap) // pass map to parent component
+
   });
 
 

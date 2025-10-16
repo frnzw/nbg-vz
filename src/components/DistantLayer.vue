@@ -70,13 +70,13 @@
         let nextRecordedDate;
         let nextStationAfterSelectedTime;
 
-        for (const ts of person.sortedDates) {
+        for (const ts of person.sortedDatesStation) {
 
             if (ts < props.dateSliderValue) {
                 continue;
             } else if (ts === props.dateSliderValue) {
-                lastRecordPosition = person.sortedDates.indexOf(ts);
-                lastRecordedDate = person.sortedDates[lastRecordPosition];
+                lastRecordPosition = person.sortedDatesStation.indexOf(ts);
+                lastRecordedDate = person.sortedDatesStation[lastRecordPosition];
                 lastStationBeforeSelectedTime = person.stationsDate[lastRecordedDate];
                 if (['Ulbricht_XX', 'Ulbricht_XY', 'Mehlhose_XX', 'Mehlhose_XY', 'Herbrich_XY', 'Richter_XY'].includes(person.personId)) {
                     console.log(`caught exact match for selected date: ${new Date(ts)}`)
@@ -89,20 +89,20 @@
                         console.log('last record position is 0')
                     }
                     previousStationBeforeSelectedTime = undefined;
-                    nextRecordedDate = person.sortedDates[lastRecordPosition + 1];
+                    nextRecordedDate = person.sortedDatesStation[lastRecordPosition + 1];
                     nextStationAfterSelectedTime = person.stationsDate[nextRecordedDate];
                     
-                } else if (lastRecordPosition === person.sortedDates.length - 1) {
+                } else if (lastRecordPosition === person.sortedDatesStation.length - 1) {
 
-                    previousRecordedDate = person.sortedDates[lastRecordPosition - 1];
+                    previousRecordedDate = person.sortedDatesStation[lastRecordPosition - 1];
                     previousStationBeforeSelectedTime = person.stationsDate[previousRecordedDate];
 
                     if (['Ulbricht_XX', 'Ulbricht_XY', 'Mehlhose_XX', 'Mehlhose_XY', 'Herbrich_XY', 'Richter_XY'].includes(person.personId)) {
                         console.log('last record position is last of array, previousStationBeforeSelectedTime should be defined');
                         console.log(`last record position = ${lastRecordPosition}`);
                         console.log(`previousStationBeforeSelectedTime = ${JSON.stringify(person.stationsDate[previousRecordedDate])}`);
-                        console.log(`sortedDates = ${person.sortedDates}`);
-                        console.log(`stationsDate = ${person.sortedDates}`);
+                        console.log(`sortedDatesStation = ${person.sortedDatesStation}`);
+                        console.log(`stationsDate = ${person.sortedDatesStation}`);
                     }
 
                     nextStationAfterSelectedTime = undefined;
@@ -110,10 +110,10 @@
                     if (['Ulbricht_XX', 'Ulbricht_XY', 'Mehlhose_XX', 'Mehlhose_XY', 'Herbrich_XY', 'Richter_XY'].includes(person.personId)) {
                         console.log('last record position is in between, previousStationBeforeSelectedTime should be defined')
                     }
-                    previousRecordedDate = person.sortedDates[lastRecordPosition - 1];
+                    previousRecordedDate = person.sortedDatesStation[lastRecordPosition - 1];
                     previousStationBeforeSelectedTime = person.stationsDate[previousRecordedDate];
                     
-                    nextRecordedDate = person.sortedDates[lastRecordPosition + 1];
+                    nextRecordedDate = person.sortedDatesStation[lastRecordPosition + 1];
                     nextStationAfterSelectedTime = person.stationsDate[nextRecordedDate];
                 }
                 if (['Ulbricht_XX', 'Ulbricht_XY', 'Mehlhose_XX', 'Mehlhose_XY', 'Herbrich_XY', 'Richter_XY'].includes(person.personId)) {
@@ -122,7 +122,7 @@
                 break; 
             } else {
                 // if ts > dateSliderValue but also only value? -> do not show marker
-                if (person.sortedDates.length === 1) {
+                if (person.sortedDatesStation.length === 1) {
                     lastStationBeforeSelectedTime = undefined;
                     previousStationBeforeSelectedTime = undefined;
                     nextRecordedDate = undefined;
@@ -130,19 +130,19 @@
 
                 } else {
 
-                    lastRecordPosition = person.sortedDates.indexOf(ts) - 1;
-                    lastRecordedDate = person.sortedDates[lastRecordPosition];
+                    lastRecordPosition = person.sortedDatesStation.indexOf(ts) - 1;
+                    lastRecordedDate = person.sortedDatesStation[lastRecordPosition];
                     lastStationBeforeSelectedTime = person.stationsDate[lastRecordedDate];
 
-                    previousRecordedDate = person.sortedDates[lastRecordPosition - 1];
+                    previousRecordedDate = person.sortedDatesStation[lastRecordPosition - 1];
                     previousStationBeforeSelectedTime = person.stationsDate[previousRecordedDate];
 
-                    if (lastRecordPosition === person.sortedDates.length - 1) {
+                    if (lastRecordPosition === person.sortedDatesStation.length - 1) {
                         // no next station recorded
                         nextRecordedDate = undefined;
                         nextStationAfterSelectedTime = undefined;
                     } else {
-                        nextRecordedDate = person.sortedDates[lastRecordPosition + 1];
+                        nextRecordedDate = person.sortedDatesStation[lastRecordPosition + 1];
                         nextStationAfterSelectedTime = person.stationsDate[nextRecordedDate];
                     }
                 }

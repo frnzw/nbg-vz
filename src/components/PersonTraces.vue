@@ -69,22 +69,12 @@
         const marker = L.marker([station.lat, station.long], {icon: icon, title: station.stationId+person.persId})
         marker.data = {date: station.date, name:person.persId}
 
-        if (person.persId === 'Teutsch_XX') {
-            // console.log(`created marker for station: ${station.stationId} (${marker.data}):`);
-            // console.log(marker);
-        }
-
         return marker;
 
     }
 
     const createPopUpAndTooltipDate = function(marker, person, lastKnownChoir, lastRecordedDate, prevStation, prevStationStay, station, stay, nextStation, nextStationStay) {
-
-        // if (person.persId === 'Genth_XX') {
-        //     console.log('createPopUpAndTooltipDate:')
-        //     console.log(person);
-            
-        // }    
+  
         const stationDateFrom = station.stays[stay.stayIdx].dateFrom
         const stationDateTo = station.stays[stay.stayIdx].dateTo
 
@@ -106,7 +96,7 @@
         const popupDiv = document.createElement('div');
 
         const heading = document.createElement('h3')
-        heading.textContent = `${person.persId} (${lastKnownChoir}) : ${marker.data.stationIdx} (${!datePresent ? 'keine Daten' :  datePresent})`
+        heading.textContent = `${person.persId} ${(lastRecordedDate) ? '('+lastKnownChoir+')' : ''} : ${marker.data.stationIdx} (${!datePresent ? 'keine Daten' :  datePresent})`
         
         const subHeadingCurrent = document.createElement('b')
         subHeadingCurrent.textContent = 'Letzte (erfasste) Station aus NBG-VZ:'
@@ -180,7 +170,7 @@
             popupDiv.appendChild(document.createTextNode(`verwitwet: ${person.widowed}`));
             popupDiv.appendChild(document.createElement('br'));
         }
-        if (lastKnownChoir) {
+        if (lastRecordedDate) {
             popupDiv.appendChild(document.createTextNode(`Chor: ${lastKnownChoir} (${new Date(lastRecordedDate).getFullYear()})`));
             popupDiv.appendChild(document.createElement('br'));
         }
@@ -220,7 +210,6 @@
         button.title ='View Place in Place View';
         button.textContent = `${stationId}`;
         button.onclick = async function() {
-            console.log(`Clicked on ${stationId}`);
             emit('place-selected', stationId)
         }
 
@@ -235,7 +224,6 @@
     const createMarkersAndArrowTraces = function(orderedStationsAggr, groupedStationsAggr, person, lastKnownChoir, lastRecordedDate, markers, traces, places, wrapperStyle, iconCss) {
         let check = ''
 
-        // if (person.persId === 'Teutsch_XX') console.log(`${person}`);
         for (let i = 0; i < orderedStationsAggr.length; i += 1) {
 
             const station = groupedStationsAggr.filter(s => s.stationId === orderedStationsAggr[i].stationId)[0]
@@ -250,19 +238,9 @@
             // only create marker for most current station
             if (i === orderedStationsAggr.length - 1) {
                 const stay = orderedStationsAggr[i]
-                // console.log(`stay: ${JSON.stringify(stay)}`);
 
-                // console.log(`station: ${station}`);
                 const marker = createTraceMarker(person, station, 1, wrapperStyle, iconCss);
                 marker.data = {dateFrom: station.dateFrom, dateTo: station.dateTo, name:person.persId, stationIdx: `${orderedStationsAggr[i].stationId}_${orderedStationsAggr[i].stayIdx}`};
-
-                if (person.persId === 'Teutsch_XX') {
-                    // console.log(`previous station: ${(prevStation) ? prevStation.stationId : undefined}`);
-                    // console.log(`station: ${station.stationId}`);
-                    // console.log(station);
-                    // console.log(`next station id index: ${i+1}; orderedStationsAggr.length: ${orderedStationsAggr.length}`);
-                    // console.log(`next station: ${(nextStation) ? nextStation.stationId : undefined}`);
-                }
 
                 createPopUpAndTooltipDate(marker, person, lastKnownChoir, lastRecordedDate, prevStation, prevStationStay, station, stay, nextStation, nextStationStay);
                 markers.push(marker);
@@ -290,18 +268,10 @@
             // opacity of traces calculated from total number of station changes
             const nofChanges = person.orderedStationsAggr.length - 1;
             const traceOpacity = nofChanges > 0 ? 1 / nofChanges : undefined
-            if (person.persId === 'Teutsch_XX') {
-                console.log(`nofChanges: ${JSON.stringify(person.orderedStationsAggr)}:`);
-                console.log(`nofChanges: ${nofChanges}:`);
-                console.log(`traceOpacity: ${traceOpacity}:`);        
-            }
+
             // create traces for all changes of station
             if (nofChanges > 0 && i < orderedStationsAggr.length - 1) {
-                // if (person.persId === 'Teutsch_XX') {
-                //     console.log(`line to: ${nextStation.stationId}:`);
-                //     // check += `${station.stationId}-->`
-                    
-                // }
+
                 const from = [station.lat, station.long]
                 const to = [nextStation.lat, nextStation.long]
                 const line = L.polyline([from, to], {color: 'black', opacity: traceOpacity})
@@ -317,109 +287,54 @@
             if (i === orderedStationsAggr.length - 1) check += station.stationId
         }
 
-        // if (person.persId === 'Teutsch_XX') {
-        //                     console.log(`person.stations:`);
-        //                     console.log(person.stations);
-        //                     console.log(`check:`);
-        //                     console.log(check);
-        //                 }
     }
 
     const  createPersonMarkersDate = function(persons, wrapperStyle, iconCss) {
-        // console.log("Attempting to add " + Object.keys(persons).length + " per son markers")
         const personMarkers = [];
         const personTraces = [];
         const placeMarkers = [];
 
         // ------ iterate over persons from store
-
         for (const key of Object.keys(persons)) {
             if (!key) continue
 
             const person = persons[key];
+            
 
             // ------ find every station entry the person has up to the currently selected slider value
             // ------ & find dated entry for person that is the next smaller or equal to slider value
             const [stationsTillSelected, stationsIdsTillSelected] = findStationsTillSelectedAggr(person)
-            if (person.persId === 'Teutsch_XX') {
-                console.log(`stationsTillSelectedX: ${stationsTillSelected}`);
-            }
 
             // ------- filter out person-place entries with dates higher than slider value
 
-            if (props.dateSliderValue >= person.sortedDates[0]) {
-
-
-                // console.log(`props.dateSliderValue: ${props.dateSliderValue} = ${new Date(props.dateSliderValue).toDateString()}`);
-                // console.log(`person.sortedDates[0]: ${person.sortedDates[0]} = ${new Date(person.sortedDates[0]).toDateString()}`);
-                // console.log(`stationsTillSelected.length = ${stationsTillSelected.length}; opacityStep = ${opacityStep}`)
-                // console.log(person.sortedDates)
-                // if (person.persId === 'Teutsch_XX') {
-                //             console.log(`selected date: ${props.dateSliderValue} = ${new Date(props.dateSliderValue).toDateString()}`);
-                // }
-
-
-
-                // if (person.persId === 'Teutsch_XX') {
-                //     console.log(`stations till selected date: ${JSON.stringify(stationsTillSelected)}`);
-                // }
-
-                // aggregate stations further
-                // const [orderedStationsAggr, groupedStationsAggr] = aggregateStations(stationsTillSelected, person)
+            if (props.dateSliderValue >= person.sortedDatesStation[0]) {
 
                 const orderedStationsAggr = stationsIdsTillSelected;
                 const groupedStationsAggr = stationsTillSelected;
-                if (person.persId === 'Teutsch_XX') {
-                    console.log('reduced aggregated stations per person:')
-                    console.log(orderedStationsAggr)
-                    console.log(groupedStationsAggr)
-                }
-
-                // if (person.persId === 'Teutsch_XX') {
-                //     console.log(`grouped stations ${orderedStationsAggr}:`);
-                //     console.log(groupedStationsAggr);
-                //     console.log(`length grouped stations: ${orderedStationsAggr.length} opacity step ${opacityStep}`);
-                // }
 
                 const [lastKnownChoir, lastRecordedDate] = findLastKnownChoir(person)
-
+                
                 // create markers and polylines
                 const markers = []
                 const traces = []
                 const places = []
                 createMarkersAndArrowTraces(orderedStationsAggr, groupedStationsAggr, person, lastKnownChoir, lastRecordedDate, markers, traces, places, wrapperStyle, iconCss)
 
-
                 markers.forEach(m => personMarkers.push(m))
                 traces.forEach(t => personTraces.push(t))
                 places.forEach(p => placeMarkers.push(p))
 
-                // console.log(`length markers ${person.persId}: ${markers.length}`);
-                // console.log(`length traces ${person.persId} : ${traces.length}`);
-
-                // if (person.persId === 'Teutsch_XX') {
-                //     console.log(markers);
-                // }
             }
 
         }
-   
-        // console.log(`length markers total: ${personMarkers.length}`);
-        // console.log(`length traces total: ${personTraces.length}`);
-        // console.log(personMarkers)
-        // console.log(personTraces)
 
         // filter station by selected names
         const [markersFilteredName, tracesFilteredName, placesFilteredName] = filterByNames(selectedValues.value, personMarkers, personTraces, placeMarkers)
 
         // create layer groups from initial markers
-        console.log(markersFilteredName)
-        console.log(tracesFilteredName)
         personLayerMarkers = L.layerGroup(markersFilteredName);
         personLayerTraces = L.layerGroup(tracesFilteredName)
         personLayerPlaces = L.layerGroup(placesFilteredName)
-
-        // console.log('markers added to layergroup')
 
     }
 
@@ -427,46 +342,42 @@
 
     const filterByNames = function(selectedValues, markers, traces, places) {
 
-        const markersFilteredName = selectedValues.length == 0 ? markers : markers.filter(marker => selectedValues.includes(marker.data.name))
+        const markersFilteredName = selectedValues.length == 0 ? markers : markers.filter(marker => {
+            return selectedValues.includes(marker.data.name)
+        })
         const tracesFilteredName = selectedValues.length == 0 ? traces : traces.filter(trace => selectedValues.includes(trace.data.name))
         const placesFilteredName = selectedValues.length == 0 ? traces : places.filter(place => selectedValues.includes(place.data.name))
-        // console.log(filteredByNames)
-        // console.log(`Filtered markers by names ${selectedValues}: ${filteredByNames.length}`)
 
         return [markersFilteredName, tracesFilteredName, placesFilteredName]
     }
 
     const findLastKnownChoir = function(person) {
         let lastKnownChoir, lastRecordedDate;
+        
+        for (const date of person.sortedDatesChoir) {
 
-        for (const date of person.sortedDates) {
-            if (person.persId = 'Luttringshauser_XY') {
-                console.log(new Date(date).getFullYear())
-            }
             if (date < props.dateSliderValue) {
                 continue;
             } else if (date === props.dateSliderValue) {
                 lastKnownChoir = person.choirDate[date].choir;
                 lastRecordedDate = date;
             } else {
-                if (person.sortedDates.length === 1) break;
-                console.log(person.persId)
-                console.log(person.sortedDates)
-                const dateBeforeIdx = person.sortedDates.indexOf(date) - 1;
-                console.log(dateBeforeIdx);
-                lastRecordedDate = person.sortedDates[dateBeforeIdx];
+                if (person.sortedDatesChoir.length === 1) break;
+
+                const dateBeforeIdx = person.sortedDatesChoir.indexOf(date) - 1;
+
+                lastRecordedDate = person.sortedDatesChoir[dateBeforeIdx];
                 lastKnownChoir = person.choirDate[lastRecordedDate].choir;
                 break;
 
             }
         }
-
+        
         return [lastKnownChoir, lastRecordedDate];
     }
 
     const findStationsTillSelectedAggr = function(person) {
 
-        // if (person.persId === 'Teutsch_XX') console.log(`orderedStationsAggr: ${person.orderedStationsAggr}`);
         const stationsTillSelected = [];
         const stationsIdsTillSelected = [];
 
@@ -483,34 +394,19 @@
             const station = person.groupedStationsAggr[stationId]
             const ts = station.stays[stayIdx].dateFrom
 
-            // if (person.persId === 'Teutsch_XX') console.log(`stay: ${JSON.stringify(person.orderedStationsAggr[i])}`);
-            // if (person.persId === 'Teutsch_XX') console.log(`station: ${station.stationId}`);
-            // if (person.persId === 'Teutsch_XX') console.log(`stay from: ${ts}`);
-
             // if a stay with dateFrom <= sliderValue is found: add to stationsTillSelected
             if (ts < props.dateSliderValue) {
-                if (person.persId === 'Teutsch_XX') console.log(`date ${new Date(ts).toDateString()} < slider ${new Date(props.dateSliderValue).toDateString()}`)    
 
                 stationsTillSelected.push(station);
                 stationsIdsTillSelected.push(person.orderedStationsAggr[i]);
-                // if (person.persId === 'Teutsch_XX') console.log(`added station, moving to next station`);
-
-
-                    // if (person.persId === 'Teutsch_XX') console.log(`index i in ordered stations: ${i}`);
-                    // if (person.persId === 'Teutsch_XX') console.log(`person.orderedStationsAggr.length - 1: ${person.orderedStationsAggr.length - 1}`);
                     if (i === person.orderedStationsAggr.length - 1) {
-                        // if (person.persId === 'Teutsch_XX') console.log('stay is last stay in persons stations');
                         break;
                     }
                     
                     
                 } else if (ts === props.dateSliderValue) {
-                    // if (person.persId === 'Teutsch_XX') console.log(`date ${new Date(ts).toDateString()} === slider ${new Date(props.dateSliderValue).toDateString()}`)
-
                     stationsTillSelected.push(station);
                     stationsIdsTillSelected.push(person.orderedStationsAggr[i]);
-
-                    // if (person.persId === 'Teutsch_XX') console.log(`added station, moving to next station`);
                     break;
                 } else {
                     break; // since stays are ordered, there should be no earlier stay listed after the first one after the selected time
@@ -539,8 +435,6 @@
     watch(() => props.dateSliderValue, () => {
         console.log('triggered watch for slider!')
         if (personLayerMarkers && personLayerTraces) {
-            console.log('old layers present')
-            // console.log(selectedValues.value)
             personLayerMarkers.clearLayers() // apparently critical for slider performance to do this before creating new markers...?
             personLayerTraces.clearLayers()
             personLayerPlaces.clearLayers()
@@ -559,25 +453,13 @@
         emit('person-pre-selection-cleared')
         if (personLayerMarkers && personLayerTraces && personLayerPlaces) {
             console.log('On selected names update:')
-            console.log(currentlySelectedValues)
-            console.log(selectedValues) 
-            // console.log(personMarkers)
-            if (true) {
-                    console.log('layers before onSelectedNamesUpdate:')
-                    console.log(personLayerMarkers.getLayers())
-                    console.log(personLayerTraces.getLayers())
-                }
+
             personLayerMarkers.clearLayers()
             personLayerTraces.clearLayers()
             personLayerPlaces.clearLayers()
-            console.log('removed markers')
 
             createPersonMarkersDate(personsStore.persons, wrapperStyle, iconCss);
-            if (true) {
-                    console.log('layers after onSelectedNamesUpdate:')
-                    console.log(personLayerMarkers.getLayers())
-                    console.log(personLayerTraces.getLayers())
-                }
+
             showPersonsLayer(personLayerMarkers, personLayerTraces, personLayerPlaces, props.map);
 
         }
@@ -603,22 +485,17 @@
 
     onMounted(async () => {
         console.log('RENDERED PERSONS LAYER')
-        //console.log('Person view map prop: ');
-        //console.log(props.map);
 
         if (!personsStore.loaded) await personsStore.readData(personsStore.pathToDataFilePersons, personsStore.pathToDataFilePersonsPlaces)
 
         console.log('personsStore.persons:')
         console.log(personsStore.persons)
 
+        // throw Error('Boom')
         createPersonMarkersDate(personsStore.persons, wrapperStyle, iconCss)
+        
         nameList.value = Array.from(Object.keys(personsStore.persons))
-        // console.log('nameList from person store:')
-        // console.log(nameList.value)
 
-        console.log(`props.personsSelectedFromPlace: ${props.personsSelectedFromPlace}`);
-        // selectedValues.value = [props.persId]
-        console.log(`mounting with selected values: ${selectedValues.value}`)
         showPersonsLayer(personLayerMarkers, personLayerTraces, personLayerPlaces, props.map);
 
 
