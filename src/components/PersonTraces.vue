@@ -4,6 +4,7 @@
     import "leaflet/dist/leaflet.css";
     import { useMapStore } from '../stores/mapStore'
     import { usePersonsStore } from '../stores/personsStore'
+    import { createPersonViewLinkAndIcon } from '../mapHelpers.js'
     import {onMounted, onUnmounted, watch, ref, defineEmits} from 'vue' 
     import SearchField from './SearchField.vue'
 
@@ -231,7 +232,7 @@
     }
 
 
-    const createMarkersAndArrowTraces = function(orderedStationsAggr, groupedStationsAggr, person, markers, traces, places, wrapperStyle, iconCss) {
+    const createMarkersAndArrowTraces = function(orderedStationsAggr, groupedStationsAggr, person, markers, traces, wrapperStyle, iconCss) {
         let check = ''
 
         // if (person.persId === 'Teutsch_XX') console.log(`${person}`);
@@ -431,6 +432,27 @@
         // console.log(`Filtered markers by names ${selectedValues}: ${filteredByNames.length}`)
 
         return [markersFilteredName, tracesFilteredName, placesFilteredName]
+    }
+
+    const findLastKnownChoir = function(person) {
+        let lastKnownChoir, lastRecordedDate;
+        for (const key of Object.keys(person.choirDate)) {
+            const entry = person.choirDate[key]
+            if (entry.date.getTime() < props.dateSliderValue) {
+                continue;
+            } else if (entry.date.getTime() === props.dateSliderValue) {
+                lastKnownChoir = entry.choir;
+                lastRecordedDate = entry.date;
+            } else {
+                if (person.sortedDates.length === 1) break
+                const dateBeforeIdx = person.sortedDates.indexOf(key) - 1;
+                lastKnownChoir = person.choirDate[dateBeforeIdx].choir;
+                lastRecordedDate = person.choirDate[dateBeforeIdx].date;
+
+            }
+        }
+
+        return [lastKnownChoir, lastRecordedDate];
     }
 
     const findStationsTillSelectedAggr = function(person) {

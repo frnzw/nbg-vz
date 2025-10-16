@@ -3,6 +3,7 @@
     import { usePersonsStore } from '../stores/personsStore'
     import { usePlacesStore } from '../stores/placesStore'
     import { useMapStore } from '../stores/mapStore'
+    import { createPersonViewLinkAndIcon } from '../mapHelpers.js'
     import {onMounted, watch, defineProps, onUnmounted} from 'vue'
 
     // ----------------- Setup / Component Scope Constants -------------------------
@@ -219,7 +220,7 @@
 
         if (lastPersonsBeforeSelectedTime) {
             for (const [index, person] of lastPersonsBeforeSelectedTime.persons.entries()) {
-                const [button, icon] = mapStore.createPersonViewLinkAndIcon(person.persId)
+                const [button, icon] = createPersonViewLinkAndIcon(person.persId)
                 popupDiv.appendChild(button);
                 popupDiv.appendChild(icon);
                 if (index < lastPersonsBeforeSelectedTime.persons.length - 1) popupDiv.appendChild(document.createElement('br'));
@@ -257,7 +258,7 @@
 
             // update popup accordingly
             for (const [index, person] of lastPersonsBeforeSelectedTime.persons.entries()) {
-                const [button, icon] = mapStore.createPersonViewLinkAndIcon(person.persId)
+                const [button, icon] = createPersonViewLinkAndIcon(person.persId)
                 popupDiv.appendChild(button);
                 popupDiv.appendChild(icon);
                 if (index < lastPersonsBeforeSelectedTime.persons.length - 1) popupDiv.appendChild(document.createElement('br'));

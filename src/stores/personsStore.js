@@ -28,15 +28,18 @@ export const usePersonsStore = defineStore('persons', () => {
             // build date from year, assuming year-12-31 for NBG-VZ data (source specifies only as "end of year")
             const d = new Date(`${entry.year}-12-31`)
 
-            acc[d.getTime()] = acc[d.getTime()] || {date: d, stationId: entry.stationId, lat:entry.lat, long:entry.long};
+            // if date already exists, use the existing entries for station and choir, else create them for the date
+            acc.stations[d.getTime()] = acc.stations[d.getTime()] || {date: d, stationId: entry.stationId, lat:entry.lat, long:entry.long};
+            acc.choir[d.getTime()] = acc.choir[d.getTime()] || {date: d, choir: entry.choir};
             return acc;
-        }, {});
+        }, {stations: {}, choir: {}});
 
-        const sortedDates = Object.keys(grouped).sort((a, b) => a - b).map(d => parseInt(d))
+        // assuming dates are the same for stations and choirs, as is determined by the data at the moment
+        const sortedDates = Object.keys(grouped.stations).sort((a, b) => a - b).map(d => parseInt(d))
 
-        for (const date of sortedDates) {
-            grouped[date].position = sortedDates.indexOf(date)
-        }
+        // for (const date of sortedDates) {
+        //     grouped[date].position = sortedDates.indexOf(date)
+        // }
         return [grouped, sortedDates]
     }
 
@@ -140,7 +143,7 @@ export const usePersonsStore = defineStore('persons', () => {
                 // different structures for same data – redundant, but saves time filtering / aggregation
                 // for interaction / animations
                 // these redundant structures should come from a backend in the future, only being loaded here
-                const [stationsExtractedDate, sortedDates] = extractStationsPerPersonDate(dataPersonsPlaces, person.persId)
+                const [stationsAndChoirDate, sortedDates] = extractStationsPerPersonDate(dataPersonsPlaces, person.persId)
                 const [orderedStationsAggr, groupedStationsAggr] = aggregateStations(dataPersonsPlaces, person.persId)
 
                 persons.value[person.persId] = {
@@ -152,7 +155,8 @@ export const usePersonsStore = defineStore('persons', () => {
                     widowed: person.widowed,
                     gender: person.gender,
 
-                    stationsDate: stationsExtractedDate,
+                    stationsDate: stationsAndChoirDate.stations,
+                    choirDate: stationsAndChoirDate.choir,
                     sortedDates: sortedDates,
                     groupedStationsAggr: groupedStationsAggr,
                     orderedStationsAggr: orderedStationsAggr  
