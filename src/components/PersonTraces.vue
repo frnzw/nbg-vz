@@ -78,7 +78,7 @@
 
     }
 
-    const createPopUpAndTooltipDate = function(marker, person, prevStation, prevStationStay, station, stay, nextStation, nextStationStay) {
+    const createPopUpAndTooltipDate = function(marker, person, lastKnownChoir, lastRecordedDate, prevStation, prevStationStay, station, stay, nextStation, nextStationStay) {
 
         // if (person.persId === 'Genth_XX') {
         //     console.log('createPopUpAndTooltipDate:')
@@ -106,7 +106,7 @@
         const popupDiv = document.createElement('div');
 
         const heading = document.createElement('h3')
-        heading.textContent = `${person.persId} : ${marker.data.stationIdx} (${!datePresent ? 'keine Daten' :  datePresent})`
+        heading.textContent = `${person.persId} (${lastKnownChoir}) : ${marker.data.stationIdx} (${!datePresent ? 'keine Daten' :  datePresent})`
         
         const subHeadingCurrent = document.createElement('b')
         subHeadingCurrent.textContent = 'Letzte (erfasste) Station aus NBG-VZ:'
@@ -180,8 +180,8 @@
             popupDiv.appendChild(document.createTextNode(`verwitwet: ${person.widowed}`));
             popupDiv.appendChild(document.createElement('br'));
         }
-        if (person.choir) {
-            popupDiv.appendChild(document.createTextNode(`Chor: ${person.choir}`));
+        if (lastKnownChoir) {
+            popupDiv.appendChild(document.createTextNode(`Chor: ${lastKnownChoir} (${new Date(lastRecordedDate).getFullYear()})`));
             popupDiv.appendChild(document.createElement('br'));
         }
         if (person.wdId) {
@@ -232,7 +232,7 @@
     }
 
 
-    const createMarkersAndArrowTraces = function(orderedStationsAggr, groupedStationsAggr, person, markers, traces, wrapperStyle, iconCss) {
+    const createMarkersAndArrowTraces = function(orderedStationsAggr, groupedStationsAggr, person, lastKnownChoir, lastRecordedDate, markers, traces, places, wrapperStyle, iconCss) {
         let check = ''
 
         // if (person.persId === 'Teutsch_XX') console.log(`${person}`);
@@ -264,7 +264,7 @@
                     // console.log(`next station: ${(nextStation) ? nextStation.stationId : undefined}`);
                 }
 
-                createPopUpAndTooltipDate(marker, person, prevStation, prevStationStay, station, stay, nextStation, nextStationStay);
+                createPopUpAndTooltipDate(marker, person, lastKnownChoir, lastRecordedDate, prevStation, prevStationStay, station, stay, nextStation, nextStationStay);
                 markers.push(marker);
             } else {
                 // create regular place marker with simple tooltip / popup
@@ -284,7 +284,7 @@
                 popupDiv.appendChild(icon);
                 circle.bindPopup(popupDiv)
 
-                traces.push(circle);
+                places.push(circle);
             }
 
             // opacity of traces calculated from total number of station changes
@@ -381,11 +381,13 @@
                 //     console.log(`length grouped stations: ${orderedStationsAggr.length} opacity step ${opacityStep}`);
                 // }
 
+                const [lastKnownChoir, lastRecordedDate] = findLastKnownChoir(person)
+
                 // create markers and polylines
                 const markers = []
                 const traces = []
                 const places = []
-                createMarkersAndArrowTraces(orderedStationsAggr, groupedStationsAggr, person, markers, traces, places, wrapperStyle, iconCss)
+                createMarkersAndArrowTraces(orderedStationsAggr, groupedStationsAggr, person, lastKnownChoir, lastRecordedDate, markers, traces, places, wrapperStyle, iconCss)
 
 
                 markers.forEach(m => personMarkers.push(m))
@@ -436,18 +438,25 @@
 
     const findLastKnownChoir = function(person) {
         let lastKnownChoir, lastRecordedDate;
-        for (const key of Object.keys(person.choirDate)) {
-            const entry = person.choirDate[key]
-            if (entry.date.getTime() < props.dateSliderValue) {
+
+        for (const date of person.sortedDates) {
+            if (person.persId = 'Luttringshauser_XY') {
+                console.log(new Date(date).getFullYear())
+            }
+            if (date < props.dateSliderValue) {
                 continue;
-            } else if (entry.date.getTime() === props.dateSliderValue) {
-                lastKnownChoir = entry.choir;
-                lastRecordedDate = entry.date;
+            } else if (date === props.dateSliderValue) {
+                lastKnownChoir = person.choirDate[date].choir;
+                lastRecordedDate = date;
             } else {
-                if (person.sortedDates.length === 1) break
-                const dateBeforeIdx = person.sortedDates.indexOf(key) - 1;
-                lastKnownChoir = person.choirDate[dateBeforeIdx].choir;
-                lastRecordedDate = person.choirDate[dateBeforeIdx].date;
+                if (person.sortedDates.length === 1) break;
+                console.log(person.persId)
+                console.log(person.sortedDates)
+                const dateBeforeIdx = person.sortedDates.indexOf(date) - 1;
+                console.log(dateBeforeIdx);
+                lastRecordedDate = person.sortedDates[dateBeforeIdx];
+                lastKnownChoir = person.choirDate[lastRecordedDate].choir;
+                break;
 
             }
         }
