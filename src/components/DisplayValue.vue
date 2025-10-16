@@ -1,8 +1,7 @@
-<!-- Sibling: DisplayValue.vue -->
 <script setup>
-defineProps({
-  value: String,
-})
+  defineProps({
+    value: String,
+  });
 </script>
 
 <template>

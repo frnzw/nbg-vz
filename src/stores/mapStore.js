@@ -1,10 +1,7 @@
-import { defineStore } from 'pinia'
-import {ref} from 'vue'
+import { defineStore } from 'pinia';
 
 export const useMapStore = defineStore('map', () => {
+  const markerBaseSize = 500;
 
-    const markerBaseSize = 500;
-  
-    return { markerBaseSize }
-
+  return { markerBaseSize };
 });
