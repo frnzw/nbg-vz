@@ -2,7 +2,10 @@
 import L from "leaflet";
 import { useMapStore } from "../stores/mapStore";
 import { usePlacesStore } from "../stores/placesStore";
-import { createPersonViewLinkAndIcon } from "../mapHelpers.js";
+import {
+  createPersonViewLinkAndIcon,
+  createWikidataLinkAndIcon,
+} from "../mapHelpers.js";
 import { onMounted, ref, defineProps, onUnmounted, watch } from "vue";
 import SearchField from "./SearchField.vue";
 
@@ -49,6 +52,44 @@ const createPopUpAndTooltip = function (
       if (index < lastPersonsBeforeSelectedTime.persons.length - 1)
         popupDiv.appendChild(document.createElement("br"));
     }
+  }
+
+  const subHeadingPlace = document.createElement("b");
+  subHeadingPlace.textContent = "Zum Ort:";
+
+  popupDiv.appendChild(document.createElement("br"));
+  popupDiv.appendChild(document.createElement("br"));
+  popupDiv.appendChild(subHeadingPlace);
+  popupDiv.appendChild(document.createElement("br"));
+
+  if (station.altName) {
+    popupDiv.appendChild(
+      document.createTextNode(`Alt.-Name: ${station.altName}`),
+    );
+    popupDiv.appendChild(document.createElement("br"));
+  }
+  if (station.yFounded) {
+    popupDiv.appendChild(
+      document.createTextNode(`Gegründet: ${station.yFounded}`),
+    );
+    popupDiv.appendChild(document.createElement("br"));
+  }
+  if (station.yRenewed) {
+    popupDiv.appendChild(
+      document.createTextNode(`Erneuert: ${station.yRenewed}`),
+    );
+    popupDiv.appendChild(document.createElement("br"));
+  }
+  if (station.region) {
+    popupDiv.appendChild(document.createTextNode(`Region: ${station.region}`));
+    popupDiv.appendChild(document.createElement("br"));
+  }
+  if (station.wdId) {
+    const [a, icon] = createWikidataLinkAndIcon(station.wdId);
+    popupDiv.appendChild(document.createTextNode("Wikidata: "));
+    popupDiv.appendChild(a);
+    popupDiv.appendChild(icon);
+    popupDiv.appendChild(document.createElement("br"));
   }
 
   circle.bindPopup(popupDiv);
