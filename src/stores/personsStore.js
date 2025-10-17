@@ -1,8 +1,8 @@
-import { defineStore } from 'pinia';
-import { ref } from 'vue';
-import Papa from 'papaparse';
+import { defineStore } from "pinia";
+import { ref } from "vue";
+import Papa from "papaparse";
 
-export const usePersonsStore = defineStore('persons', () => {
+export const usePersonsStore = defineStore("persons", () => {
   let loaded = ref(false);
   const pathToDataFilePersons = `${import.meta.env.BASE_URL}persons_vis.csv`;
   const pathToDataFilePersonsPlaces = `${import.meta.env.BASE_URL}persons_places_vis.csv`;
@@ -131,18 +131,18 @@ export const usePersonsStore = defineStore('persons', () => {
     try {
       // kick off async data loading
       const personsResPromise = fetch(pathToDataFilePersons, {
-        method: 'get',
+        method: "get",
       });
 
       const personsPlacesResPromise = fetch(pathToDataFilePersonsPlaces, {
-        method: 'get',
+        method: "get",
       });
 
       // await first data set, parse from csv to JSON
       const personsRes = await personsResPromise;
       if (!personsRes.ok) {
         throw Error(
-          `Failed to read data from local file ${pathToDataFilePersons}`
+          `Failed to read data from local file ${pathToDataFilePersons}`,
         );
       }
       const csvStringPersons = await personsRes.text();
@@ -155,7 +155,7 @@ export const usePersonsStore = defineStore('persons', () => {
       const personsPlacesRes = await personsPlacesResPromise;
       if (!personsPlacesRes.ok) {
         throw Error(
-          `Failed to read data from local file ${pathToDataFilePersonsPlaces}`
+          `Failed to read data from local file ${pathToDataFilePersonsPlaces}`,
         );
       }
       const csvStringPersonsPlaces = await personsPlacesRes.text();
@@ -176,11 +176,11 @@ export const usePersonsStore = defineStore('persons', () => {
           extractStationsPerPersonDate(dataPersonsPlaces, person.persId);
         const [choirByDate, sortedDatesChoir] = extractChoirPerPersonDate(
           dataPersonsPlaces,
-          person.persId
+          person.persId,
         );
         const [orderedStationsAggr, groupedStationsAggr] = aggregateStations(
           dataPersonsPlaces,
-          person.persId
+          person.persId,
         );
 
         persons.value[person.persId] = {
@@ -200,7 +200,7 @@ export const usePersonsStore = defineStore('persons', () => {
         };
       }
 
-      console.log('Loaded personsStore');
+      console.log("Loaded personsStore");
 
       loaded.value = true;
     } catch (error) {

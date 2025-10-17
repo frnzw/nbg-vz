@@ -10,7 +10,7 @@ export const usePlacesStore = defineStore("places", () => {
 
   function aggregatePersonsPerStationDate(data, stationId) {
     const filteredByStation = data.filter(
-      (entry) => entry.stationId === stationId
+      (entry) => entry.stationId === stationId,
     );
     // list / count persons present per year
     // group by year using reduce
@@ -53,7 +53,7 @@ export const usePlacesStore = defineStore("places", () => {
       const placesRes = await placesResPromise;
       if (!placesRes.ok) {
         throw Error(
-          `Failed to read data from local file ${pathToDataFilePlaces}`
+          `Failed to read data from local file ${pathToDataFilePlaces}`,
         );
       }
       const csvStringPlaces = await placesRes.text();
@@ -66,7 +66,7 @@ export const usePlacesStore = defineStore("places", () => {
       const personsPlacesRes = await personsPlacesResPromise;
       if (!personsPlacesRes.ok) {
         throw Error(
-          `Failed to read data from local file ${pathToDataFilePlaces}`
+          `Failed to read data from local file ${pathToDataFilePlaces}`,
         );
       }
       const csvStringPersonsPlaces = await personsPlacesRes.text();

@@ -40,7 +40,6 @@ const getLastRecordBeforeSelectedDate = function (station, dateSliderValue) {
     } else {
       // if ts > dateSliderValue but also only value? -> do not show marker
       if (station.sortedDates.length === 1) break;
-
       // found a date > selected value -> select the date before
       lastRecordPosition = station.sortedDates.indexOf(ts) - 1;
       lastRecordedDate = station.sortedDates[lastRecordPosition];
@@ -282,7 +281,7 @@ const createPopUpAndTooltip = function (
       index,
       person,
     ] of lastPersonsBeforeSelectedTime.persons.entries()) {
-      const [button, icon] = createPersonViewLinkAndIcon(person.persId);
+      const [button, icon] = createPersonViewLinkAndIcon(person.persId, emit);
       popupDiv.appendChild(button);
       popupDiv.appendChild(icon);
       if (index < lastPersonsBeforeSelectedTime.persons.length - 1)
