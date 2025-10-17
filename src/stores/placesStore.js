@@ -6,6 +6,7 @@ export const usePlacesStore = defineStore("places", () => {
   let loaded = ref(false);
   const pathToDataFilePlaces = `${import.meta.env.BASE_URL}places_vis.csv`;
   const pathToDataFilePersonsPlaces = `${import.meta.env.BASE_URL}persons_places_vis.csv`;
+  const pathToDataFilePopulationPlaces = `${import.meta.env.BASE_URL}places_population_vis.csv`;
   const stations = ref({});
 
   function aggregatePersonsPerStationDate(data, stationId) {
@@ -39,13 +40,42 @@ export const usePlacesStore = defineStore("places", () => {
     return [grouped, sortedDates];
   }
 
-  async function readData(pathToDataFilePlaces, pathToDataFilePersonsPlaces) {
+  function extractPopulationPerStationDate(data, stationId) {
+    const filteredByStation = data.filter(
+      (entry) => entry.stationId === stationId,
+    );
+    // list population present per year
+    const population = {};
+
+    for (const entry of filteredByStation) {
+      // using same fixed day as in Verzeichnis data
+      const d = new Date(`${entry.year}-12-31`);
+      population[d.getTime()] = {
+        pop_1: entry.pop_1,
+        pop_2: entry.pop_2,
+      };
+    }
+
+    // console.log(grouped)
+    // console.log(sortedDates)
+    return population;
+  }
+
+  async function readData(
+    pathToDataFilePlaces,
+    pathToDataFilePersonsPlaces,
+    pathToDataFilePopulationPlaces,
+  ) {
     try {
       // kick off async data loading
       const placesResPromise = fetch(pathToDataFilePlaces, {
         method: "get",
       });
       const personsPlacesResPromise = fetch(pathToDataFilePersonsPlaces, {
+        method: "get",
+      });
+
+      const populationPlacesResPromise = fetch(pathToDataFilePopulationPlaces, {
         method: "get",
       });
 
@@ -75,6 +105,20 @@ export const usePlacesStore = defineStore("places", () => {
         dynamicTyping: true,
       }).data;
 
+      // await third data set (should be ready by now), parse from csv to JSON
+      const populationPlacesRes = await populationPlacesResPromise;
+      if (!populationPlacesRes.ok) {
+        throw Error(
+          `Failed to read data from local file ${populationPlacesResPromise}`,
+        );
+      }
+      const csvStringPopulationPlaces = await populationPlacesRes.text();
+      const dataPopulationPlaces = Papa.parse(csvStringPopulationPlaces, {
+        header: true,
+        dynamicTyping: true,
+      }).data;
+
+      console.log(dataPopulationPlaces);
       // create entry in store, adding metadata about the place
       for (const station of dataPlaces) {
         if (!station.stationId) continue;
@@ -93,6 +137,10 @@ export const usePlacesStore = defineStore("places", () => {
           yRenewed: station.yRenewed,
           personsAggregatedDate: personsAggregatedDate, //
           sortedDates: sortedDates,
+          populationDate: extractPopulationPerStationDate(
+            dataPopulationPlaces,
+            station.stationId,
+          ),
         };
       }
 
@@ -108,6 +156,7 @@ export const usePlacesStore = defineStore("places", () => {
   return {
     pathToDataFilePlaces,
     pathToDataFilePersonsPlaces,
+    pathToDataFilePopulationPlaces,
     readData,
     stations,
   };

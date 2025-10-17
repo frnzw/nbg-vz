@@ -269,6 +269,7 @@ onMounted(async () => {
   await placesStore.readData(
     placesStore.pathToDataFilePlaces,
     placesStore.pathToDataFilePersonsPlaces,
+    placesStore.pathToDataFilePopulationPlaces,
   );
   // console.log(placesStore.stations)
 
