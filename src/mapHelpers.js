@@ -42,6 +42,41 @@ export const filterByStationId = function (selectedValues, placeMarkers) {
   return filteredByNamesPlaces;
 };
 
+export const getStationsLastRecordBeforeSelectedDate = function (
+  station,
+  dateSliderValue
+) {
+  // find last record before selected data of slider
+  let lastRecordPosition;
+  let lastRecordedDate;
+  let lastPersonsBeforeSelectedTime;
+  for (const ts of station.sortedDates) {
+    if (ts < dateSliderValue) {
+      continue;
+    } else if (ts === dateSliderValue) {
+      lastRecordPosition = station.sortedDates.indexOf(ts);
+      lastRecordedDate = station.sortedDates[lastRecordPosition];
+      lastPersonsBeforeSelectedTime =
+        station.personsAggregatedDate[station.sortedDates[lastRecordPosition]];
+      break;
+    } else {
+      // if ts > dateSliderValue but also only value? -> do not show marker
+      if (station.sortedDates.length === 1) break;
+      // found a date > selected value -> select the date before
+      lastRecordPosition = station.sortedDates.indexOf(ts) - 1;
+      lastRecordedDate = station.sortedDates[lastRecordPosition];
+      lastPersonsBeforeSelectedTime =
+        station.personsAggregatedDate[station.sortedDates[lastRecordPosition]];
+
+      break;
+    }
+  }
+
+  // all recorded dates are smaller than selected date -> show no data
+
+  return [lastRecordedDate, lastPersonsBeforeSelectedTime];
+};
+
 /**
  * Proportional Transformation of 2D Symbols as described by Barvir, Holub and Vondrakova (2025).
  * Barvir, R., Holub, M., & Vondrakova, A. (2025). Proportional Symbol Maps: Value-Scale Types, Online Value-Scale Generator and User Perspectives. ISPRS International Journal of Geo-Information, 14(9), 340. https://doi.org/10.3390/ijgi14090340

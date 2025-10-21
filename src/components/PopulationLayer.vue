@@ -104,39 +104,6 @@
     return [lastRecordedDatePop, lastPopBeforeSelectedTime];
   };
 
-  const getLastRecordBeforeSelectedDate = function (station, dateSliderValue) {
-    // find last record before selected data of slider
-    let lastRecordPosition;
-    let lastRecordedDate;
-    let lastPersonsBeforeSelectedTime;
-    for (const ts of station.sortedDates) {
-      if (ts < dateSliderValue) {
-        continue;
-      } else if (ts === dateSliderValue) {
-        lastRecordPosition = station.sortedDates.indexOf(ts);
-        lastRecordedDate = station.sortedDates[lastRecordPosition];
-        lastPersonsBeforeSelectedTime =
-          station.personsAggregatedDate[
-            station.sortedDates[lastRecordPosition]
-          ];
-        break;
-      } else {
-        // if ts > dateSliderValue but also only value? -> do not show marker
-        if (station.sortedDates.length === 1) break;
-
-        lastRecordPosition = station.sortedDates.indexOf(ts) - 1;
-        lastRecordedDate = station.sortedDates[lastRecordPosition];
-        lastPersonsBeforeSelectedTime =
-          station.personsAggregatedDate[
-            station.sortedDates[lastRecordPosition]
-          ];
-        break;
-      }
-    }
-
-    return [lastRecordedDate, lastPersonsBeforeSelectedTime];
-  };
-
   const createStationMarkersDate = function (stations) {
     // console.log("Attempting to add " + Object.keys(stations).length + " markers")
     const pop1Markers = [];

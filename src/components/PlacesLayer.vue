@@ -7,6 +7,7 @@
     createWikidataLinkAndIcon,
     scaleRadiusProportional,
     scaleRadiusProportionalFlannery,
+    getStationsLastRecordBeforeSelectedDate,
   } from '../mapHelpers.js';
   import { onMounted, ref, defineProps, onUnmounted, watch } from 'vue';
   import SearchField from './SearchField.vue';
@@ -100,39 +101,6 @@
     circle.bindTooltip(`${station.stationId}`);
   };
 
-  const getLastRecordBeforeSelectedDate = function (station, dateSliderValue) {
-    // find last record before selected data of slider
-    let lastRecordPosition;
-    let lastRecordedDate;
-    let lastPersonsBeforeSelectedTime;
-    for (const ts of station.sortedDates) {
-      if (ts < dateSliderValue) {
-        continue;
-      } else if (ts === dateSliderValue) {
-        lastRecordPosition = station.sortedDates.indexOf(ts);
-        lastRecordedDate = station.sortedDates[lastRecordPosition];
-        lastPersonsBeforeSelectedTime =
-          station.personsAggregatedDate[
-            station.sortedDates[lastRecordPosition]
-          ];
-        break;
-      } else {
-        // if ts > dateSliderValue but also only value? -> do not show marker
-        if (station.sortedDates.length === 1) break;
-
-        lastRecordPosition = station.sortedDates.indexOf(ts) - 1;
-        lastRecordedDate = station.sortedDates[lastRecordPosition];
-        lastPersonsBeforeSelectedTime =
-          station.personsAggregatedDate[
-            station.sortedDates[lastRecordPosition]
-          ];
-        break;
-      }
-    }
-
-    return [lastRecordedDate, lastPersonsBeforeSelectedTime];
-  };
-
   const createCircleMarker = function (
     station,
     lastPersonsBeforeSelectedTime,
@@ -200,7 +168,10 @@
         // console.log('station.persons[sliderValue]: ' + station.persons[props.sliderValue])
         // console.log('mapStore.markerBaseSizePersonnel: ' + mapStore.markerBaseSizePersonnel)
         const [lastRecordedDate, lastPersonsBeforeSelectedTime] =
-          getLastRecordBeforeSelectedDate(station, props.dateSliderValue);
+          getStationsLastRecordBeforeSelectedDate(
+            station,
+            props.dateSliderValue
+          );
 
         if (lastPersonsBeforeSelectedTime) {
           // only create marker if data is present

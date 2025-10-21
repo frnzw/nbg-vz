@@ -3,7 +3,10 @@
   import { usePersonsStore } from '../stores/personsStore';
   import { usePlacesStore } from '../stores/placesStore';
   import { useMapStore } from '../stores/mapStore';
-  import { createPersonViewLinkAndIcon } from '../mapHelpers.js';
+  import {
+    createPersonViewLinkAndIcon,
+    getStationsLastRecordBeforeSelectedDate,
+  } from '../mapHelpers.js';
   import { onMounted, watch, defineProps, onUnmounted } from 'vue';
 
   // ----------------- Setup / Component Scope Constants -------------------------
@@ -22,42 +25,6 @@
   let placeLayer = undefined;
 
   // ----------------- Filtering and Updating -------------------------
-
-  const getLastRecordBeforeSelectedDate = function (station, dateSliderValue) {
-    // find last record before selected data of slider
-    let lastRecordPosition;
-    let lastRecordedDate;
-    let lastPersonsBeforeSelectedTime;
-    for (const ts of station.sortedDates) {
-      if (ts < dateSliderValue) {
-        continue;
-      } else if (ts === dateSliderValue) {
-        lastRecordPosition = station.sortedDates.indexOf(ts);
-        lastRecordedDate = station.sortedDates[lastRecordPosition];
-        lastPersonsBeforeSelectedTime =
-          station.personsAggregatedDate[
-            station.sortedDates[lastRecordPosition]
-          ];
-        break;
-      } else {
-        // if ts > dateSliderValue but also only value? -> do not show marker
-        if (station.sortedDates.length === 1) break;
-        // found a date > selected value -> select the date before
-        lastRecordPosition = station.sortedDates.indexOf(ts) - 1;
-        lastRecordedDate = station.sortedDates[lastRecordPosition];
-        lastPersonsBeforeSelectedTime =
-          station.personsAggregatedDate[
-            station.sortedDates[lastRecordPosition]
-          ];
-
-        break;
-      }
-    }
-
-    // all recorded dates are smaller than selected date -> show no data
-
-    return [lastRecordedDate, lastPersonsBeforeSelectedTime];
-  };
 
   const getPersonsCurrentPreviousNextStation = function (
     person,
@@ -294,7 +261,10 @@
         // console.log('station.persons[sliderValue]: ' + station.persons[props.sliderValue])
         // console.log('mapStore.markerBaseSize: ' + mapStore.markerBaseSize)
         const [lastRecordedDate, lastPersonsBeforeSelectedTime] =
-          getLastRecordBeforeSelectedDate(station, props.dateSliderValue);
+          getStationsLastRecordBeforeSelectedDate(
+            station,
+            props.dateSliderValue
+          );
 
         const circle = createCircleMarker(
           station,
@@ -585,7 +555,10 @@
         const station = placesStore.stations[key];
 
         const [lastRecordedDate, lastPersonsBeforeSelectedTime] =
-          getLastRecordBeforeSelectedDate(station, props.dateSliderValue);
+          getStationsLastRecordBeforeSelectedDate(
+            station,
+            props.dateSliderValue
+          );
 
         // this would be easier with a hashmap built upon initial marker creation
         let stationMarker;
