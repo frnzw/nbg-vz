@@ -1,7 +1,9 @@
-import { defineStore } from "pinia";
+import { defineStore } from 'pinia';
 
-export const useMapStore = defineStore("map", () => {
+export const useMapStore = defineStore('map', () => {
   const markerBaseSize = 500;
+  const markerBaseSizePersonnel = 3;
+  const markerBaseSizePopulation = 50;
 
-  return { markerBaseSize };
+  return { markerBaseSize, markerBaseSizePersonnel, markerBaseSizePopulation };
 });

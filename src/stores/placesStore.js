@@ -1,20 +1,22 @@
-import { defineStore } from "pinia";
-import { ref } from "vue";
-import Papa from "papaparse";
+import { defineStore } from 'pinia';
+import { ref } from 'vue';
+import Papa from 'papaparse';
 
-export const usePlacesStore = defineStore("places", () => {
+export const usePlacesStore = defineStore('places', () => {
   let loaded = ref(false);
   const pathToDataFilePlaces = `${import.meta.env.BASE_URL}places_vis.csv`;
   const pathToDataFilePersonsPlaces = `${import.meta.env.BASE_URL}persons_places_vis.csv`;
   const pathToDataFilePopulationPlaces = `${import.meta.env.BASE_URL}places_population_vis.csv`;
   const stations = ref({});
 
+  let minPersonnelCountAllStations = ref(1); // have to define a numeric here for vue
+  let minPopulationCountAllStations = ref(1);
+
   function aggregatePersonsPerStationDate(data, stationId) {
     const filteredByStation = data.filter(
-      (entry) => entry.stationId === stationId,
+      (entry) => entry.stationId === stationId
     );
     // list / count persons present per year
-    // group by year using reduce
     const grouped = filteredByStation.reduce((acc, entry) => {
       // build date from year, assuming year-12-31 for NBG-VZ data (source specifies only as "end of year")
       const d = new Date(`${entry.year}-12-31`);
@@ -29,24 +31,31 @@ export const usePlacesStore = defineStore("places", () => {
       return acc;
     }, {});
 
+    const minimalCountGreaterZero = Math.min(
+      ...Object.keys(grouped)
+        .map((date) => {
+          return grouped[date].count;
+        })
+        .filter((count) => count > 0)
+    );
+
     const sortedDates = Object.keys(grouped)
       .sort((a, b) => a - b)
       .map((d) => parseInt(d));
     for (const date of sortedDates) {
       grouped[date].position = sortedDates.indexOf(date); // @todo: check if this is used at all
     }
-    // console.log(grouped)
-    // console.log(sortedDates)
-    return [grouped, sortedDates];
+    return [grouped, sortedDates, minimalCountGreaterZero];
   }
 
   function extractPopulationPerStationDate(data, stationId) {
     const filteredByStation = data.filter(
-      (entry) => entry.stationId === stationId,
+      (entry) => entry.stationId === stationId
     );
     // list population present per year
     const population = {};
 
+    const populationCounts = [];
     for (const entry of filteredByStation) {
       // using same fixed day as in Verzeichnis data
       const d = new Date(`${entry.year}-12-31`);
@@ -54,36 +63,42 @@ export const usePlacesStore = defineStore("places", () => {
         pop_1: entry.pop_1,
         pop_2: entry.pop_2,
       };
+      if (entry.pop_1) populationCounts.push(entry.pop_1);
+      if (entry.pop_2) populationCounts.push(entry.pop_2);
     }
 
-    // console.log(grouped)
-    // console.log(sortedDates)
-    return population;
+    const minimalCountGreaterZero = Math.min(...populationCounts);
+
+    const sortedDates = Object.keys(population)
+      .sort((a, b) => a - b)
+      .map((d) => parseInt(d));
+
+    return [population, sortedDates, minimalCountGreaterZero];
   }
 
   async function readData(
     pathToDataFilePlaces,
     pathToDataFilePersonsPlaces,
-    pathToDataFilePopulationPlaces,
+    pathToDataFilePopulationPlaces
   ) {
     try {
       // kick off async data loading
       const placesResPromise = fetch(pathToDataFilePlaces, {
-        method: "get",
+        method: 'get',
       });
       const personsPlacesResPromise = fetch(pathToDataFilePersonsPlaces, {
-        method: "get",
+        method: 'get',
       });
 
       const populationPlacesResPromise = fetch(pathToDataFilePopulationPlaces, {
-        method: "get",
+        method: 'get',
       });
 
       // await first data set, parse from csv to JSON
       const placesRes = await placesResPromise;
       if (!placesRes.ok) {
         throw Error(
-          `Failed to read data from local file ${pathToDataFilePlaces}`,
+          `Failed to read data from local file ${pathToDataFilePlaces}`
         );
       }
       const csvStringPlaces = await placesRes.text();
@@ -96,7 +111,7 @@ export const usePlacesStore = defineStore("places", () => {
       const personsPlacesRes = await personsPlacesResPromise;
       if (!personsPlacesRes.ok) {
         throw Error(
-          `Failed to read data from local file ${pathToDataFilePlaces}`,
+          `Failed to read data from local file ${pathToDataFilePlaces}`
         );
       }
       const csvStringPersonsPlaces = await personsPlacesRes.text();
@@ -109,7 +124,7 @@ export const usePlacesStore = defineStore("places", () => {
       const populationPlacesRes = await populationPlacesResPromise;
       if (!populationPlacesRes.ok) {
         throw Error(
-          `Failed to read data from local file ${populationPlacesResPromise}`,
+          `Failed to read data from local file ${populationPlacesResPromise}`
         );
       }
       const csvStringPopulationPlaces = await populationPlacesRes.text();
@@ -118,13 +133,22 @@ export const usePlacesStore = defineStore("places", () => {
         dynamicTyping: true,
       }).data;
 
-      console.log(dataPopulationPlaces);
       // create entry in store, adding metadata about the place
+      let stationMinPersonelCounts = [];
+      let stationMinPopulationCounts = [];
       for (const station of dataPlaces) {
         if (!station.stationId) continue;
 
-        const [personsAggregatedDate, sortedDates] =
+        const [personsAggregatedDate, sortedDates, stationMinCountPersonnel] =
           aggregatePersonsPerStationDate(dataPersonsPlaces, station.stationId);
+
+        stationMinPersonelCounts.push(stationMinCountPersonnel);
+        const [populationDate, sortedDatesPop, stationMinCountPopulation] =
+          extractPopulationPerStationDate(
+            dataPopulationPlaces,
+            station.stationId
+          );
+        stationMinPopulationCounts.push(stationMinCountPopulation);
 
         stations.value[station.stationId] = {
           stationId: station.stationId, // custom unique name ID without whitespace & punctuation
@@ -137,15 +161,20 @@ export const usePlacesStore = defineStore("places", () => {
           yRenewed: station.yRenewed,
           personsAggregatedDate: personsAggregatedDate, //
           sortedDates: sortedDates,
-          populationDate: extractPopulationPerStationDate(
-            dataPopulationPlaces,
-            station.stationId,
-          ),
+          populationDate: populationDate,
+          sortedDatesPop: sortedDatesPop,
         };
       }
 
-      console.log("Loaded placesStore.");
-      console.log(stations.value);
+      minPersonnelCountAllStations.value = Math.min(
+        ...stationMinPersonelCounts
+      );
+
+      minPopulationCountAllStations.value = Math.min(
+        ...stationMinPopulationCounts
+      );
+
+      console.log('Loaded placesStore.');
       loaded.value = true;
     } catch (error) {
       console.log(error);
@@ -159,5 +188,8 @@ export const usePlacesStore = defineStore("places", () => {
     pathToDataFilePopulationPlaces,
     readData,
     stations,
+    minPersonnelCountAllStations,
+    minPopulationCountAllStations,
+    loaded,
   };
 });

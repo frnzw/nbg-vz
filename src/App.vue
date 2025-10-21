@@ -1,7 +1,7 @@
 <script setup>
-import { useRoute, RouterView } from "vue-router";
+  import { useRoute, RouterView } from 'vue-router';
 
-const route = useRoute();
+  const route = useRoute();
 </script>
 
 <template>
@@ -12,8 +12,11 @@ const route = useRoute();
 
       <!-- Tab Navigation -->
       <v-tabs :model-value="route.path" align-tabs="center">
-        <v-tab to="/map/places" value="/map/places"> Places View </v-tab>
-        <v-tab to="/map/traces" value="/map/traces"> Persons View </v-tab>
+        <v-tab to="/map/places" value="/map/places"> Ort:Personal </v-tab>
+        <v-tab to="/map/population" value="/map/population">
+          Ort:Gemeinde
+        </v-tab>
+        <v-tab to="/map/traces" value="/map/traces"> Traces </v-tab>
         <v-tab to="/map/distant" value="/map/distant"> Distant View </v-tab>
       </v-tabs>
     </v-app-bar>

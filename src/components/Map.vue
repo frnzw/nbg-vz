@@ -1,160 +1,164 @@
 <script setup>
-import { onMounted, ref, watch } from "vue";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
-import PlacesLayer from "./PlacesLayer.vue";
-import TimeSlider from "./TimeSlider.vue";
-import DistantLayer from "./DistantLayer.vue";
-import PersonTraces from "./PersonTraces.vue";
-import { useRoute, useRouter } from "vue-router";
+  import { onMounted, ref, watch } from 'vue';
+  import 'leaflet/dist/leaflet.css';
+  import L from 'leaflet';
+  import PlacesLayer from './PlacesLayer.vue';
+  import PopulationLayer from './PopulationLayer.vue';
+  import TimeSlider from './TimeSlider.vue';
+  import DistantLayer from './DistantLayer.vue';
+  import PersonTraces from './PersonTraces.vue';
+  import { useRoute, useRouter } from 'vue-router';
 
-const route = useRoute();
-const router = useRouter();
+  const route = useRoute();
+  const router = useRouter();
 
-const emit = defineEmits(["mapIsReady"]); // for passing map to parent component
+  const emit = defineEmits(['mapIsReady']); // for passing map to parent component
 
-const sliderValue = ref(1828);
-const dateSliderValue = ref(new Date("1828-12-31").getTime());
+  const sliderValue = ref(1828);
+  const dateSliderValue = ref(new Date('1860-12-31').getTime());
 
-// reactive switch for checking if props.map is initialized before rendering child components
-// set this in onMounted()
-let mapReady = ref(false);
-let globalMap = undefined;
+  // reactive switch for checking if props.map is initialized before rendering child components
+  // set this in onMounted()
+  let mapReady = ref(false);
+  let globalMap = undefined;
 
-// reactive switch for checking if current route is properly accessible before conditionally rendering child components
-// set this in onMounted()
-let readyForPlaceView = ref(false);
-let readyForTraceView = ref(false);
-let readyForPersonView = ref(false);
-let readyForDistantView = ref(false);
+  // reactive switch for checking if current route is properly accessible before conditionally rendering child components
+  // set this in onMounted()
+  let readyForPlaceView = ref(false);
+  let readyForPopulationView = ref(false);
+  let readyForTraceView = ref(false);
+  let readyForPersonView = ref(false);
+  let readyForDistantView = ref(false);
 
-const personsSelectedFromPlace = ref([]);
-const placesSelectedFromTrace = ref([]);
+  const personsSelectedFromPlace = ref([]);
+  const placesSelectedFromTrace = ref([]);
 
-const initMap = function () {
-  const map = L.map("mapContainer").fitWorld().zoomIn(); //.setView(center, 2);
-  /**
-   * @todo set minZoom and initial view dependent on screen size: large screen needs minZoom 3 for initial view / overview
-   */
-  const tileLayer = L.tileLayer(
-    "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}" +
-      (L.Browser.retina ? "@2x.png" : ".png"),
-    {
-      attribution:
-        '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      subdomains: "abcd",
-      maxZoom: 20,
-      minZoom: 2,
-    },
-  );
+  const initMap = function () {
+    const map = L.map('mapContainer').fitWorld().zoomIn(); //.setView(center, 2);
+    /**
+     * @todo set minZoom and initial view dependent on screen size: large screen needs minZoom 3 for initial view / overview
+     */
+    const tileLayer = L.tileLayer(
+      'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}' +
+        (L.Browser.retina ? '@2x.png' : '.png'),
+      {
+        attribution:
+          '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20,
+        minZoom: 2,
+      }
+    );
 
-  tileLayer.addTo(map);
+    tileLayer.addTo(map);
 
-  globalMap = map;
-  mapReady = true;
-};
+    map.on('click', () => console.log(map.getZoom()));
 
-onMounted(() => {
-  initMap();
+    globalMap = map;
+    mapReady = true;
+  };
 
-  if (mapReady) {
-    if (route.path === "/map/places") {
-      readyForPlaceView.value = true;
+  onMounted(() => {
+    initMap();
 
-      readyForTraceView.value = false;
-      readyForPersonView.value = false;
-      readyForDistantView.value = false;
-      console.log("ready for place view");
-    } else if (route.path === "/map/traces") {
-      readyForTraceView.value = true;
+    if (mapReady) {
+      if (route.path === '/map/places') {
+        readyForPlaceView.value = true;
 
-      readyForPersonView.value = false;
-      readyForPlaceView.value = false;
-      readyForDistantView.value = false;
-      console.log("ready for trace view");
-    } else if (route.path === "/map/persons") {
-      readyForPersonView.value = true;
+        readyForPopulationView.value = false;
+        readyForPersonView.value = false;
+        readyForDistantView.value = false;
+        console.log('ready for place view');
+      } else if (route.path === '/map/population') {
+        readyForPopulationView.value = true;
 
-      readyForPlaceView.value = false;
-      readyForTraceView.value = false;
-      readyForDistantView.value = false;
-      console.log("ready for person view");
-    } else if (route.path === "/map/distant") {
-      readyForDistantView.value = true;
+        readyForPersonView.value = false;
+        readyForPlaceView.value = false;
+        readyForDistantView.value = false;
+        console.log('ready for trace view');
+      } else if (route.path === '/map/persons') {
+        readyForPersonView.value = true;
 
-      readyForPersonView.value = false;
-      readyForPlaceView.value = false;
-      readyForTraceView.value = false;
-    } else {
-      console.warn(
-        "map component initialized without proper sub route, no additional layers will be visible!",
-      );
+        readyForPlaceView.value = false;
+        readyForPopulationView.value = false;
+        readyForDistantView.value = false;
+        console.log('ready for person view');
+      } else if (route.path === '/map/distant') {
+        readyForDistantView.value = true;
+
+        readyForPersonView.value = false;
+        readyForPlaceView.value = false;
+        readyForPopulationView.value = false;
+      } else {
+        console.warn(
+          'map component initialized without proper sub route, no additional layers will be visible!'
+        );
+      }
     }
-  }
-});
+  });
 
-const switchToPersonView = function (persId) {
-  console.log("caught event person-selected!");
-  personsSelectedFromPlace.value = [persId];
-  router.push({ name: "traces" });
-};
+  const switchToPersonView = function (persId) {
+    console.log('caught event person-selected!');
+    personsSelectedFromPlace.value = [persId];
+    router.push({ name: 'traces' });
+  };
 
-const clearPreSelectionPerson = function () {
-  console.log("caught event person-pre-selection-cleared!");
-  personsSelectedFromPlace.value = [];
-};
+  const clearPreSelectionPerson = function () {
+    console.log('caught event person-pre-selection-cleared!');
+    personsSelectedFromPlace.value = [];
+  };
 
-const switchToPlacesView = function (stationId) {
-  console.log("caught event place-selected!");
-  placesSelectedFromTrace.value = [stationId];
-  router.push({ name: "places" });
-};
+  const switchToPlacesView = function (stationId) {
+    console.log('caught event place-selected!');
+    placesSelectedFromTrace.value = [stationId];
+    router.push({ name: 'places' });
+  };
 
-const clearPreSelectionPlace = function () {
-  console.log("caught event place-pre-selection-cleared!");
-  placesSelectedFromTrace.value = [];
-};
+  const clearPreSelectionPlace = function () {
+    console.log('caught event place-pre-selection-cleared!');
+    placesSelectedFromTrace.value = [];
+  };
 
-watch(route, () => {
-  console.log(
-    `route changed to ${route.path} with params ${JSON.stringify(route.query)}`,
-  );
+  watch(route, () => {
+    console.log(
+      `route changed to ${route.path} with params ${JSON.stringify(route.query)}`
+    );
 
-  if (mapReady) {
-    if (route.path === "/map/places") {
-      readyForPlaceView.value = true;
+    if (mapReady) {
+      if (route.path === '/map/places') {
+        readyForPlaceView.value = true;
 
-      readyForTraceView.value = false;
-      readyForPersonView.value = false;
-      readyForDistantView.value = false;
-      console.log("ready for place view");
-    } else if (route.path === "/map/traces") {
-      readyForTraceView.value = true;
+        readyForPopulationView.value = false;
+        readyForPersonView.value = false;
+        readyForDistantView.value = false;
+        console.log('ready for place view');
+      } else if (route.path === '/map/population') {
+        readyForPopulationView.value = true;
 
-      readyForPersonView.value = false;
-      readyForPlaceView.value = false;
-      readyForDistantView.value = false;
-      console.log("ready for trace view");
-    } else if (route.path === "/map/persons") {
-      readyForPersonView.value = true;
+        readyForPersonView.value = false;
+        readyForPlaceView.value = false;
+        readyForDistantView.value = false;
+        console.log('ready for trace view');
+      } else if (route.path === '/map/persons') {
+        readyForPersonView.value = true;
 
-      readyForPlaceView.value = false;
-      readyForTraceView.value = false;
-      readyForDistantView.value = false;
-      console.log("ready for person view");
-    } else if (route.path === "/map/distant") {
-      readyForDistantView.value = true;
+        readyForPlaceView.value = false;
+        readyForPopulationView.value = false;
+        readyForDistantView.value = false;
+        console.log('ready for person view');
+      } else if (route.path === '/map/distant') {
+        readyForDistantView.value = true;
 
-      readyForPersonView.value = false;
-      readyForPlaceView.value = false;
-      readyForTraceView.value = false;
-    } else {
-      console.warn(
-        "map component initialized without proper sub route, no additional layers will be visible!",
-      );
+        readyForPersonView.value = false;
+        readyForPlaceView.value = false;
+        readyForPopulationView.value = false;
+      } else {
+        console.warn(
+          'map component initialized without proper sub route, no additional layers will be visible!'
+        );
+      }
     }
-  }
-});
+  });
 </script>
 
 <template>
@@ -170,6 +174,13 @@ watch(route, () => {
     :sliderValue="sliderValue"
     :dateSliderValue="dateSliderValue"
     :placesSelectedFromTrace="placesSelectedFromTrace"
+  />
+  <PopulationLayer
+    v-if="readyForPopulationView"
+    @place-selected="switchToPopulationView"
+    @place-pre-selection-cleared="clearPreSelectionPlace"
+    :map="globalMap"
+    :dateSliderValue="dateSliderValue"
   />
   <PersonTraces
     v-if="readyForTraceView"
@@ -191,8 +202,8 @@ watch(route, () => {
 </template>
 
 <style scoped>
-#mapContainer {
-  width: 100vw;
-  height: 90%;
-}
+  #mapContainer {
+    width: 100vw;
+    height: 90%;
+  }
 </style>

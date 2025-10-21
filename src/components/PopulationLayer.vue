@@ -1,0 +1,355 @@
+<script setup>
+  import L from 'leaflet';
+  import { useMapStore } from '../stores/mapStore.js';
+  import { usePlacesStore } from '../stores/placesStore.js';
+  import {
+    scaleRadiusProportionalFlannery,
+    filterByStationId,
+  } from '../mapHelpers.js';
+  import { onMounted, ref, defineProps, onUnmounted, watch } from 'vue';
+  import SearchField from './SearchField.vue';
+
+  const placesStore = usePlacesStore();
+  const mapStore = useMapStore();
+
+  const props = defineProps({
+    map: Object,
+    sliderValue: Number,
+    dateSliderValue: Number,
+  });
+
+  const emit = defineEmits(['person-selected', 'place-pre-selection-cleared']);
+
+  let currentPop1Markers = undefined;
+  let currentPop2Markers = undefined;
+
+  let popLayer1 = undefined;
+  let popLayer2 = undefined;
+
+  const facetName = 'Stationsnamen';
+  let nameList = ref([]);
+  const selectedValues = ref([]);
+
+  const createPopUpAndTooltip = function (
+    circle,
+    station,
+    lastRecordedDatePop,
+    lastPopBeforeSelectedTime
+  ) {
+    let popUpHtml =
+      `<h3>${station.stationId}</h3></br>` +
+      `<b>Anwesend in letztem erfassten Jahr ${lastRecordedDatePop ? new Date(lastRecordedDatePop).getFullYear() : ''}:</b></br>`;
+
+    const popupDiv = document.createElement('div');
+    popupDiv.innerHTML = popUpHtml;
+
+    if (!lastRecordedDatePop)
+      popupDiv.appendChild(document.createTextNode('Keine Daten.'));
+
+    const subHeadingPop1 = document.createElement('b');
+    subHeadingPop1.textContent = 'Gemeindegröße_1: ';
+    popupDiv.appendChild(subHeadingPop1);
+    if (lastPopBeforeSelectedTime.pop_1) {
+      popupDiv.appendChild(
+        document.createTextNode(`${lastPopBeforeSelectedTime.pop_1}`)
+      );
+      popupDiv.appendChild(document.createElement('br'));
+    }
+
+    const subHeadingPop2 = document.createElement('b');
+    subHeadingPop2.textContent = 'Gemeindegröße_1: ';
+    popupDiv.appendChild(subHeadingPop2);
+    if (lastPopBeforeSelectedTime.pop_2) {
+      popupDiv.appendChild(
+        document.createTextNode(`${lastPopBeforeSelectedTime.pop_2}`)
+      );
+      popupDiv.appendChild(document.createElement('br'));
+    }
+
+    circle.bindPopup(popupDiv);
+    circle.bindTooltip(`${station.stationId}`);
+  };
+
+  const getLastPopulationRecordBeforeSelectedDate = function (
+    station,
+    dateSliderValue
+  ) {
+    // find last poulation record before selected data of slider
+    // console.log(`station: ${station.stationId}`);
+    let lastRecordPosition;
+    let lastRecordedDatePop;
+    let lastPopBeforeSelectedTime;
+
+    for (const ts of station.sortedDatesPop) {
+      if (ts < dateSliderValue) {
+        continue;
+      } else if (ts === dateSliderValue) {
+        lastRecordPosition = station.sortedDatesPop.indexOf(ts);
+        lastRecordedDatePop = station.sortedDatesPop[lastRecordPosition];
+        lastPopBeforeSelectedTime = station.populationDate[lastRecordedDatePop];
+        break;
+      } else {
+        // if ts > dateSliderValue but also only value? -> do not show marker
+        if (station.sortedDatesPop.length === 1) break;
+
+        lastRecordPosition = station.sortedDatesPop.indexOf(ts) - 1;
+        lastRecordedDatePop = station.sortedDatesPop[lastRecordPosition];
+        lastPopBeforeSelectedTime =
+          station.populationDate[station.sortedDatesPop[lastRecordPosition]];
+
+        break;
+      }
+    }
+
+    return [lastRecordedDatePop, lastPopBeforeSelectedTime];
+  };
+
+  const getLastRecordBeforeSelectedDate = function (station, dateSliderValue) {
+    // find last record before selected data of slider
+    let lastRecordPosition;
+    let lastRecordedDate;
+    let lastPersonsBeforeSelectedTime;
+    for (const ts of station.sortedDates) {
+      if (ts < dateSliderValue) {
+        continue;
+      } else if (ts === dateSliderValue) {
+        lastRecordPosition = station.sortedDates.indexOf(ts);
+        lastRecordedDate = station.sortedDates[lastRecordPosition];
+        lastPersonsBeforeSelectedTime =
+          station.personsAggregatedDate[
+            station.sortedDates[lastRecordPosition]
+          ];
+        break;
+      } else {
+        // if ts > dateSliderValue but also only value? -> do not show marker
+        if (station.sortedDates.length === 1) break;
+
+        lastRecordPosition = station.sortedDates.indexOf(ts) - 1;
+        lastRecordedDate = station.sortedDates[lastRecordPosition];
+        lastPersonsBeforeSelectedTime =
+          station.personsAggregatedDate[
+            station.sortedDates[lastRecordPosition]
+          ];
+        break;
+      }
+    }
+
+    return [lastRecordedDate, lastPersonsBeforeSelectedTime];
+  };
+
+  const createStationMarkersDate = function (stations) {
+    // console.log("Attempting to add " + Object.keys(stations).length + " markers")
+    const pop1Markers = [];
+    const pop2Markers = [];
+
+    for (const key of Object.keys(stations)) {
+      if (!key) continue;
+      if (stations.hasOwnProperty(key)) {
+        const station = stations[key];
+
+        const [lastRecordedDatePop, lastPopBeforeSelectedTime] =
+          getLastPopulationRecordBeforeSelectedDate(
+            station,
+            props.dateSliderValue
+          );
+
+        if (lastPopBeforeSelectedTime.pop_1) {
+          // only create marker if data is present
+          const circle = createCircleMarker(
+            station,
+            lastPopBeforeSelectedTime.pop_1,
+            placesStore.minPopulationCountAllStations,
+            'blue',
+            false,
+            true
+          );
+          createPopUpAndTooltip(
+            circle,
+            station,
+            lastRecordedDatePop,
+            lastPopBeforeSelectedTime
+          );
+          pop1Markers.push(circle);
+        }
+
+        if (lastPopBeforeSelectedTime.pop_2) {
+          // only create marker if data is present
+          const circle = createCircleMarker(
+            station,
+            lastPopBeforeSelectedTime.pop_2,
+            placesStore.minPopulationCountAllStations,
+            'red',
+            true,
+            false
+          );
+          createPopUpAndTooltip(
+            circle,
+            station,
+            lastRecordedDatePop,
+            lastPopBeforeSelectedTime
+          );
+          pop2Markers.push(circle);
+        }
+      }
+    }
+
+    const filteredByNamesPop1 = filterByStationId(
+      selectedValues.value,
+      pop1Markers
+    );
+    popLayer1 = L.layerGroup(filteredByNamesPop1);
+    currentPop1Markers = pop1Markers;
+    popLayer1.addTo(props.map);
+
+    const filteredByNamesPop2 = filterByStationId(
+      selectedValues.value,
+      pop2Markers
+    );
+    popLayer2 = L.layerGroup(filteredByNamesPop2);
+    currentPop2Markers = pop2Markers;
+    popLayer2.addTo(props.map);
+  };
+
+  const createCircleMarker = function (
+    station,
+    lastPopBeforeSelectedTime,
+    minPopulationCountAllStations,
+    customColor = 'red',
+    fill = true,
+    stroke = true
+  ) {
+    let radiusScaled;
+    let strokeColor;
+    let fillColor;
+    if (lastPopBeforeSelectedTime) {
+      // we have data
+
+      if (lastPopBeforeSelectedTime === 0) {
+        // minimal value and 'negative' brushing for known values of zero
+        radiusScaled = 1;
+        strokeColor = 'grey';
+        fillColor = 'grey';
+      } else {
+        radiusScaled = scaleRadiusProportionalFlannery(
+          parseInt(lastPopBeforeSelectedTime),
+          minPopulationCountAllStations,
+          mapStore.markerBaseSizePopulation
+        );
+
+        strokeColor = customColor;
+        fillColor = customColor;
+      }
+
+      const circle = L.circleMarker([station.lat, station.long], {
+        stroke: stroke,
+        color: strokeColor,
+        weight: 0.5,
+        fill: fill,
+        fillColor: fillColor,
+        fillOpacity: 0.2,
+        radius: radiusScaled / (20 - props.map.getZoom()),
+      });
+
+      circle.data = { stationId: station.stationId, persons: station.persons };
+
+      return circle;
+    } else {
+      console.warn('Called createCircleMarker without data!');
+      return undefined;
+    }
+  };
+
+  watch(
+    () => props.dateSliderValue,
+    () => {
+      // console.log('triggered watch for date slider!')
+      // console.log(`selected date: ${dateSliderValue} = ${new Date(dateSliderValue).toDateString()}`)
+      if (currentPop1Markers && currentPop2Markers && popLayer1 && popLayer2) {
+        if (popLayer1) popLayer1.clearLayers();
+        if (popLayer2) popLayer2.clearLayers();
+
+        createStationMarkersDate(placesStore.stations, props.map);
+        showPopulationLayer(popLayer1, popLayer2, props.map);
+      }
+    }
+  );
+
+  const onSelectedNamesUpdate = function (
+    selectedValues,
+    pop1Markers,
+    pop2Markers
+  ) {
+    // console.log('On selected names update:');
+    // console.log(selectedValues); // !!! selectedValues comes from template here, can access directly not via .value
+
+    // clear pre-selection prop in map component to avoid pre-selection being active next time
+    // a user navigates here via tabs
+    emit('place-pre-selection-cleared');
+    if (pop1Markers && pop2Markers && popLayer1 && popLayer2) {
+      popLayer1.clearLayers();
+      popLayer2.clearLayers();
+
+      const filteredByNamesPop1 = filterByStationId(
+        selectedValues,
+        pop1Markers
+      );
+      filteredByNamesPop1.forEach((marker) => marker.addTo(popLayer1));
+
+      const filteredByNamesPop2 = filterByStationId(
+        selectedValues,
+        pop2Markers
+      );
+      filteredByNamesPop2.forEach((marker) => marker.addTo(popLayer2));
+    }
+  };
+
+  const showPopulationLayer = function (popLayer1, popLayer2, map) {
+    popLayer1.addTo(map);
+    popLayer2.addTo(map);
+  };
+
+  const hidePopulationLayer = function (popLayer1, popLayer2, map) {
+    popLayer1.removeFrom(map);
+    popLayer2.removeFrom(map);
+  };
+
+  onMounted(async () => {
+    // console.log('Places view map prop: ');
+    // console.log(props.map);
+    // console.log('pathToDataFile: ' + placesStore.pathToDataFile)
+    await placesStore.readData(
+      placesStore.pathToDataFilePlaces,
+      placesStore.pathToDataFilePersonsPlaces,
+      placesStore.pathToDataFilePopulationPlaces
+    );
+    console.log(placesStore.stations);
+
+    if (currentPop1Markers === undefined && currentPop2Markers === undefined)
+      createStationMarkersDate(placesStore.stations, props.map);
+    nameList.value = Array.from(Object.keys(placesStore.stations));
+
+    showPopulationLayer(popLayer1, popLayer2, props.map);
+  });
+
+  onUnmounted(() => {
+    hidePopulationLayer(popLayer1, popLayer2, props.map);
+  });
+</script>
+<template>
+  <v-container>
+    <SearchField
+      v-model="selectedValues"
+      @update:modelValue="
+        onSelectedNamesUpdate(
+          selectedValues,
+          currentPop1Markers,
+          currentPop2Markers
+        )
+      "
+      :v-if="nameList.length > 0"
+      :facet="facetName"
+      :facetData="nameList"
+    />
+    <p>{{ selectedValues }}</p>
+  </v-container>
+</template>
