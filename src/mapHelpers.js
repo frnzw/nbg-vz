@@ -1,5 +1,5 @@
 import L from 'leaflet';
-import { useMapStore } from './stores/mapStore';
+// import { useMapStore } from './stores/mapStore';
 
 export const showLayer = function (layergroup, map) {
   layergroup.addTo(map);
@@ -120,57 +120,50 @@ export const getStationsLastRecordBeforeSelectedDate = function (
 
 export const createCircleMarker = function (
   station,
-  lastPersonsBeforeSelectedTime,
-  minPersonnelCountAllStations
+  lastPopBeforeSelectedTime,
+  minPopulationCountAllStations,
+  customColor = 'red',
+  fill = true,
+  stroke = true,
+  baseRadius = 1,
+  scaleToZoom = null
 ) {
-  const mapStore = useMapStore();
   let radiusScaled;
   let strokeColor;
   let fillColor;
-  if (lastPersonsBeforeSelectedTime) {
+  if (lastPopBeforeSelectedTime) {
     // we have data
 
-    if (lastPersonsBeforeSelectedTime.length === 0) {
+    if (lastPopBeforeSelectedTime === 0) {
       // minimal value and 'negative' brushing for known values of zero
       radiusScaled = 1;
       strokeColor = 'grey';
       fillColor = 'grey';
     } else {
       radiusScaled = scaleRadiusProportionalFlannery(
-        parseInt(lastPersonsBeforeSelectedTime.count),
-        minPersonnelCountAllStations,
-        mapStore.markerBaseSizePersonnel
+        parseInt(lastPopBeforeSelectedTime),
+        minPopulationCountAllStations,
+        baseRadius
       );
 
-      // radiusScaled = scaleRadiusProportional(
-      //   parseInt(lastPersonsBeforeSelectedTime.count),
-      //   minPersonnelCountAllStations,
-      //   mapStore.markerBaseSizePersonnel
-      // );
-
-      strokeColor = 'red';
-      fillColor = '#f03';
+      strokeColor = customColor;
+      fillColor = customColor;
     }
 
-    // console.log('radius scaled: ' + radiusScaled);
     const circle = L.circleMarker([station.lat, station.long], {
+      stroke: stroke,
       color: strokeColor,
       weight: 0.5,
+      fill: fill,
       fillColor: fillColor,
-      fillOpacity: 0.5,
-      radius: radiusScaled,
+      fillOpacity: 0.2,
+      radius: scaleToZoom ? radiusScaled / (20 - scaleToZoom) : radiusScaled,
     });
 
-    circle.data = {
-      stationId: station.stationId,
-      persCount: lastPersonsBeforeSelectedTime
-        ? lastPersonsBeforeSelectedTime.count
-        : 0,
-    };
+    circle.data = { stationId: station.stationId, persons: station.persons };
 
     return circle;
   } else {
-    console.log(`station: ${station.stationId}`);
     console.warn('Called createCircleMarker without data!');
     return undefined;
   }

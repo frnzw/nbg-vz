@@ -1,6 +1,7 @@
 <script setup>
   import L from 'leaflet';
   import { usePlacesStore } from '../stores/placesStore';
+  import { useMapStore } from '../stores/mapStore';
   import {
     createCircleMarker,
     createPersonViewLinkAndIcon,
@@ -14,6 +15,7 @@
   import SearchField from './SearchField.vue';
 
   const placesStore = usePlacesStore();
+  const mapStore = useMapStore();
 
   const props = defineProps({
     map: Object,
@@ -128,8 +130,13 @@
           // only create marker if data is present
           const circle = createCircleMarker(
             station,
-            lastPersonsBeforeSelectedTime,
-            placesStore.minPersonnelCountAllStations
+            lastPersonsBeforeSelectedTime.count,
+            placesStore.minPersonnelCountAllStations,
+            'red',
+            true,
+            true,
+            mapStore.markerBaseSizePersonnel,
+            null
           );
           createPopUpAndTooltip(
             circle,

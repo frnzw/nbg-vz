@@ -3,7 +3,7 @@
   import { useMapStore } from '../stores/mapStore.js';
   import { usePlacesStore } from '../stores/placesStore.js';
   import {
-    scaleRadiusProportionalFlannery,
+    createCircleMarker,
     filterByStationId,
     showLayer,
     hideLayer,
@@ -99,7 +99,9 @@
             placesStore.minPopulationCountAllStations,
             'blue',
             false,
-            true
+            true,
+            mapStore.markerBaseSizePopulation,
+            props.map.getZoom()
           );
           createPopUpAndTooltip(
             circle,
@@ -118,7 +120,9 @@
             placesStore.minPopulationCountAllStations,
             'red',
             true,
-            false
+            false,
+            mapStore.markerBaseSizePopulation,
+            props.map.getZoom()
           );
           createPopUpAndTooltip(
             circle,
@@ -146,55 +150,6 @@
     popLayer2 = L.layerGroup(filteredByNamesPop2);
     currentPop2Markers = pop2Markers;
     popLayer2.addTo(props.map);
-  };
-
-  const createCircleMarker = function (
-    station,
-    lastPopBeforeSelectedTime,
-    minPopulationCountAllStations,
-    customColor = 'red',
-    fill = true,
-    stroke = true
-  ) {
-    let radiusScaled;
-    let strokeColor;
-    let fillColor;
-    if (lastPopBeforeSelectedTime) {
-      // we have data
-
-      if (lastPopBeforeSelectedTime === 0) {
-        // minimal value and 'negative' brushing for known values of zero
-        radiusScaled = 1;
-        strokeColor = 'grey';
-        fillColor = 'grey';
-      } else {
-        radiusScaled = scaleRadiusProportionalFlannery(
-          parseInt(lastPopBeforeSelectedTime),
-          minPopulationCountAllStations,
-          mapStore.markerBaseSizePopulation
-        );
-
-        strokeColor = customColor;
-        fillColor = customColor;
-      }
-
-      const circle = L.circleMarker([station.lat, station.long], {
-        stroke: stroke,
-        color: strokeColor,
-        weight: 0.5,
-        fill: fill,
-        fillColor: fillColor,
-        fillOpacity: 0.2,
-        radius: radiusScaled / (20 - props.map.getZoom()),
-      });
-
-      circle.data = { stationId: station.stationId, persons: station.persons };
-
-      return circle;
-    } else {
-      console.warn('Called createCircleMarker without data!');
-      return undefined;
-    }
   };
 
   watch(
@@ -242,16 +197,6 @@
       filteredByNamesPop2.forEach((marker) => marker.addTo(popLayer2));
     }
   };
-
-  // const showPopulationLayer = function (popLayer1, popLayer2, map) {
-  //   popLayer1.addTo(map);
-  //   popLayer2.addTo(map);
-  // };
-
-  // const hidePopulationLayer = function (popLayer1, popLayer2, map) {
-  //   popLayer1.removeFrom(map);
-  //   popLayer2.removeFrom(map);
-  // };
 
   onMounted(async () => {
     // console.log('Places view map prop: ');

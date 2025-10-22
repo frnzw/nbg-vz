@@ -177,8 +177,13 @@
     if (lastPersonsBeforeSelectedTime) {
       const circle = createCircleMarker(
         station,
-        lastPersonsBeforeSelectedTime,
-        placesStore.minPersonnelCountAllStations
+        lastPersonsBeforeSelectedTime.count,
+        placesStore.minPersonnelCountAllStations,
+        'red',
+        true,
+        true,
+        mapStore.markerBaseSizePersonnel,
+        null
       );
 
       createPopUpAndTooltip(
