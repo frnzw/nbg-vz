@@ -302,14 +302,6 @@
     );
   }
 
-  const updatePlaceMarkerRadius = function (persCount) {
-    if (persCount === 0) {
-      return mapStore.markerBaseSize;
-    } else {
-      return mapStore.markerBaseSize * persCount * (20 - props.map.getZoom());
-    }
-  };
-
   const createNativeMovingMarker = async function (
     markerStart,
     markerEnd,
@@ -543,22 +535,23 @@
       await Promise.all(animateMarkerPromises);
 
       console.log('animations finished!');
+      placeLayer.clearLayers();
+      createStationMarkersDate(placesStore.stations, props.map);
+      // for (const key of Object.keys(placesStore.stations)) {
+      //   if (!key) continue;
+      //   const station = placesStore.stations[key];
 
-      for (const key of Object.keys(placesStore.stations)) {
-        if (!key) continue;
-        const station = placesStore.stations[key];
+      //   const [lastRecordedDate, lastPersonsBeforeSelectedTime] =
+      //     getStationsLastRecordBeforeSelectedDate(
+      //       station,
+      //       props.dateSliderValue,
+      //       'sortedDates',
+      //       'personsAggregatedDate'
+      //     );
 
-        const [lastRecordedDate, lastPersonsBeforeSelectedTime] =
-          getStationsLastRecordBeforeSelectedDate(
-            station,
-            props.dateSliderValue,
-            'sortedDates',
-            'personsAggregatedDate'
-          );
-
-        placeLayer.clearLayers();
-        createStationMarkersDate(placesStore.stations, props.map);
-      }
+      //   placeLayer.clearLayers();
+      //   createStationMarkersDate(placesStore.stations, props.map);
+      // }
     }
   );
 </script>
