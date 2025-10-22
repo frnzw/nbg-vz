@@ -9,19 +9,49 @@ export const hideLayer = function (layergroup, map) {
   layergroup.removeFrom(map);
 };
 
-export const createPersonViewLinkAndIcon = function (persId, emit) {
+export const createEmitButtonWithIcon = function (
+  value,
+  title,
+  iconClass,
+  eventName,
+  emitFn
+) {
   const button = document.createElement('button');
   button.style.color = '#0078A8';
   button.style.textDecoration = 'underline';
-  button.title = 'View Person in Person View';
-  button.textContent = `${persId}`;
+  button.title = title;
+  button.textContent = `${value}`;
   button.onclick = async function () {
-    emit('person-selected', persId);
+    emitFn(eventName, value);
   };
 
   const icon = document.createElement('i');
-  icon.classList.add('mdi', 'mdi-account-outline');
+  icon.classList.add('mdi', iconClass);
   icon.style.paddingLeft = '3px';
+
+  return [button, icon];
+};
+
+export const createPersonViewLinkAndIcon = function (persId, emitFn) {
+  const [button, icon] = createEmitButtonWithIcon(
+    persId,
+    'View Person in Person View',
+    'mdi-account-outline',
+    'person-selected',
+    emitFn
+  );
+
+  return [button, icon];
+};
+
+export const createPlaceViewLinkAndIcon = function (stationId, emitFn) {
+  const [button, icon] = createEmitButtonWithIcon(
+    stationId,
+    'View Place in Place View',
+    'mdi-map-marker',
+    'place-selected',
+    emitFn
+  );
 
   return [button, icon];
 };

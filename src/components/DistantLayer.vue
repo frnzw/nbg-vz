@@ -6,6 +6,7 @@
   import {
     createCircleMarker,
     createPersonViewLinkAndIcon,
+    createPlaceViewLinkAndIcon,
     getStationsLastRecordBeforeSelectedDate,
     scaleRadiusProportionalFlannery,
     showLayer,
@@ -127,30 +128,13 @@
 
   // ----------------- Marker and Popup Creation -------------------------
 
-  const createPlaceViewLinkAndIcon = function (stationId) {
-    const button = document.createElement('button');
-    button.style.color = '#0078A8';
-    button.style.textDecoration = 'underline';
-    button.title = 'View Place in Place View';
-    button.textContent = `${stationId}`;
-    button.onclick = async function () {
-      emit('place-selected', stationId);
-    };
-
-    const icon = document.createElement('i');
-    icon.classList.add('mdi', 'mdi-map-marker');
-    icon.style.paddingLeft = '3px';
-
-    return [button, icon];
-  };
-
   const createPopUpAndTooltip = function (
     circle,
     station,
     lastRecordedDate,
     lastPersonsBeforeSelectedTime
   ) {
-    const [button, icon] = createPlaceViewLinkAndIcon(station.stationId);
+    const [button, icon] = createPlaceViewLinkAndIcon(station.stationId, emit);
     const heading = document.createElement('h3');
     heading.appendChild(button);
     heading.appendChild(icon);
