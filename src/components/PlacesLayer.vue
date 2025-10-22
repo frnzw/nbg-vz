@@ -7,6 +7,8 @@
     createWikidataLinkAndIcon,
     getStationsLastRecordBeforeSelectedDate,
     filterByStationId,
+    showLayer,
+    hideLayer,
   } from '../mapHelpers.js';
   import { onMounted, ref, defineProps, onUnmounted, watch } from 'vue';
   import SearchField from './SearchField.vue';
@@ -158,7 +160,7 @@
         if (placeLayer) placeLayer.clearLayers();
 
         createStationMarkersDate(placesStore.stations, props.map);
-        showPlacesLayer(placeLayer, props.map);
+        showLayer(placeLayer, props.map);
       }
     }
   );
@@ -179,13 +181,13 @@
     }
   };
 
-  const showPlacesLayer = function (layergroup, map) {
-    layergroup.addTo(map);
-  };
+  // const showPlacesLayer = function (layergroup, map) {
+  //   layergroup.addTo(map);
+  // };
 
-  const hidePlacesLayer = function (layergroup, map) {
-    if (layergroup) layergroup.removeFrom(map);
-  };
+  // const hidePlacesLayer = function (layergroup, map) {
+  //   if (layergroup) layergroup.removeFrom(map);
+  // };
 
   onMounted(async () => {
     // console.log('Places view test prop: ' + props.test);
@@ -206,11 +208,11 @@
 
     nameList.value = Array.from(Object.keys(placesStore.stations));
 
-    showPlacesLayer(placeLayer, props.map);
+    showLayer(placeLayer, props.map);
   });
 
   onUnmounted(() => {
-    hidePlacesLayer(placeLayer, props.map);
+    hideLayer(placeLayer, props.map);
   });
 </script>
 <template>

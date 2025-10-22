@@ -1,6 +1,14 @@
 import L from 'leaflet';
 import { useMapStore } from './stores/mapStore';
 
+export const showLayer = function (layergroup, map) {
+  layergroup.addTo(map);
+};
+
+export const hideLayer = function (layergroup, map) {
+  layergroup.removeFrom(map);
+};
+
 export const createPersonViewLinkAndIcon = function (persId, emit) {
   const button = document.createElement('button');
   button.style.color = '#0078A8';

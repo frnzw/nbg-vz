@@ -5,6 +5,8 @@
   import {
     scaleRadiusProportionalFlannery,
     filterByStationId,
+    showLayer,
+    hideLayer,
   } from '../mapHelpers.js';
   import { onMounted, ref, defineProps, onUnmounted, watch } from 'vue';
   import SearchField from './SearchField.vue';
@@ -236,7 +238,9 @@
         if (popLayer2) popLayer2.clearLayers();
 
         createStationMarkersDate(placesStore.stations, props.map);
-        showPopulationLayer(popLayer1, popLayer2, props.map);
+        // showPopulationLayer(popLayer1, popLayer2, props.map);
+        showLayer(popLayer1, props.map);
+        showLayer(popLayer2, props.map);
       }
     }
   );
@@ -270,15 +274,15 @@
     }
   };
 
-  const showPopulationLayer = function (popLayer1, popLayer2, map) {
-    popLayer1.addTo(map);
-    popLayer2.addTo(map);
-  };
+  // const showPopulationLayer = function (popLayer1, popLayer2, map) {
+  //   popLayer1.addTo(map);
+  //   popLayer2.addTo(map);
+  // };
 
-  const hidePopulationLayer = function (popLayer1, popLayer2, map) {
-    popLayer1.removeFrom(map);
-    popLayer2.removeFrom(map);
-  };
+  // const hidePopulationLayer = function (popLayer1, popLayer2, map) {
+  //   popLayer1.removeFrom(map);
+  //   popLayer2.removeFrom(map);
+  // };
 
   onMounted(async () => {
     // console.log('Places view map prop: ');
@@ -295,11 +299,15 @@
       createStationMarkersDate(placesStore.stations, props.map);
     nameList.value = Array.from(Object.keys(placesStore.stations));
 
-    showPopulationLayer(popLayer1, popLayer2, props.map);
+    // showPopulationLayer(popLayer1, popLayer2, props.map);
+    showLayer(popLayer1, props.map);
+    showLayer(popLayer2, props.map);
   });
 
   onUnmounted(() => {
-    hidePopulationLayer(popLayer1, popLayer2, props.map);
+    // hidePopulationLayer(popLayer1, popLayer2, props.map);
+    hideLayer(popLayer1, props.map);
+    hideLayer(popLayer2, props.map);
   });
 </script>
 <template>

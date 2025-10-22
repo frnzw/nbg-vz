@@ -8,6 +8,8 @@
     createPersonViewLinkAndIcon,
     getStationsLastRecordBeforeSelectedDate,
     scaleRadiusProportionalFlannery,
+    showLayer,
+    hideLayer,
   } from '../mapHelpers.js';
   import { onMounted, watch, defineProps, onUnmounted } from 'vue';
 
@@ -178,63 +180,6 @@
     circle.bindPopup(popupDiv);
     circle.bindTooltip(`${station.stationId}`);
   };
-
-  // const createCircleMarker = function (
-  //   station,
-  //   lastPersonsBeforeSelectedTime,
-  //   minPersonnelCountAllStations
-  // ) {
-  //   let radiusScaled;
-  //   let strokeColor;
-  //   let fillColor;
-  //   if (lastPersonsBeforeSelectedTime) {
-  //     // we have data
-
-  //     if (lastPersonsBeforeSelectedTime.length === 0) {
-  //       // minimal value and 'negative' brushing for known values of zero
-  //       radiusScaled = 1;
-  //       strokeColor = 'grey';
-  //       fillColor = 'grey';
-  //     } else {
-  //       radiusScaled = scaleRadiusProportionalFlannery(
-  //         parseInt(lastPersonsBeforeSelectedTime.count),
-  //         minPersonnelCountAllStations,
-  //         mapStore.markerBaseSizePersonnel
-  //       );
-
-  //       // radiusScaled = scaleRadiusProportional(
-  //       //   parseInt(lastPersonsBeforeSelectedTime.count),
-  //       //   minPersonnelCountAllStations,
-  //       //   mapStore.markerBaseSizePersonnel
-  //       // );
-
-  //       strokeColor = 'red';
-  //       fillColor = '#f03';
-  //     }
-
-  //     // console.log('radius scaled: ' + radiusScaled);
-  //     const circle = L.circleMarker([station.lat, station.long], {
-  //       color: strokeColor,
-  //       weight: 0.5,
-  //       fillColor: fillColor,
-  //       fillOpacity: 0.5,
-  //       radius: radiusScaled,
-  //     });
-
-  //     circle.data = {
-  //       stationId: station.stationId,
-  //       persCount: lastPersonsBeforeSelectedTime
-  //         ? lastPersonsBeforeSelectedTime.count
-  //         : 0,
-  //     };
-
-  //     return circle;
-  //   } else {
-  //     console.log(`station: ${station.stationId}`);
-  //     console.warn('Called createCircleMarker without data!');
-  //     return undefined;
-  //   }
-  // };
 
   const createStationMarker = function (station) {
     const [lastRecordedDate, lastPersonsBeforeSelectedTime] =
@@ -428,13 +373,6 @@
   };
 
   // ----------------- Lifecycle Functions -------------------------
-  const showPlacesLayer = function (layergroup, map) {
-    layergroup.addTo(map);
-  };
-
-  const hidePlacesLayer = function (layergroup, map) {
-    layergroup.removeFrom(map);
-  };
 
   onMounted(async () => {
     console.log('RENDERED DISTANT LAYER');
@@ -458,10 +396,10 @@
     if (allPlaceMarkers === undefined)
       createStationMarkersDate(placesStore.stations, props.map);
 
-    showPlacesLayer(placeLayer, props.map);
+    showLayer(placeLayer, props.map);
   });
 
-  onUnmounted(() => hidePlacesLayer(placeLayer, props.map));
+  onUnmounted(() => hideLayer(placeLayer, props.map));
 
   watch(
     () => props.dateSliderValue,
@@ -489,7 +427,7 @@
         newDateSliderValue < oldDateSliderValue
       ) {
         console.log('Stepped OUT data range: BEFORE!');
-        hidePlacesLayer(placeLayer, props.map);
+        hideLayer(placeLayer, props.map);
       }
 
       const animateMarkerPromises = [];
