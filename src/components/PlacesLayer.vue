@@ -1,12 +1,12 @@
 <script setup>
   import L from 'leaflet';
-  import { useMapStore } from '../stores/mapStore';
   import { usePlacesStore } from '../stores/placesStore';
   import {
     createCircleMarker,
     createPersonViewLinkAndIcon,
     createWikidataLinkAndIcon,
     getStationsLastRecordBeforeSelectedDate,
+    filterByStationId,
   } from '../mapHelpers.js';
   import { onMounted, ref, defineProps, onUnmounted, watch } from 'vue';
   import SearchField from './SearchField.vue';
@@ -147,19 +147,6 @@
     placeLayer.addTo(props.map);
 
     // console.log('markers added to layergroup')
-  };
-
-  const filterByStationId = function (selectedValues, placeMarkers) {
-    const filteredByNamesPlaces =
-      selectedValues.length == 0
-        ? placeMarkers
-        : placeMarkers.filter((marker) =>
-            selectedValues.includes(marker.data.stationId)
-          );
-    // console.log(filteredByNames)
-    // console.log(`Filtered markers by names ${selectedValues}: ${filteredByNames.length}`)
-
-    return filteredByNamesPlaces;
   };
 
   watch(
