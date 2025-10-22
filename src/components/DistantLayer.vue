@@ -167,7 +167,12 @@
 
   const createStationMarker = function (station) {
     const [lastRecordedDate, lastPersonsBeforeSelectedTime] =
-      getStationsLastRecordBeforeSelectedDate(station, props.dateSliderValue);
+      getStationsLastRecordBeforeSelectedDate(
+        station,
+        props.dateSliderValue,
+        'sortedDates',
+        'personsAggregatedDate'
+      );
 
     if (lastPersonsBeforeSelectedTime) {
       const circle = createCircleMarker(
@@ -541,7 +546,9 @@
         const [lastRecordedDate, lastPersonsBeforeSelectedTime] =
           getStationsLastRecordBeforeSelectedDate(
             station,
-            props.dateSliderValue
+            props.dateSliderValue,
+            'sortedDates',
+            'personsAggregatedDate'
           );
 
         placeLayer.clearLayers();

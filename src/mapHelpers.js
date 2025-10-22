@@ -85,29 +85,29 @@ export const filterByStationId = function (selectedValues, placeMarkers) {
 
 export const getStationsLastRecordBeforeSelectedDate = function (
   station,
-  dateSliderValue
+  dateSliderValue,
+  datesSortedKey,
+  dataMapKey
 ) {
   // find last record before selected data of slider
   let lastRecordPosition;
   let lastRecordedDate;
-  let lastPersonsBeforeSelectedTime;
-  for (const ts of station.sortedDates) {
+  let lastRecordBeforeSelectedTime;
+  for (const ts of station[datesSortedKey]) {
     if (ts < dateSliderValue) {
       continue;
     } else if (ts === dateSliderValue) {
-      lastRecordPosition = station.sortedDates.indexOf(ts);
-      lastRecordedDate = station.sortedDates[lastRecordPosition];
-      lastPersonsBeforeSelectedTime =
-        station.personsAggregatedDate[station.sortedDates[lastRecordPosition]];
+      lastRecordPosition = station[datesSortedKey].indexOf(ts);
+      lastRecordedDate = station[datesSortedKey][lastRecordPosition];
+      lastRecordBeforeSelectedTime = station[dataMapKey][lastRecordedDate];
       break;
     } else {
       // if ts > dateSliderValue but also only value? -> do not show marker
-      if (station.sortedDates.length === 1) break;
+      if (station[datesSortedKey].length === 1) break;
       // found a date > selected value -> select the date before
-      lastRecordPosition = station.sortedDates.indexOf(ts) - 1;
-      lastRecordedDate = station.sortedDates[lastRecordPosition];
-      lastPersonsBeforeSelectedTime =
-        station.personsAggregatedDate[station.sortedDates[lastRecordPosition]];
+      lastRecordPosition = station[datesSortedKey].indexOf(ts) - 1;
+      lastRecordedDate = station[datesSortedKey][lastRecordPosition];
+      lastRecordBeforeSelectedTime = station[dataMapKey][lastRecordedDate];
 
       break;
     }
@@ -115,7 +115,7 @@ export const getStationsLastRecordBeforeSelectedDate = function (
 
   // all recorded dates are smaller than selected date -> show no data
 
-  return [lastRecordedDate, lastPersonsBeforeSelectedTime];
+  return [lastRecordedDate, lastRecordBeforeSelectedTime];
 };
 
 export const createCircleMarker = function (

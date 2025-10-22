@@ -7,6 +7,7 @@
     filterByStationId,
     showLayer,
     hideLayer,
+    getStationsLastRecordBeforeSelectedDate,
   } from '../mapHelpers.js';
   import { onMounted, ref, defineProps, onUnmounted, watch } from 'vue';
   import SearchField from './SearchField.vue';
@@ -72,40 +73,6 @@
     circle.bindTooltip(`${station.stationId}`);
   };
 
-  const getLastPopulationRecordBeforeSelectedDate = function (
-    station,
-    dateSliderValue
-  ) {
-    // find last poulation record before selected data of slider
-    // console.log(`station: ${station.stationId}`);
-    let lastRecordPosition;
-    let lastRecordedDatePop;
-    let lastPopBeforeSelectedTime;
-
-    for (const ts of station.sortedDatesPop) {
-      if (ts < dateSliderValue) {
-        continue;
-      } else if (ts === dateSliderValue) {
-        lastRecordPosition = station.sortedDatesPop.indexOf(ts);
-        lastRecordedDatePop = station.sortedDatesPop[lastRecordPosition];
-        lastPopBeforeSelectedTime = station.populationDate[lastRecordedDatePop];
-        break;
-      } else {
-        // if ts > dateSliderValue but also only value? -> do not show marker
-        if (station.sortedDatesPop.length === 1) break;
-
-        lastRecordPosition = station.sortedDatesPop.indexOf(ts) - 1;
-        lastRecordedDatePop = station.sortedDatesPop[lastRecordPosition];
-        lastPopBeforeSelectedTime =
-          station.populationDate[station.sortedDatesPop[lastRecordPosition]];
-
-        break;
-      }
-    }
-
-    return [lastRecordedDatePop, lastPopBeforeSelectedTime];
-  };
-
   const createStationMarkersDate = function (stations) {
     // console.log("Attempting to add " + Object.keys(stations).length + " markers")
     const pop1Markers = [];
@@ -117,9 +84,11 @@
         const station = stations[key];
 
         const [lastRecordedDatePop, lastPopBeforeSelectedTime] =
-          getLastPopulationRecordBeforeSelectedDate(
+          getStationsLastRecordBeforeSelectedDate(
             station,
-            props.dateSliderValue
+            props.dateSliderValue,
+            'sortedDatesPop',
+            'populationDate'
           );
 
         if (lastPopBeforeSelectedTime.pop_1) {

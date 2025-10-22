@@ -159,8 +159,10 @@ export const usePlacesStore = defineStore('places', () => {
           region: station.region,
           yFounded: station.yFounded,
           yRenewed: station.yRenewed,
+
           personsAggregatedDate: personsAggregatedDate, //
           sortedDates: sortedDates,
+
           populationDate: populationDate,
           sortedDatesPop: sortedDatesPop,
         };

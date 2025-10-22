@@ -119,7 +119,9 @@
         const [lastRecordedDate, lastPersonsBeforeSelectedTime] =
           getStationsLastRecordBeforeSelectedDate(
             station,
-            props.dateSliderValue
+            props.dateSliderValue,
+            'sortedDates',
+            'personsAggregatedDate'
           );
 
         if (lastPersonsBeforeSelectedTime) {
