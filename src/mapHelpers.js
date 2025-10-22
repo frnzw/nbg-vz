@@ -1,3 +1,6 @@
+import L from 'leaflet';
+import { useMapStore } from './stores/mapStore';
+
 export const createPersonViewLinkAndIcon = function (persId, emit) {
   const button = document.createElement('button');
   button.style.color = '#0078A8';
@@ -75,6 +78,64 @@ export const getStationsLastRecordBeforeSelectedDate = function (
   // all recorded dates are smaller than selected date -> show no data
 
   return [lastRecordedDate, lastPersonsBeforeSelectedTime];
+};
+
+export const createCircleMarker = function (
+  station,
+  lastPersonsBeforeSelectedTime,
+  minPersonnelCountAllStations
+) {
+  const mapStore = useMapStore();
+  let radiusScaled;
+  let strokeColor;
+  let fillColor;
+  if (lastPersonsBeforeSelectedTime) {
+    // we have data
+
+    if (lastPersonsBeforeSelectedTime.length === 0) {
+      // minimal value and 'negative' brushing for known values of zero
+      radiusScaled = 1;
+      strokeColor = 'grey';
+      fillColor = 'grey';
+    } else {
+      radiusScaled = scaleRadiusProportionalFlannery(
+        parseInt(lastPersonsBeforeSelectedTime.count),
+        minPersonnelCountAllStations,
+        mapStore.markerBaseSizePersonnel
+      );
+
+      // radiusScaled = scaleRadiusProportional(
+      //   parseInt(lastPersonsBeforeSelectedTime.count),
+      //   minPersonnelCountAllStations,
+      //   mapStore.markerBaseSizePersonnel
+      // );
+
+      strokeColor = 'red';
+      fillColor = '#f03';
+    }
+
+    // console.log('radius scaled: ' + radiusScaled);
+    const circle = L.circleMarker([station.lat, station.long], {
+      color: strokeColor,
+      weight: 0.5,
+      fillColor: fillColor,
+      fillOpacity: 0.5,
+      radius: radiusScaled,
+    });
+
+    circle.data = {
+      stationId: station.stationId,
+      persCount: lastPersonsBeforeSelectedTime
+        ? lastPersonsBeforeSelectedTime.count
+        : 0,
+    };
+
+    return circle;
+  } else {
+    console.log(`station: ${station.stationId}`);
+    console.warn('Called createCircleMarker without data!');
+    return undefined;
+  }
 };
 
 /**

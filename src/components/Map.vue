@@ -27,7 +27,6 @@
   let readyForPlaceView = ref(false);
   let readyForPopulationView = ref(false);
   let readyForTraceView = ref(false);
-  let readyForPersonView = ref(false);
   let readyForDistantView = ref(false);
 
   const personsSelectedFromPlace = ref([]);
@@ -61,40 +60,7 @@
   onMounted(() => {
     initMap();
 
-    if (mapReady) {
-      if (route.path === '/map/places') {
-        readyForPlaceView.value = true;
-
-        readyForPopulationView.value = false;
-        readyForPersonView.value = false;
-        readyForDistantView.value = false;
-        console.log('ready for place view');
-      } else if (route.path === '/map/population') {
-        readyForPopulationView.value = true;
-
-        readyForPersonView.value = false;
-        readyForPlaceView.value = false;
-        readyForDistantView.value = false;
-        console.log('ready for trace view');
-      } else if (route.path === '/map/persons') {
-        readyForPersonView.value = true;
-
-        readyForPlaceView.value = false;
-        readyForPopulationView.value = false;
-        readyForDistantView.value = false;
-        console.log('ready for person view');
-      } else if (route.path === '/map/distant') {
-        readyForDistantView.value = true;
-
-        readyForPersonView.value = false;
-        readyForPlaceView.value = false;
-        readyForPopulationView.value = false;
-      } else {
-        console.warn(
-          'map component initialized without proper sub route, no additional layers will be visible!'
-        );
-      }
-    }
+    prepareRenderingOfSubComponents();
   });
 
   const switchToPersonView = function (persId) {
@@ -119,28 +85,24 @@
     placesSelectedFromTrace.value = [];
   };
 
-  watch(route, () => {
-    console.log(
-      `route changed to ${route.path} with params ${JSON.stringify(route.query)}`
-    );
-
+  const prepareRenderingOfSubComponents = function () {
     if (mapReady) {
       if (route.path === '/map/places') {
         readyForPlaceView.value = true;
 
         readyForPopulationView.value = false;
-        readyForPersonView.value = false;
+        readyForTraceView.value = false;
         readyForDistantView.value = false;
         console.log('ready for place view');
       } else if (route.path === '/map/population') {
         readyForPopulationView.value = true;
 
-        readyForPersonView.value = false;
+        readyForTraceView.value = false;
         readyForPlaceView.value = false;
         readyForDistantView.value = false;
         console.log('ready for trace view');
-      } else if (route.path === '/map/persons') {
-        readyForPersonView.value = true;
+      } else if (route.path === '/map/traces') {
+        readyForTraceView.value = true;
 
         readyForPlaceView.value = false;
         readyForPopulationView.value = false;
@@ -149,7 +111,7 @@
       } else if (route.path === '/map/distant') {
         readyForDistantView.value = true;
 
-        readyForPersonView.value = false;
+        readyForTraceView.value = false;
         readyForPlaceView.value = false;
         readyForPopulationView.value = false;
       } else {
@@ -158,6 +120,13 @@
         );
       }
     }
+  };
+
+  watch(route, () => {
+    console.log(
+      `route changed to ${route.path} with params ${JSON.stringify(route.query)}`
+    );
+    prepareRenderingOfSubComponents();
   });
 </script>
 

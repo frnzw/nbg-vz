@@ -3,17 +3,15 @@
   import { useMapStore } from '../stores/mapStore';
   import { usePlacesStore } from '../stores/placesStore';
   import {
+    createCircleMarker,
     createPersonViewLinkAndIcon,
     createWikidataLinkAndIcon,
-    scaleRadiusProportional,
-    scaleRadiusProportionalFlannery,
     getStationsLastRecordBeforeSelectedDate,
   } from '../mapHelpers.js';
   import { onMounted, ref, defineProps, onUnmounted, watch } from 'vue';
   import SearchField from './SearchField.vue';
 
   const placesStore = usePlacesStore();
-  const mapStore = useMapStore();
 
   const props = defineProps({
     map: Object,
@@ -99,57 +97,6 @@
 
     circle.bindPopup(popupDiv);
     circle.bindTooltip(`${station.stationId}`);
-  };
-
-  const createCircleMarker = function (
-    station,
-    lastPersonsBeforeSelectedTime,
-    minPersonnelCountAllStations
-  ) {
-    let radiusScaled;
-    let strokeColor;
-    let fillColor;
-    if (lastPersonsBeforeSelectedTime) {
-      // we have data
-
-      if (lastPersonsBeforeSelectedTime.length === 0) {
-        // minimal value and 'negative' brushing for known values of zero
-        radiusScaled = 1;
-        strokeColor = 'grey';
-        fillColor = 'grey';
-      } else {
-        radiusScaled = scaleRadiusProportionalFlannery(
-          parseInt(lastPersonsBeforeSelectedTime.count),
-          minPersonnelCountAllStations,
-          mapStore.markerBaseSizePersonnel
-        );
-
-        // radiusScaled = scaleRadiusProportional(
-        //   parseInt(lastPersonsBeforeSelectedTime.count),
-        //   minPersonnelCountAllStations,
-        //   mapStore.markerBaseSizePersonnel
-        // );
-
-        strokeColor = 'red';
-        fillColor = '#f03';
-      }
-
-      // console.log('radius scaled: ' + radiusScaled);
-      const circle = L.circleMarker([station.lat, station.long], {
-        color: strokeColor,
-        weight: 0.5,
-        fillColor: fillColor,
-        fillOpacity: 0.5,
-        radius: radiusScaled,
-      });
-
-      circle.data = { stationId: station.stationId, persons: station.persons };
-
-      return circle;
-    } else {
-      console.warn('Called createCircleMarker without data!');
-      return undefined;
-    }
   };
 
   const createStationMarkersDate = function (stations) {
