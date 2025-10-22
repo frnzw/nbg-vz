@@ -786,18 +786,20 @@
           );
 
         // this would be easier with a hashmap built upon initial marker creation
-        let stationMarker;
-        for (const m of allPlaceMarkers) {
-          if (m.data.stationId === station.stationId) stationMarker = m;
-        }
+        // let stationMarker;
+        // for (const m of allPlaceMarkers) {
+        //   if (m.data.stationId === station.stationId) stationMarker = m;
+        // }
 
-        updateMarkerAndPopUp(
-          stationMarker,
-          station,
-          lastRecordedDate,
-          lastPersonsBeforeSelectedTime,
-          placesStore.minPersonnelCountAllStations
-        );
+        // updateMarkerAndPopUp(
+        //   stationMarker,
+        //   station,
+        //   lastRecordedDate,
+        //   lastPersonsBeforeSelectedTime,
+        //   placesStore.minPersonnelCountAllStations
+        // );
+        placeLayer.clearLayers();
+        createStationMarkersDate(placesStore.stations, props.map);
       }
     }
   );
