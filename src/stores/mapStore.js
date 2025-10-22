@@ -5,5 +5,13 @@ export const useMapStore = defineStore('map', () => {
   const markerBaseSizePersonnel = 3;
   const markerBaseSizePopulation = 50;
 
-  return { markerBaseSize, markerBaseSizePersonnel, markerBaseSizePopulation };
+  // this should be calculated dynamically when importing data
+  const dateFirstRecordsPlace = new Date('1828-12-31').getTime();
+
+  return {
+    markerBaseSize,
+    markerBaseSizePersonnel,
+    markerBaseSizePopulation,
+    dateFirstRecordsPlace,
+  };
 });

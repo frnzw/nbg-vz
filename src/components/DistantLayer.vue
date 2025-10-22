@@ -6,6 +6,7 @@
   import {
     createPersonViewLinkAndIcon,
     getStationsLastRecordBeforeSelectedDate,
+    scaleRadiusProportionalFlannery,
   } from '../mapHelpers.js';
   import { onMounted, watch, defineProps, onUnmounted } from 'vue';
 
@@ -181,7 +182,8 @@
     marker,
     station,
     lastRecordedDate,
-    lastPersonsBeforeSelectedTime
+    lastPersonsBeforeSelectedTime,
+    minPersonnelCountAllStations
   ) {
     const [button, icon] = createPlaceViewLinkAndIcon(station.stationId);
     const heading = document.createElement('h3');
@@ -197,10 +199,52 @@
     popupDiv.appendChild(subheading);
     popupDiv.appendChild(document.createElement('br'));
 
-    if (lastPersonsBeforeSelectedTime) {
+    let radiusScaled;
+    let strokeColor;
+    let fillColor;
+    if (lastPersonsBeforeSelectedTime && marker) {
       // update marker with final persCount for the date, including new arrivals and deaths
       marker.data.persCount = lastPersonsBeforeSelectedTime.count;
-      marker.setRadius(updatePlaceMarkerRadius(marker.data.persCount));
+
+      if (lastPersonsBeforeSelectedTime.length === 0) {
+        // minimal value and 'negative' brushing for known values of zero
+        radiusScaled = 1;
+        strokeColor = 'grey';
+        fillColor = 'grey';
+      } else {
+        // if (station.stationId === 'Genadendal') {
+        //   console.log(
+        //     `updateMarkerAndPopUp for ${station.stationId} with data: ${JSON.stringify(lastPersonsBeforeSelectedTime)}`
+        //   );
+        // }
+
+        radiusScaled = scaleRadiusProportionalFlannery(
+          parseInt(lastPersonsBeforeSelectedTime.count),
+          minPersonnelCountAllStations,
+          mapStore.markerBaseSizePersonnel
+        );
+
+        // radiusScaled = scaleRadiusProportional(
+        //   parseInt(lastPersonsBeforeSelectedTime.count),
+        //   minPersonnelCountAllStations,
+        //   mapStore.markerBaseSizePersonnel
+        // );
+
+        strokeColor = 'red';
+        fillColor = '#f03';
+      }
+
+      // if (station.stationId === 'Genadendal') {
+      //   console.log(marker.getRadius());
+      // }
+
+      marker.setRadius(radiusScaled);
+      marker.setStyle({ color: strokeColor, fillColor: fillColor });
+
+      // if (station.stationId === 'Genadendal') {
+      //   console.log(marker);
+      //   console.log(marker.getRadius());
+      // }
 
       // update popup accordingly
       for (const [
@@ -214,35 +258,120 @@
           popupDiv.appendChild(document.createElement('br'));
       }
     } else {
-      marker.setRadius(updatePlaceMarkerRadius(0));
+      // marker.setRadius(updatePlaceMarkerRadius(0));
+      // console.log(`station: ${station.stationId}`);
+      // console.warn('Called updateMarkerAndPopUp without data!');
+      return undefined;
     }
 
-    marker.setStyle({
-      color: lastPersonsBeforeSelectedTime ? 'red' : 'grey',
-    });
+    // marker.setStyle({
+    //   color: lastPersonsBeforeSelectedTime ? 'red' : 'grey',
+    // });
     marker.setPopupContent(popupDiv);
   };
 
-  const createCircleMarker = function (station, lastPersonsBeforeSelectedTime) {
-    // scale radius according to last known record
-    const radiusScaled = lastPersonsBeforeSelectedTime
-      ? mapStore.markerBaseSize * parseInt(lastPersonsBeforeSelectedTime.count)
-      : mapStore.markerBaseSize;
-    const circle = L.circle([station.lat, station.long], {
-      color: lastPersonsBeforeSelectedTime ? 'red' : 'grey',
-      fillColor: '#f03',
-      fillOpacity: 0.5,
-      radius: radiusScaled * (20 - props.map.getZoom()),
-    });
+  // const createCircleMarker = function (station, lastPersonsBeforeSelectedTime) {
+  //   // scale radius according to last known record
+  //   const radiusScaled = lastPersonsBeforeSelectedTime
+  //     ? mapStore.markerBaseSize * parseInt(lastPersonsBeforeSelectedTime.count)
+  //     : mapStore.markerBaseSize;
+  //   const circle = L.circle([station.lat, station.long], {
+  //     color: lastPersonsBeforeSelectedTime ? 'red' : 'grey',
+  //     fillColor: '#f03',
+  //     fillOpacity: 0.5,
+  //     radius: radiusScaled * (20 - props.map.getZoom()),
+  //   });
 
-    circle.data = {
-      stationId: station.stationId,
-      persCount: lastPersonsBeforeSelectedTime
-        ? lastPersonsBeforeSelectedTime.count
-        : 0,
-    };
+  //   circle.data = {
+  //     stationId: station.stationId,
+  //     persCount: lastPersonsBeforeSelectedTime
+  //       ? lastPersonsBeforeSelectedTime.count
+  //       : 0,
+  //   };
 
-    return circle;
+  //   return circle;
+  // }
+
+  const createCircleMarker = function (
+    station,
+    lastPersonsBeforeSelectedTime,
+    minPersonnelCountAllStations
+  ) {
+    let radiusScaled;
+    let strokeColor;
+    let fillColor;
+    if (lastPersonsBeforeSelectedTime) {
+      // we have data
+
+      if (lastPersonsBeforeSelectedTime.length === 0) {
+        // minimal value and 'negative' brushing for known values of zero
+        radiusScaled = 1;
+        strokeColor = 'grey';
+        fillColor = 'grey';
+      } else {
+        radiusScaled = scaleRadiusProportionalFlannery(
+          parseInt(lastPersonsBeforeSelectedTime.count),
+          minPersonnelCountAllStations,
+          mapStore.markerBaseSizePersonnel
+        );
+
+        // radiusScaled = scaleRadiusProportional(
+        //   parseInt(lastPersonsBeforeSelectedTime.count),
+        //   minPersonnelCountAllStations,
+        //   mapStore.markerBaseSizePersonnel
+        // );
+
+        strokeColor = 'red';
+        fillColor = '#f03';
+      }
+
+      // console.log('radius scaled: ' + radiusScaled);
+      const circle = L.circleMarker([station.lat, station.long], {
+        color: strokeColor,
+        weight: 0.5,
+        fillColor: fillColor,
+        fillOpacity: 0.5,
+        radius: radiusScaled,
+      });
+
+      circle.data = {
+        stationId: station.stationId,
+        persCount: lastPersonsBeforeSelectedTime
+          ? lastPersonsBeforeSelectedTime.count
+          : 0,
+      };
+
+      return circle;
+    } else {
+      console.log(`station: ${station.stationId}`);
+      console.warn('Called createCircleMarker without data!');
+      return undefined;
+    }
+  };
+
+  const createInitialMarker = function (station) {
+    const [lastRecordedDate, lastPersonsBeforeSelectedTime] =
+      getStationsLastRecordBeforeSelectedDate(station, props.dateSliderValue);
+
+    if (lastPersonsBeforeSelectedTime) {
+      console.log(`creating INITIAL circle marker for ${station.stationId}`);
+      const circle = createCircleMarker(
+        station,
+        lastPersonsBeforeSelectedTime,
+        placesStore.minPersonnelCountAllStations
+      );
+
+      createPopUpAndTooltip(
+        circle,
+        station,
+        lastRecordedDate,
+        lastPersonsBeforeSelectedTime
+      );
+
+      return circle;
+    } else {
+      return undefined;
+    }
   };
 
   const createStationMarkersDate = function (stations) {
@@ -260,27 +389,13 @@
 
         // console.log('station.persons[sliderValue]: ' + station.persons[props.sliderValue])
         // console.log('mapStore.markerBaseSize: ' + mapStore.markerBaseSize)
-        const [lastRecordedDate, lastPersonsBeforeSelectedTime] =
-          getStationsLastRecordBeforeSelectedDate(
-            station,
-            props.dateSliderValue
-          );
 
-        const circle = createCircleMarker(
-          station,
-          lastPersonsBeforeSelectedTime
-        );
-
-        createPopUpAndTooltip(
-          circle,
-          station,
-          lastRecordedDate,
-          lastPersonsBeforeSelectedTime
-        );
-
-        placeMarkers.push(circle);
+        const circle = createInitialMarker(station);
+        if (circle) placeMarkers.push(circle);
       }
     }
+
+    console.log(placeMarkers);
     //const filtered = filterByStationId(selectedValues.value, placeMarkers)
     placeLayer = L.layerGroup(placeMarkers);
     allPlaceMarkers = placeMarkers;
@@ -304,7 +419,8 @@
     markerEnd,
     duration,
     startTime,
-    persId
+    persId,
+    minPersonnelCountAllStations
   ) {
     // progress, i.e. proportion of line that should have been
     // passed at time since animation started [0,1]
@@ -317,10 +433,34 @@
       persMarker.setLatLng(markerEnd.getLatLng());
       // update end markers person count and radius
       markerEnd.data.persCount = markerEnd.data.persCount + 1;
-      markerEnd.setRadius(updatePlaceMarkerRadius(markerEnd.data.persCount));
+      // if (markerEnd.data.stationId === 'Genadendal') {
+      //   console.log(`radius Genadendal END: ${markerEnd.getRadius()}`);
+      //   console.log(`markerEnd.data.persCount: ${markerEnd.data.persCount}`);
+      //   console.log(
+      //     `minPersonnelCountAllStations: ${minPersonnelCountAllStations}`
+      //   );
+      //   console.log(
+      //     `mapStore.markerBaseSizePersonnel: ${mapStore.markerBaseSizePersonnel}`
+      //   );
+      // }
+      markerEnd.setRadius(
+        scaleRadiusProportionalFlannery(
+          markerEnd.data.persCount,
+          minPersonnelCountAllStations,
+          mapStore.markerBaseSizePersonnel
+        )
+      );
+      // if (markerEnd.data.stationId === 'Genadendal') {
+      //   console.log(`radius Genadendal END UPDATED: ${markerEnd.getRadius()}`);
+      // }
       persMarker.removeFrom(props.map);
       return; // end animation
     }
+
+    if (!markerStart)
+      console.log(`persId: ${persId}; markerEnd: ${markerEnd.stationId}`);
+    if (!markerEnd)
+      console.log(`persId: ${persId}; markerStart: ${markerStart.stationId}`);
 
     // transform LatLng to pixel coordinates with native leaflet function
     const startPoint = props.map.latLngToLayerPoint(markerStart.getLatLng());
@@ -349,7 +489,8 @@
           markerEnd,
           duration,
           startTime,
-          persId
+          persId,
+          minPersonnelCountAllStations
         )
     );
   }
@@ -362,41 +503,42 @@
     }
   };
 
-  const testNativeMovingMarker = async function (markerStart, markerEnd) {
-    // a temporary person marker that will be moved across the map
-    const persMarker = L.circle(markerStart.getLatLng(), {
-      color: 'blue',
-      fillColor: 'blue',
-      fillOpacity: 0.5,
-    });
-    persMarker.addTo(props.map);
+  // const testNativeMovingMarker = async function (markerStart, markerEnd) {
+  //   // a temporary person marker that will be moved across the map
+  //   const persMarker = L.circle(markerStart.getLatLng(), {
+  //     color: 'blue',
+  //     fillColor: 'blue',
+  //     fillOpacity: 0.5,
+  //   });
+  //   persMarker.addTo(props.map);
 
-    const duration = 500;
+  //   const duration = 500;
 
-    const startTime = performance.now();
+  //   const startTime = performance.now();
 
-    // start animation
-    // update start markers radius here
-    if (markerStart.data.persCount > 0)
-      markerStart.data.persCount = markerStart.data.persCount - 1;
-    markerStart.setRadius(updatePlaceMarkerRadius(markerStart.data.persCount));
-    requestAnimationFrame((t) =>
-      animateMarker(
-        t,
-        persMarker,
-        markerStart,
-        markerEnd,
-        duration,
-        startTime,
-        persId
-      )
-    );
-  };
+  //   // start animation
+  //   // update start markers radius here
+  //   if (markerStart.data.persCount > 0)
+  //     markerStart.data.persCount = markerStart.data.persCount - 1;
+  //   markerStart.setRadius(updatePlaceMarkerRadius(markerStart.data.persCount));
+  //   requestAnimationFrame((t) =>
+  //     animateMarker(
+  //       t,
+  //       persMarker,
+  //       markerStart,
+  //       markerEnd,
+  //       duration,
+  //       startTime,
+  //       persId
+  //     )
+  //   );
+  // };
 
   const createNativeMovingMarker = async function (
     markerStart,
     markerEnd,
-    persId
+    persId,
+    minPersonnelCountAllStations
   ) {
     // a temporary person marker that will be moved across the map
     const persMarker = L.circle(markerStart.getLatLng(), {
@@ -414,7 +556,21 @@
     // update start markers radius here
     if (markerStart.data.persCount > 0)
       markerStart.data.persCount = markerStart.data.persCount - 1;
-    markerStart.setRadius(updatePlaceMarkerRadius(markerStart.data.persCount));
+    // if (markerStart.data.stationId === 'Genadendal') {
+    //   console.log(`radius Genadendal START: ${markerStart.getRadius()}`);
+    // }
+    markerStart.setRadius(
+      scaleRadiusProportionalFlannery(
+        markerStart.data.persCount,
+        minPersonnelCountAllStations,
+        mapStore.markerBaseSizePersonnel
+      )
+    );
+    // if (markerStart.data.stationId === 'Genadendal') {
+    //   console.log(
+    //     `radius Genadendal START UPDATED: ${markerStart.getRadius()}`
+    //   );
+    // }
     requestAnimationFrame(
       async (t) =>
         await animateMarker(
@@ -424,7 +580,8 @@
           markerEnd,
           duration,
           startTime,
-          persId
+          persId,
+          minPersonnelCountAllStations
         )
     );
 
@@ -472,9 +629,31 @@
   watch(
     () => props.dateSliderValue,
     async (newDateSliderValue, oldDateSliderValue) => {
-      // console.log(
-      //   `triggered watch for slider! old = ${oldDateSliderValue}, new = ${newDateSliderValue}`
-      // );
+      console.log(
+        `triggered watch for slider! old = ${oldDateSliderValue}, new = ${newDateSliderValue}`
+      );
+      console.log(
+        `mapStore.dateFirstRecordsPlace ${mapStore.dateFirstRecordsPlace}`
+      );
+
+      // if newDate is first date there are records for AND we have moved FORWARDS in time:
+      // (re-)create all markers having data for this date, (re-)create layer
+      if (
+        newDateSliderValue === mapStore.dateFirstRecordsPlace &&
+        newDateSliderValue > oldDateSliderValue
+      ) {
+        console.log('Stepped INTO data range!');
+        createStationMarkersDate(placesStore.stations, props.map);
+      }
+      // if oldDate is first date there are records for AND we have moved BACKWARDS in time:
+      // just hide the layer
+      if (
+        oldDateSliderValue === mapStore.dateFirstRecordsPlace &&
+        newDateSliderValue < oldDateSliderValue
+      ) {
+        console.log('Stepped OUT data range: BEFORE!');
+        hidePlacesLayer(placeLayer, props.map);
+      }
 
       const animateMarkerPromises = [];
       for (const key of Object.keys(personsStore.persons)) {
@@ -489,6 +668,48 @@
 
           // if person has changed place, trigger animation
           if (previousStation.stationId != currentStation.stationId) {
+            // if on of current stations is not yet in allPlaceMarkers -> add it:
+
+            if (
+              !allPlaceMarkers
+                .map((m) => m.data.stationId)
+                .includes(currentStation.stationId)
+            ) {
+              console.log(`Adding markers for station:`);
+              console.log(placesStore.stations[currentStation.stationId]);
+              // ! create marker using the entry from places store, currentStation-Object from above
+              // is from person.stationsDate entry -> does not contain all data for marker creation
+              const circle = createInitialMarker(
+                placesStore.stations[currentStation.stationId]
+              );
+              console.log(`Created marker:`);
+              console.log(circle);
+              if (circle) allPlaceMarkers.push(circle);
+              circle.addTo(placeLayer);
+            }
+
+            if (
+              !allPlaceMarkers
+                .map((m) => m.data.stationId)
+                .includes(previousStation.stationId)
+            ) {
+              console.log(`Adding markers for station:`);
+              console.log(placesStore.stations[previousStation.stationId]);
+              // ! create marker using the entry from places store, currentStation-Object from above
+              // is from person.stationsDate entry -> does not contain all data for marker creation
+              const circle = createInitialMarker(
+                placesStore.stations[currentStation.stationId]
+              );
+              console.log(`Created marker:`);
+              console.log(circle);
+              if (circle) allPlaceMarkers.push(circle);
+              circle.addTo(placeLayer);
+            }
+
+            // console.log(
+            //   `Retrieving markers for ${person.persId} from ${JSON.stringify(previousStation)} to ${JSON.stringify(currentStation)}`
+            // );
+            // console.log(allPlaceMarkers.map((m) => m.data.stationId));
             // get the actual markers for the previous and the next station
             // this would be easier with a hashmap built upon initial marker creation
             let currentMarker;
@@ -500,13 +721,16 @@
                 currentMarker = m;
             }
 
-            // console.log(`Trigger animation for ${person.personId} from ${JSON.stringify(previousMarker.data)} to ${JSON.stringify(currentMarker.data)}`);
+            // console.log(
+            //   `Trigger animation for ${person.persId} from ${JSON.stringify(previousMarker.data)} to ${JSON.stringify(currentMarker.data)}`
+            // );
 
             animateMarkerPromises.push(
               createNativeMovingMarker(
                 previousMarker,
                 currentMarker,
-                person.personId
+                person.persId,
+                placesStore.minPersonnelCountAllStations
               )
             );
           }
@@ -533,7 +757,8 @@
               createNativeMovingMarker(
                 nextMarker,
                 currentMarker,
-                person.personId
+                person.persId,
+                placesStore.minPersonnelCountAllStations
               )
             );
           }
@@ -570,7 +795,8 @@
           stationMarker,
           station,
           lastRecordedDate,
-          lastPersonsBeforeSelectedTime
+          lastPersonsBeforeSelectedTime,
+          placesStore.minPersonnelCountAllStations
         );
       }
     }

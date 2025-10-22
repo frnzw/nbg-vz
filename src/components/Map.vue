@@ -15,7 +15,7 @@
   const emit = defineEmits(['mapIsReady']); // for passing map to parent component
 
   const sliderValue = ref(1828);
-  const dateSliderValue = ref(new Date('1860-12-31').getTime());
+  const dateSliderValue = ref(new Date('1827-12-31').getTime());
 
   // reactive switch for checking if props.map is initialized before rendering child components
   // set this in onMounted()
