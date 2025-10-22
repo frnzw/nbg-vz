@@ -146,8 +146,6 @@
   />
   <PopulationLayer
     v-if="readyForPopulationView"
-    @place-selected="switchToPopulationView"
-    @place-pre-selection-cleared="clearPreSelectionPlace"
     :map="globalMap"
     :dateSliderValue="dateSliderValue"
   />
