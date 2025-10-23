@@ -148,7 +148,7 @@
     const popupDiv = document.createElement('div');
 
     const heading = document.createElement('h3');
-    heading.textContent = `${person.persId} ${lastRecordedDate ? '(' + lastKnownChoir + ')' : ''} : ${marker.data.stationIdx} (${!datePresent ? 'keine Daten' : datePresent})`;
+    heading.textContent = `${person.persId} ${lastRecordedDate ? '(' + lastKnownChoir.choir + ')' : ''} : ${marker.data.stationIdx} (${!datePresent ? 'keine Daten' : datePresent})`;
 
     const subHeadingCurrent = document.createElement('b');
     subHeadingCurrent.textContent = 'Letzte (erfasste) Station aus NBG-VZ:';
@@ -236,7 +236,7 @@
     if (lastRecordedDate) {
       popupDiv.appendChild(
         document.createTextNode(
-          `Chor: ${lastKnownChoir} (${new Date(lastRecordedDate).getFullYear()})`
+          `Chor: ${lastKnownChoir.choir} (${new Date(lastRecordedDate).getFullYear()})`
         )
       );
       popupDiv.appendChild(document.createElement('br'));
@@ -440,7 +440,7 @@
         const orderedStationsAggr = stationsIdsTillSelected;
         const groupedStationsAggr = stationsTillSelected;
 
-        const [lastKnownChoir, lastRecordedDate] =
+        const [lastRecordedDate, lastKnownChoir] =
           getLastRecordBeforeSelectedDate(
             person,
             props.dateSliderValue,
