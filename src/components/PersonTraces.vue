@@ -6,6 +6,8 @@
   import {
     createWikidataLinkAndIcon,
     createPlaceViewLinkAndIcon,
+    showLayer,
+    hideLayer,
   } from '../mapHelpers.js';
   import { usePersonsStore } from '../stores/personsStore';
   import { onMounted, onUnmounted, watch, ref, defineEmits } from 'vue';
@@ -577,12 +579,15 @@
         personLayerPlaces.clearLayers();
 
         createPersonMarkersDate(personsStore.persons, wrapperStyle, iconCss);
-        showPersonsLayer(
-          personLayerMarkers,
-          personLayerTraces,
-          personLayerPlaces,
-          props.map
-        );
+        // showPersonsLayer(
+        //   personLayerMarkers,
+        //   personLayerTraces,
+        //   personLayerPlaces,
+        //   props.map
+        // );
+        showLayer(personLayerMarkers, props.map);
+        showLayer(personLayerTraces, props.map);
+        showLayer(personLayerPlaces, props.map);
       }
     }
   );
@@ -600,36 +605,39 @@
 
       createPersonMarkersDate(personsStore.persons, wrapperStyle, iconCss);
 
-      showPersonsLayer(
-        personLayerMarkers,
-        personLayerTraces,
-        personLayerPlaces,
-        props.map
-      );
+      // showPersonsLayer(
+      //   personLayerMarkers,
+      //   personLayerTraces,
+      //   personLayerPlaces,
+      //   props.map
+      // );
+      showLayer(personLayerMarkers, props.map);
+      showLayer(personLayerTraces, props.map);
+      showLayer(personLayerPlaces, props.map);
     }
   };
 
-  const showPersonsLayer = function (
-    markerLayerGroup,
-    traceLayerGroup,
-    personLayerPlaces,
-    map
-  ) {
-    markerLayerGroup.addTo(map);
-    traceLayerGroup.addTo(map);
-    personLayerPlaces.addTo(map);
-  };
+  // const showPersonsLayer = function (
+  //   markerLayerGroup,
+  //   traceLayerGroup,
+  //   personLayerPlaces,
+  //   map
+  // ) {
+  //   markerLayerGroup.addTo(map);
+  //   traceLayerGroup.addTo(map);
+  //   personLayerPlaces.addTo(map);
+  // };
 
-  const hidePersonsLayer = function (
-    markerLayerGroup,
-    traceLayerGroup,
-    personLayerPlaces,
-    map
-  ) {
-    markerLayerGroup.removeFrom(map);
-    traceLayerGroup.removeFrom(map);
-    personLayerPlaces.removeFrom(map);
-  };
+  // const hidePersonsLayer = function (
+  //   markerLayerGroup,
+  //   traceLayerGroup,
+  //   personLayerPlaces,
+  //   map
+  // ) {
+  //   markerLayerGroup.removeFrom(map);
+  //   traceLayerGroup.removeFrom(map);
+  //   personLayerPlaces.removeFrom(map);
+  // };
 
   // ------------------------------ COMPONENT LIFECYCLE FUNCTIONS
 
@@ -650,22 +658,28 @@
 
     nameList.value = Array.from(Object.keys(personsStore.persons));
 
-    showPersonsLayer(
-      personLayerMarkers,
-      personLayerTraces,
-      personLayerPlaces,
-      props.map
-    );
+    // showPersonsLayer(
+    //   personLayerMarkers,
+    //   personLayerTraces,
+    //   personLayerPlaces,
+    //   props.map
+    // );
+    showLayer(personLayerMarkers, props.map);
+    showLayer(personLayerTraces, props.map);
+    showLayer(personLayerPlaces, props.map);
   });
 
-  onUnmounted(() =>
-    hidePersonsLayer(
-      personLayerMarkers,
-      personLayerTraces,
-      personLayerPlaces,
-      props.map
-    )
-  );
+  onUnmounted(() => {
+    //     hidePersonsLayer(
+    //   personLayerMarkers,
+    //   personLayerTraces,
+    //   personLayerPlaces,
+    //   props.map
+    // )
+    hideLayer(personLayerMarkers, props.map);
+    hideLayer(personLayerTraces, props.map);
+    hideLayer(personLayerPlaces, props.map);
+  });
 </script>
 <template>
   <v-container>
