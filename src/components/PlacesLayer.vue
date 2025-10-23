@@ -6,7 +6,7 @@
     createCircleMarker,
     createPersonViewLinkAndIcon,
     createWikidataLinkAndIcon,
-    getStationsLastRecordBeforeSelectedDate,
+    getLastRecordBeforeSelectedDate,
     filterByStationId,
     showLayer,
     hideLayer,
@@ -119,7 +119,7 @@
         // console.log('station.persons[sliderValue]: ' + station.persons[props.sliderValue])
         // console.log('mapStore.markerBaseSizePersonnel: ' + mapStore.markerBaseSizePersonnel)
         const [lastRecordedDate, lastPersonsBeforeSelectedTime] =
-          getStationsLastRecordBeforeSelectedDate(
+          getLastRecordBeforeSelectedDate(
             station,
             props.dateSliderValue,
             'sortedDates',

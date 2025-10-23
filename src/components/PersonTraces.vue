@@ -6,6 +6,7 @@
   import {
     createWikidataLinkAndIcon,
     createPlaceViewLinkAndIcon,
+    getLastRecordBeforeSelectedDate,
     showLayer,
     hideLayer,
   } from '../mapHelpers.js';
@@ -438,7 +439,13 @@
         const orderedStationsAggr = stationsIdsTillSelected;
         const groupedStationsAggr = stationsTillSelected;
 
-        const [lastKnownChoir, lastRecordedDate] = findLastKnownChoir(person);
+        const [lastKnownChoir, lastRecordedDate] =
+          getLastRecordBeforeSelectedDate(
+            person,
+            props.dateSliderValue,
+            'sortedDatesChoir',
+            'choirDate'
+          );
 
         // create markers and polylines
         const markers = [];
@@ -499,28 +506,28 @@
     return [markersFilteredName, tracesFilteredName, placesFilteredName];
   };
 
-  const findLastKnownChoir = function (person) {
-    let lastKnownChoir, lastRecordedDate;
+  // const findLastKnownChoir = function (person) {
+  //   let lastKnownChoir, lastRecordedDate;
 
-    for (const date of person.sortedDatesChoir) {
-      if (date < props.dateSliderValue) {
-        continue;
-      } else if (date === props.dateSliderValue) {
-        lastKnownChoir = person.choirDate[date].choir;
-        lastRecordedDate = date;
-      } else {
-        if (person.sortedDatesChoir.length === 1) break;
+  //   for (const date of person.sortedDatesChoir) {
+  //     if (date < props.dateSliderValue) {
+  //       continue;
+  //     } else if (date === props.dateSliderValue) {
+  //       lastKnownChoir = person.choirDate[date].choir;
+  //       lastRecordedDate = date;
+  //     } else {
+  //       if (person.sortedDatesChoir.length === 1) break;
 
-        const dateBeforeIdx = person.sortedDatesChoir.indexOf(date) - 1;
+  //       const dateBeforeIdx = person.sortedDatesChoir.indexOf(date) - 1;
 
-        lastRecordedDate = person.sortedDatesChoir[dateBeforeIdx];
-        lastKnownChoir = person.choirDate[lastRecordedDate].choir;
-        break;
-      }
-    }
+  //       lastRecordedDate = person.sortedDatesChoir[dateBeforeIdx];
+  //       lastKnownChoir = person.choirDate[lastRecordedDate].choir;
+  //       break;
+  //     }
+  //   }
 
-    return [lastKnownChoir, lastRecordedDate];
-  };
+  //   return [lastKnownChoir, lastRecordedDate];
+  // };
 
   const findStationsTillSelectedAggr = function (person) {
     const stationsTillSelected = [];

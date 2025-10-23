@@ -7,7 +7,7 @@
     filterByStationId,
     showLayer,
     hideLayer,
-    getStationsLastRecordBeforeSelectedDate,
+    getLastRecordBeforeSelectedDate,
   } from '../mapHelpers.js';
   import { onMounted, ref, defineProps, onUnmounted, watch } from 'vue';
   import SearchField from './SearchField.vue';
@@ -84,7 +84,7 @@
         const station = stations[key];
 
         const [lastRecordedDatePop, lastPopBeforeSelectedTime] =
-          getStationsLastRecordBeforeSelectedDate(
+          getLastRecordBeforeSelectedDate(
             station,
             props.dateSliderValue,
             'sortedDatesPop',

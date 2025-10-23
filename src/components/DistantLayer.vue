@@ -7,7 +7,7 @@
     createCircleMarker,
     createPersonViewLinkAndIcon,
     createPlaceViewLinkAndIcon,
-    getStationsLastRecordBeforeSelectedDate,
+    getLastRecordBeforeSelectedDate,
     scaleRadiusProportionalFlannery,
     showLayer,
     hideLayer,
@@ -167,7 +167,7 @@
 
   const createStationMarker = function (station) {
     const [lastRecordedDate, lastPersonsBeforeSelectedTime] =
-      getStationsLastRecordBeforeSelectedDate(
+      getLastRecordBeforeSelectedDate(
         station,
         props.dateSliderValue,
         'sortedDates',
@@ -551,7 +551,7 @@
       //   const station = placesStore.stations[key];
 
       //   const [lastRecordedDate, lastPersonsBeforeSelectedTime] =
-      //     getStationsLastRecordBeforeSelectedDate(
+      //     getLastRecordBeforeSelectedDate(
       //       station,
       //       props.dateSliderValue,
       //       'sortedDates',

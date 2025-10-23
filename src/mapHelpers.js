@@ -83,8 +83,8 @@ export const filterByStationId = function (selectedValues, placeMarkers) {
   return filteredByNamesPlaces;
 };
 
-export const getStationsLastRecordBeforeSelectedDate = function (
-  station,
+export const getLastRecordBeforeSelectedDate = function (
+  dataMap,
   dateSliderValue,
   datesSortedKey,
   dataMapKey
@@ -93,21 +93,21 @@ export const getStationsLastRecordBeforeSelectedDate = function (
   let lastRecordPosition;
   let lastRecordedDate;
   let lastRecordBeforeSelectedTime;
-  for (const ts of station[datesSortedKey]) {
+  for (const ts of dataMap[datesSortedKey]) {
     if (ts < dateSliderValue) {
       continue;
     } else if (ts === dateSliderValue) {
-      lastRecordPosition = station[datesSortedKey].indexOf(ts);
-      lastRecordedDate = station[datesSortedKey][lastRecordPosition];
-      lastRecordBeforeSelectedTime = station[dataMapKey][lastRecordedDate];
+      lastRecordPosition = dataMap[datesSortedKey].indexOf(ts);
+      lastRecordedDate = dataMap[datesSortedKey][lastRecordPosition];
+      lastRecordBeforeSelectedTime = dataMap[dataMapKey][lastRecordedDate];
       break;
     } else {
       // if ts > dateSliderValue but also only value? -> do not show marker
-      if (station[datesSortedKey].length === 1) break;
+      if (dataMap[datesSortedKey].length === 1) break;
       // found a date > selected value -> select the date before
-      lastRecordPosition = station[datesSortedKey].indexOf(ts) - 1;
-      lastRecordedDate = station[datesSortedKey][lastRecordPosition];
-      lastRecordBeforeSelectedTime = station[dataMapKey][lastRecordedDate];
+      lastRecordPosition = dataMap[datesSortedKey].indexOf(ts) - 1;
+      lastRecordedDate = dataMap[datesSortedKey][lastRecordPosition];
+      lastRecordBeforeSelectedTime = dataMap[dataMapKey][lastRecordedDate];
 
       break;
     }
