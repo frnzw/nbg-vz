@@ -215,7 +215,7 @@
       }
     }
 
-    console.log(placeMarkers);
+    // console.log(placeMarkers);
     placeLayer = L.layerGroup(placeMarkers);
     allPlaceMarkers = placeMarkers;
     placeLayer.addTo(props.map);
@@ -543,7 +543,7 @@
       // need to be taken into account for total person count on a particular date
       await Promise.all(animateMarkerPromises);
 
-      console.log('animations finished!');
+      // console.log('animations finished!');
       placeLayer.clearLayers();
       createStationMarkersDate(placesStore.stations, props.map);
       // for (const key of Object.keys(placesStore.stations)) {

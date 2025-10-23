@@ -56,8 +56,8 @@
       popupDiv.appendChild(
         document.createTextNode(`${lastPopBeforeSelectedTime.pop_1}`)
       );
-      popupDiv.appendChild(document.createElement('br'));
     }
+    popupDiv.appendChild(document.createElement('br'));
 
     const subHeadingPop2 = document.createElement('b');
     subHeadingPop2.textContent = 'Gemeindegröße_1: ';

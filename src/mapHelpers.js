@@ -165,11 +165,11 @@ export const createCircleMarker = function (
       stationId: station.stationId,
     };
 
-    if (station.stationId === 'Genadendal') {
-      console.log(`Created Marker:`);
-      console.log(circle);
-      console.log(station);
-    }
+    // if (station.stationId === 'Genadendal') {
+    //   console.log(`Created Marker:`);
+    //   console.log(circle);
+    //   console.log(station);
+    // }
 
     return circle;
   } else {
