@@ -104,12 +104,64 @@ export const getLastRecordBeforeSelectedDate = function (
   dataMap,
   dateSliderValue,
   datesSortedKey,
-  dataMapKey
+  dataMapKey,
+  oldDateSliderValue
 ) {
-  // find last record before selected data of slider
+  // // find last record before selected data of slider
+  // let lastRecordPosition;
+  // let lastRecordedDate;
+  // let lastRecordBeforeSelectedTime;
+  // for (const ts of dataMap[datesSortedKey]) {
+  //   if (ts < dateSliderValue) {
+  //     continue;
+  //   } else if (ts === dateSliderValue) {
+  //     lastRecordPosition = dataMap[datesSortedKey].indexOf(ts);
+  //     lastRecordedDate = dataMap[datesSortedKey][lastRecordPosition];
+  //     lastRecordBeforeSelectedTime = dataMap[dataMapKey][lastRecordedDate];
+  //     break;
+  //   } else {
+  //     // if ts > dateSliderValue but also only value? -> do not show marker
+  //     if (dataMap[datesSortedKey].length === 1) break;
+  //     // found a date > selected value -> select the date before
+  //     lastRecordPosition = dataMap[datesSortedKey].indexOf(ts) - 1;
+  //     lastRecordedDate = dataMap[datesSortedKey][lastRecordPosition];
+  //     lastRecordBeforeSelectedTime = dataMap[dataMapKey][lastRecordedDate];
+
+  //     break;
+  //   }
+  // }
+
+  // // all recorded dates are smaller than selected date -> show no data
+  const [lastRecordedDate, lastRecordBeforeSelectedTime] = getRecordsAroundDate(
+    dataMap,
+    dateSliderValue,
+    datesSortedKey,
+    dataMapKey,
+    oldDateSliderValue,
+    true
+  );
+
+  return [lastRecordedDate, lastRecordBeforeSelectedTime];
+};
+
+export const getRecordsAroundDate = function (
+  dataMap,
+  dateSliderValue,
+  datesSortedKey,
+  dataMapKey,
+  oldDateSliderValue,
+  lastOnly
+) {
   let lastRecordPosition;
   let lastRecordedDate;
   let lastRecordBeforeSelectedTime;
+
+  let previousRecordedDate;
+  let previousRecordBeforeSelectedTime;
+
+  let nextRecordedDate;
+  let nextRecordAfterSelectedTime;
+
   for (const ts of dataMap[datesSortedKey]) {
     if (ts < dateSliderValue) {
       continue;
@@ -117,22 +169,76 @@ export const getLastRecordBeforeSelectedDate = function (
       lastRecordPosition = dataMap[datesSortedKey].indexOf(ts);
       lastRecordedDate = dataMap[datesSortedKey][lastRecordPosition];
       lastRecordBeforeSelectedTime = dataMap[dataMapKey][lastRecordedDate];
+
+      if (lastRecordPosition === 0) {
+        previousRecordBeforeSelectedTime = undefined;
+        nextRecordedDate = dataMap[datesSortedKey][lastRecordPosition + 1];
+        nextRecordAfterSelectedTime = dataMap[dataMapKey][nextRecordedDate];
+      } else if (lastRecordPosition === dataMap[datesSortedKey].length - 1) {
+        previousRecordedDate = dataMap[datesSortedKey][lastRecordPosition - 1];
+        previousRecordBeforeSelectedTime =
+          dataMap[dataMapKey][previousRecordedDate];
+
+        nextRecordAfterSelectedTime = undefined;
+      } else {
+        previousRecordedDate = dataMap[datesSortedKey][lastRecordPosition - 1];
+        previousRecordBeforeSelectedTime =
+          dataMap[dataMapKey][previousRecordedDate];
+
+        nextRecordedDate = dataMap[datesSortedKey][lastRecordPosition + 1];
+        nextRecordAfterSelectedTime = dataMap[dataMapKey][nextRecordedDate];
+      }
+
       break;
     } else {
       // if ts > dateSliderValue but also only value? -> do not show marker
-      if (dataMap[datesSortedKey].length === 1) break;
-      // found a date > selected value -> select the date before
-      lastRecordPosition = dataMap[datesSortedKey].indexOf(ts) - 1;
-      lastRecordedDate = dataMap[datesSortedKey][lastRecordPosition];
-      lastRecordBeforeSelectedTime = dataMap[dataMapKey][lastRecordedDate];
+      if (dataMap[datesSortedKey].length === 1) {
+        lastRecordBeforeSelectedTime = undefined;
+        previousRecordBeforeSelectedTime = undefined;
+        nextRecordedDate = undefined;
+        nextRecordAfterSelectedTime = undefined;
+      } else {
+        lastRecordPosition = dataMap[datesSortedKey].indexOf(ts) - 1;
+        lastRecordedDate = dataMap[datesSortedKey][lastRecordPosition];
+        lastRecordBeforeSelectedTime = dataMap[dataMapKey][lastRecordedDate];
+
+        previousRecordedDate = dataMap[datesSortedKey][lastRecordPosition - 1];
+        previousRecordBeforeSelectedTime =
+          dataMap[dataMapKey][previousRecordedDate];
+
+        if (lastRecordPosition === dataMap[datesSortedKey].length - 1) {
+          // no next station recorded
+          nextRecordedDate = undefined;
+          nextRecordAfterSelectedTime = undefined;
+        } else {
+          nextRecordedDate = dataMap[datesSortedKey][lastRecordPosition + 1];
+          nextRecordAfterSelectedTime = dataMap[dataMapKey][nextRecordedDate];
+        }
+      }
 
       break;
     }
   }
 
-  // all recorded dates are smaller than selected date -> show no data
+  // special rule for navigating backwards on slider:
+  // only set nextStation if it was visible on the date user is navigating from
+  // might need to move this out of generalized function some time in the future
+  if (nextRecordedDate && oldDateSliderValue) {
+    if (nextRecordedDate > oldDateSliderValue) {
+      nextRecordAfterSelectedTime = undefined;
+    }
+  }
 
-  return [lastRecordedDate, lastRecordBeforeSelectedTime];
+  if (lastOnly) {
+    return [lastRecordedDate, lastRecordBeforeSelectedTime];
+  } else {
+    return [
+      lastRecordedDate,
+      lastRecordBeforeSelectedTime,
+      previousRecordBeforeSelectedTime,
+      nextRecordAfterSelectedTime,
+    ];
+  }
 };
 
 export const createCircleMarker = function (

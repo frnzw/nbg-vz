@@ -551,7 +551,7 @@
       //   const station = placesStore.stations[key];
 
       //   const [lastRecordedDate, lastPersonsBeforeSelectedTime] =
-      //     getLastRecordBeforeSelectedDate(
+      //     getStationsLastRecordBeforeSelectedDate(
       //       station,
       //       props.dateSliderValue,
       //       'sortedDates',
