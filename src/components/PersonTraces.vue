@@ -3,7 +3,10 @@
   import 'leaflet-polylinedecorator';
   import 'leaflet/dist/leaflet.css';
   import { useMapStore } from '../stores/mapStore';
-  import { createWikidataLinkAndIcon } from '../mapHelpers.js';
+  import {
+    createWikidataLinkAndIcon,
+    createPlaceViewLinkAndIcon,
+  } from '../mapHelpers.js';
   import { usePersonsStore } from '../stores/personsStore';
   import { onMounted, onUnmounted, watch, ref, defineEmits } from 'vue';
   import SearchField from './SearchField.vue';
@@ -117,7 +120,8 @@
             '-' +
             new Date(nextStationDateTo).getFullYear();
       [buttonNext, iconNext] = createPlaceViewLinkAndIcon(
-        nextStation.stationId
+        nextStation.stationId,
+        emit
       );
     }
     if (prevStation) {
@@ -132,7 +136,8 @@
             '-' +
             new Date(prevStationDateTo).getFullYear();
       [buttonPrev, iconPrev] = createPlaceViewLinkAndIcon(
-        prevStation.stationId
+        prevStation.stationId,
+        emit
       );
     }
 
@@ -145,7 +150,8 @@
     subHeadingCurrent.textContent = 'Letzte (erfasste) Station aus NBG-VZ:';
 
     const [buttonCurrent, iconCurrent] = createPlaceViewLinkAndIcon(
-      station.stationId
+      station.stationId,
+      emit
     );
 
     const subHeadingPrev = document.createElement('b');
@@ -258,22 +264,22 @@
   //   return [a, icon];
   // };
 
-  const createPlaceViewLinkAndIcon = function (stationId) {
-    const button = document.createElement('button');
-    button.style.color = '#0078A8';
-    button.style.textDecoration = 'underline';
-    button.title = 'View Place in Place View';
-    button.textContent = `${stationId}`;
-    button.onclick = async function () {
-      emit('place-selected', stationId);
-    };
+  // const createPlaceViewLinkAndIcon = function (stationId) {
+  //   const button = document.createElement('button');
+  //   button.style.color = '#0078A8';
+  //   button.style.textDecoration = 'underline';
+  //   button.title = 'View Place in Place View';
+  //   button.textContent = `${stationId}`;
+  //   button.onclick = async function () {
+  //     emit('place-selected', stationId);
+  //   };
 
-    const icon = document.createElement('i');
-    icon.classList.add('mdi', 'mdi-map-marker');
-    icon.style.paddingLeft = '3px';
+  //   const icon = document.createElement('i');
+  //   icon.classList.add('mdi', 'mdi-map-marker');
+  //   icon.style.paddingLeft = '3px';
 
-    return [button, icon];
-  };
+  //   return [button, icon];
+  // };
 
   const createMarkersAndArrowTraces = function (
     orderedStationsAggr,
@@ -355,7 +361,10 @@
         circle.data = { name: person.persId };
         circle.bindTooltip(station.stationId);
 
-        const [button, icon] = createPlaceViewLinkAndIcon(station.stationId);
+        const [button, icon] = createPlaceViewLinkAndIcon(
+          station.stationId,
+          emit
+        );
         const popupDiv = document.createElement('div');
         popupDiv.appendChild(button);
         popupDiv.appendChild(icon);
