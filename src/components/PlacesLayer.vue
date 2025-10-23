@@ -7,7 +7,7 @@
     createPersonViewLinkAndIcon,
     createWikidataLinkAndIcon,
     getLastRecordBeforeSelectedDate,
-    filterByStationId,
+    filterMarkersByDataKey,
     showLayer,
     hideLayer,
   } from '../mapHelpers.js';
@@ -149,9 +149,10 @@
       }
     }
 
-    const filteredByNamesPlaces = filterByStationId(
+    const filteredByNamesPlaces = filterMarkersByDataKey(
       selectedValues.value,
-      placeMarkers
+      placeMarkers,
+      'stationId'
     );
     placeLayer = L.layerGroup(filteredByNamesPlaces);
     currentPlaceMarkers = placeMarkers;
@@ -185,7 +186,7 @@
       const filteredByStationId =
         selectedValues.length == 0
           ? markers
-          : filterByStationId(selectedValues, markers);
+          : filterMarkersByDataKey(selectedValues, markers, 'stationId');
       filteredByStationId.forEach((marker) => marker.addTo(placeLayer));
     }
   };

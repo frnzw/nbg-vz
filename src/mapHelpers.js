@@ -70,18 +70,35 @@ export const createWikidataLinkAndIcon = function (wdId) {
   return [a, icon];
 };
 
-export const filterByStationId = function (selectedValues, placeMarkers) {
-  const filteredByNamesPlaces =
+export const filterMarkersByDataKey = function (
+  selectedValues,
+  markers,
+  dataKey
+) {
+  const filtered =
     selectedValues.length == 0
-      ? placeMarkers
-      : placeMarkers.filter((marker) =>
-          selectedValues.includes(marker.data.stationId)
+      ? markers
+      : markers.filter((marker) =>
+          selectedValues.includes(marker.data[dataKey])
         );
   // console.log(filteredByNames)
-  // console.log(`Filtered markers by names ${selectedValues}: ${filteredByNames.length}`)
+  // console.log(`Filtered markers by ${dataKey} ${selectedValues}: ${filteredByNames.length}`)
 
-  return filteredByNamesPlaces;
+  return filtered;
 };
+
+// export const filterByStationId = function (selectedValues, placeMarkers) {
+//   const filteredByNamesPlaces =
+//     selectedValues.length == 0
+//       ? placeMarkers
+//       : placeMarkers.filter((marker) =>
+//           selectedValues.includes(marker.data.stationId)
+//         );
+//   // console.log(filteredByNames)
+//   // console.log(`Filtered markers by names ${selectedValues}: ${filteredByNames.length}`)
+
+//   return filteredByNamesPlaces;
+// };
 
 export const getLastRecordBeforeSelectedDate = function (
   dataMap,

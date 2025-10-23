@@ -4,7 +4,7 @@
   import { usePlacesStore } from '../stores/placesStore.js';
   import {
     createCircleMarker,
-    filterByStationId,
+    filterMarkersByDataKey,
     showLayer,
     hideLayer,
     getLastRecordBeforeSelectedDate,
@@ -135,17 +135,19 @@
       }
     }
 
-    const filteredByNamesPop1 = filterByStationId(
+    const filteredByNamesPop1 = filterMarkersByDataKey(
       selectedValues.value,
-      pop1Markers
+      pop1Markers,
+      'stationId'
     );
     popLayer1 = L.layerGroup(filteredByNamesPop1);
     currentPop1Markers = pop1Markers;
     popLayer1.addTo(props.map);
 
-    const filteredByNamesPop2 = filterByStationId(
+    const filteredByNamesPop2 = filterMarkersByDataKey(
       selectedValues.value,
-      pop2Markers
+      pop2Markers,
+      'stationId'
     );
     popLayer2 = L.layerGroup(filteredByNamesPop2);
     currentPop2Markers = pop2Markers;
@@ -184,15 +186,17 @@
       popLayer1.clearLayers();
       popLayer2.clearLayers();
 
-      const filteredByNamesPop1 = filterByStationId(
+      const filteredByNamesPop1 = filterMarkersByDataKey(
         selectedValues,
-        pop1Markers
+        pop1Markers,
+        'stationId'
       );
       filteredByNamesPop1.forEach((marker) => marker.addTo(popLayer1));
 
-      const filteredByNamesPop2 = filterByStationId(
+      const filteredByNamesPop2 = filterMarkersByDataKey(
         selectedValues,
-        pop2Markers
+        pop2Markers,
+        'stationId'
       );
       filteredByNamesPop2.forEach((marker) => marker.addTo(popLayer2));
     }

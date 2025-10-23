@@ -9,6 +9,7 @@
     getLastRecordBeforeSelectedDate,
     showLayer,
     hideLayer,
+    filterMarkersByDataKey,
   } from '../mapHelpers.js';
   import { usePersonsStore } from '../stores/personsStore';
   import { onMounted, onUnmounted, watch, ref, defineEmits } from 'vue';
@@ -471,13 +472,29 @@
     }
 
     // filter station by selected names
-    const [markersFilteredName, tracesFilteredName, placesFilteredName] =
-      filterByNames(
-        selectedValues.value,
-        personMarkers,
-        personTraces,
-        placeMarkers
-      );
+    // const [markersFilteredName, tracesFilteredName, placesFilteredName] =
+    //   filterByNames(
+    //     selectedValues.value,
+    //     personMarkers,
+    //     personTraces,
+    //     placeMarkers
+    //   );
+
+    const markersFilteredName = filterMarkersByDataKey(
+      selectedValues.value,
+      personMarkers,
+      'name'
+    );
+    const tracesFilteredName = filterMarkersByDataKey(
+      selectedValues.value,
+      personTraces,
+      'name'
+    );
+    const placesFilteredName = filterMarkersByDataKey(
+      selectedValues.value,
+      placeMarkers,
+      'name'
+    );
 
     // create layer groups from initial markers
     personLayerMarkers = L.layerGroup(markersFilteredName);
@@ -487,24 +504,24 @@
 
   // ------------------------------ FILTER FUNCTIONS
 
-  const filterByNames = function (selectedValues, markers, traces, places) {
-    const markersFilteredName =
-      selectedValues.length == 0
-        ? markers
-        : markers.filter((marker) => {
-            return selectedValues.includes(marker.data.name);
-          });
-    const tracesFilteredName =
-      selectedValues.length == 0
-        ? traces
-        : traces.filter((trace) => selectedValues.includes(trace.data.name));
-    const placesFilteredName =
-      selectedValues.length == 0
-        ? traces
-        : places.filter((place) => selectedValues.includes(place.data.name));
+  // const filterByNames = function (selectedValues, markers, traces, places) {
+  //   const markersFilteredName =
+  //     selectedValues.length == 0
+  //       ? markers
+  //       : markers.filter((marker) => {
+  //           return selectedValues.includes(marker.data.name);
+  //         });
+  //   const tracesFilteredName =
+  //     selectedValues.length == 0
+  //       ? traces
+  //       : traces.filter((trace) => selectedValues.includes(trace.data.name));
+  //   const placesFilteredName =
+  //     selectedValues.length == 0
+  //       ? traces
+  //       : places.filter((place) => selectedValues.includes(place.data.name));
 
-    return [markersFilteredName, tracesFilteredName, placesFilteredName];
-  };
+  //   return [markersFilteredName, tracesFilteredName, placesFilteredName];
+  // };
 
   // const findLastKnownChoir = function (person) {
   //   let lastKnownChoir, lastRecordedDate;
