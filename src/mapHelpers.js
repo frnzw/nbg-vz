@@ -120,8 +120,8 @@ export const getStationsLastRecordBeforeSelectedDate = function (
 
 export const createCircleMarker = function (
   station,
-  lastPopBeforeSelectedTime,
-  minPopulationCountAllStations,
+  lastPersCountBeforeSelectedTime,
+  minPersCountAllStations,
   customColor = 'red',
   fill = true,
   stroke = true,
@@ -131,18 +131,18 @@ export const createCircleMarker = function (
   let radiusScaled;
   let strokeColor;
   let fillColor;
-  if (lastPopBeforeSelectedTime) {
+  if (lastPersCountBeforeSelectedTime) {
     // we have data
 
-    if (lastPopBeforeSelectedTime === 0) {
+    if (lastPersCountBeforeSelectedTime === 0) {
       // minimal value and 'negative' brushing for known values of zero
       radiusScaled = 1;
       strokeColor = 'grey';
       fillColor = 'grey';
     } else {
       radiusScaled = scaleRadiusProportionalFlannery(
-        parseInt(lastPopBeforeSelectedTime),
-        minPopulationCountAllStations,
+        parseInt(lastPersCountBeforeSelectedTime),
+        minPersCountAllStations,
         baseRadius
       );
 
@@ -160,7 +160,16 @@ export const createCircleMarker = function (
       radius: scaleToZoom ? radiusScaled / (20 - scaleToZoom) : radiusScaled,
     });
 
-    circle.data = { stationId: station.stationId, persons: station.persons };
+    // more specific data will be attached in calling functions
+    circle.data = {
+      stationId: station.stationId,
+    };
+
+    if (station.stationId === 'Genadendal') {
+      console.log(`Created Marker:`);
+      console.log(circle);
+      console.log(station);
+    }
 
     return circle;
   } else {

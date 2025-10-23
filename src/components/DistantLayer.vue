@@ -186,12 +186,13 @@
         null
       );
 
-      createPopUpAndTooltip(
-        circle,
-        station,
-        lastRecordedDate,
-        lastPersonsBeforeSelectedTime
-      );
+      ((circle.data.persCount = lastPersonsBeforeSelectedTime.count),
+        createPopUpAndTooltip(
+          circle,
+          station,
+          lastRecordedDate,
+          lastPersonsBeforeSelectedTime
+        ));
 
       return circle;
     } else {
@@ -248,6 +249,9 @@
     const progressOnLine = (time - startTime) / duration;
 
     if (progressOnLine >= 1) {
+      if (markerEnd.data.stationId === 'Genadendal') {
+        console.log(`radius Genadendal END: ${markerEnd.getRadius()}`);
+      }
       persMarker.setLatLng(markerEnd.getLatLng());
       // update end markers person count and radius
       markerEnd.data.persCount = markerEnd.data.persCount + 1;
@@ -259,7 +263,16 @@
           mapStore.markerBaseSizePersonnel
         )
       );
-
+      if (markerEnd.data.stationId === 'Genadendal') {
+        console.log(`markerEnd.data.persCount: ${markerEnd.data.persCount}`);
+        console.log(
+          `minPersonnelCountAllStations: ${minPersonnelCountAllStations}`
+        );
+        console.log(
+          `mapStore.markerBaseSizePersonnel: ${mapStore.markerBaseSizePersonnel}`
+        );
+        console.log(`radius Genadendal END UPDATED: ${markerEnd.getRadius()}`);
+      }
       persMarker.removeFrom(props.map);
       return; // end animation
     }
@@ -324,9 +337,9 @@
     // update start markers radius here
     if (markerStart.data.persCount > 0)
       markerStart.data.persCount = markerStart.data.persCount - 1;
-    // if (markerStart.data.stationId === 'Genadendal') {
-    //   console.log(`radius Genadendal START: ${markerStart.getRadius()}`);
-    // }
+    if (markerStart.data.stationId === 'Genadendal') {
+      console.log(`radius Genadendal START: ${markerStart.getRadius()}`);
+    }
     markerStart.setRadius(
       scaleRadiusProportionalFlannery(
         markerStart.data.persCount,
@@ -334,11 +347,11 @@
         mapStore.markerBaseSizePersonnel
       )
     );
-    // if (markerStart.data.stationId === 'Genadendal') {
-    //   console.log(
-    //     `radius Genadendal START UPDATED: ${markerStart.getRadius()}`
-    //   );
-    // }
+    if (markerStart.data.stationId === 'Genadendal') {
+      console.log(
+        `radius Genadendal START UPDATED: ${markerStart.getRadius()}`
+      );
+    }
     requestAnimationFrame(
       async (t) =>
         await animateMarker(
@@ -481,10 +494,6 @@
               if (m.data.stationId === currentStation.stationId)
                 currentMarker = m;
             }
-
-            // console.log(
-            //   `Trigger animation for ${person.persId} from ${JSON.stringify(previousMarker.data)} to ${JSON.stringify(currentMarker.data)}`
-            // );
 
             animateMarkerPromises.push(
               createNativeMovingMarker(
