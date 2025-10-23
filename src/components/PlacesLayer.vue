@@ -10,6 +10,7 @@
     filterByStationId,
     showLayer,
     hideLayer,
+    createInfobox,
   } from '../mapHelpers.js';
   import { onMounted, ref, defineProps, onUnmounted, watch } from 'vue';
   import SearchField from './SearchField.vue';
@@ -19,6 +20,7 @@
 
   const props = defineProps({
     map: Object,
+    infobox: Object,
     sliderValue: Number,
     dateSliderValue: Number,
     placesSelectedFromTrace: Array,
@@ -211,6 +213,9 @@
       );
     }
     console.log(placesStore.stations);
+
+    // fill info box with content describing this layer
+    props.infobox.update('Hello Place Info');
 
     if (currentPlaceMarkers === undefined)
       createStationMarkersDate(placesStore.stations, props.map);

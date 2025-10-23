@@ -9,6 +9,93 @@ export const hideLayer = function (layergroup, map) {
   layergroup.removeFrom(map);
 };
 
+export const createInfobox = function () {
+  const info = L.control();
+
+  const toggle = function () {
+    const contentElement = document.getElementById('infoBoxContent');
+    const buttonElement = document.getElementById('infoBoxButton');
+    console.log(`buttonElement.style.display: ${buttonElement.style.display}`);
+    console.log(
+      `contentElement.style.display: ${contentElement.style.display}`
+    );
+
+    if (buttonElement.style.display === 'none') {
+      buttonElement.style.display = 'flex';
+      contentElement.style.display = 'None';
+    } else {
+      buttonElement.style.display = 'none';
+      contentElement.style.display = 'block';
+    }
+
+    console.log(`buttonElement.style.display: ${buttonElement.style.display}`);
+    console.log(
+      `contentElement.style.display: ${contentElement.style.display}`
+    );
+  };
+
+  info.onAdd = function () {
+    const displayDiv = L.DomUtil.create('div', 'info');
+    const contentDiv = L.DomUtil.create('div', 'info-content');
+    contentDiv.setAttribute('id', 'infoBoxContent');
+
+    // create close button for infobox
+    const closeButton = document.createElement('button');
+    closeButton.title = 'Close Info-Box';
+    closeButton.onclick = async function () {
+      console.log('Clicked Infobox Button');
+      toggle();
+    };
+    const closeIcon = document.createElement('i');
+    closeIcon.classList.add('mdi', 'mdi-close');
+    closeIcon.style.paddingLeft = '3px';
+    closeIcon.style.fontSize = '24px';
+    closeButton.appendChild(closeIcon);
+    contentDiv.appendChild(closeButton);
+
+    // create text content for infobox
+    const textContent = document.createElement('div');
+    textContent.setAttribute('id', 'infoBoxTextContent');
+    contentDiv.appendChild(textContent);
+
+    // hide content when creating control
+    contentDiv.style.display = 'None';
+
+    // create info button
+    const button = document.createElement('button');
+    button.title = 'Open Info-Box';
+    button.onclick = async function () {
+      console.log('Clicked Infobox Button');
+      toggle();
+    };
+    // create info button content: an icon
+    const icon = document.createElement('i');
+    icon.setAttribute('id', 'infoBoxButton');
+    icon.classList.add('mdi', 'mdi-information-outline');
+    icon.style.paddingLeft = '3px';
+    icon.style.fontSize = '24px';
+    icon.style.display = 'flex';
+    button.appendChild(icon);
+
+    displayDiv.appendChild(button);
+    displayDiv.appendChild(contentDiv);
+
+    this._div = displayDiv;
+    // this.update('');
+    return this._div;
+  };
+
+  info.update = function (content) {
+    console.log(`Called infoBox.update with param ${content}`);
+    const contentElement = document.getElementById('infoBoxTextContent');
+    contentElement.innerHTML = content;
+  };
+
+  info.toggle;
+
+  return info;
+};
+
 export const createEmitButtonWithIcon = function (
   value,
   title,

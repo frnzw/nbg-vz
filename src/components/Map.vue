@@ -8,6 +8,7 @@
   import DistantLayer from './DistantLayer.vue';
   import PersonTraces from './PersonTraces.vue';
   import { useRoute, useRouter } from 'vue-router';
+  import { createInfobox } from '../mapHelpers';
 
   const route = useRoute();
   const router = useRouter();
@@ -21,6 +22,7 @@
   // set this in onMounted()
   let mapReady = ref(false);
   let globalMap = undefined;
+  let globalInfoBox = undefined;
 
   // reactive switch for checking if current route is properly accessible before conditionally rendering child components
   // set this in onMounted()
@@ -49,11 +51,20 @@
       }
     );
 
+    // add tile layer
     tileLayer.addTo(map);
 
+    // add infobox (without any content at this point)
+    const info = createInfobox();
+    info.addTo(map);
+
+    // a debugging convenience
     map.on('click', () => console.log(map.getZoom()));
 
+    // set vue variables to hand down as props
     globalMap = map;
+    globalInfoBox = info;
+
     mapReady = true;
   };
 
@@ -140,7 +151,7 @@
     @person-selected="switchToPersonView"
     @place-pre-selection-cleared="clearPreSelectionPlace"
     :map="globalMap"
-    :sliderValue="sliderValue"
+    :infobox="globalInfoBox"
     :dateSliderValue="dateSliderValue"
     :placesSelectedFromTrace="placesSelectedFromTrace"
   />
