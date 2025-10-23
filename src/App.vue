@@ -18,6 +18,7 @@
         </v-tab>
         <v-tab to="/map/traces" value="/map/traces"> Traces </v-tab>
         <v-tab to="/map/distant" value="/map/distant"> Distant View </v-tab>
+        <v-tab to="/about" value="/about"> About </v-tab>
       </v-tabs>
     </v-app-bar>
 

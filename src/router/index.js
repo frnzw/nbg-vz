@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import MapView from '../views/MapView.vue';
+import AboutView from '../views/AboutView.vue';
 import NotFoundView from '../views/NotFoundView.vue';
 
 const router = createRouter({
@@ -29,6 +30,11 @@ const router = createRouter({
       path: '/map/distant',
       name: 'distant',
       component: MapView,
+    },
+    {
+      path: '/about',
+      name: 'about',
+      component: AboutView,
     },
     {
       path: '/:catchAll(.*)*',
