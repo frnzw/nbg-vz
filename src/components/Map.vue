@@ -158,6 +158,7 @@
   <PopulationLayer
     v-if="readyForPopulationView"
     :map="globalMap"
+    :infobox="globalInfoBox"
     :dateSliderValue="dateSliderValue"
   />
   <PersonTraces
@@ -165,6 +166,7 @@
     @place-selected="switchToPlacesView"
     @person-pre-selection-cleared="clearPreSelectionPerson"
     :map="globalMap"
+    :infobox="globalInfoBox"
     :sliderValue="sliderValue"
     :dateSliderValue="dateSliderValue"
     :personsSelectedFromPlace="personsSelectedFromPlace"
@@ -174,6 +176,7 @@
     @person-selected="switchToPersonView"
     @place-selected="switchToPlacesView"
     :map="globalMap"
+    :infobox="globalInfoBox"
     :sliderValue="sliderValue"
     :dateSliderValue="dateSliderValue"
   />

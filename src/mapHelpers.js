@@ -39,9 +39,15 @@ export const createInfobox = function () {
     const contentDiv = L.DomUtil.create('div', 'info-content');
     contentDiv.setAttribute('id', 'infoBoxContent');
 
+    const headline = document.createElement('h3'); // z.B. <h3>
+    headline.setAttribute('id', 'infoBoxHeadline');
+    headline.style.margin = '0'; // Standard-Margin von h3 entfernen
+    contentDiv.appendChild(headline);
+
     // create close button for infobox
     const closeButton = document.createElement('button');
     closeButton.title = 'Close Info-Box';
+    closeButton.setAttribute('id', 'infoBoxTextCloseButton');
     closeButton.onclick = async function () {
       console.log('Clicked Infobox Button');
       toggle();
@@ -57,6 +63,8 @@ export const createInfobox = function () {
     const textContent = document.createElement('div');
     textContent.setAttribute('id', 'infoBoxTextContent');
     contentDiv.appendChild(textContent);
+    textContent.innerHTML =
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
 
     // hide content when creating control
     contentDiv.style.display = 'None';
@@ -64,17 +72,17 @@ export const createInfobox = function () {
     // create info button
     const button = document.createElement('button');
     button.title = 'Open Info-Box';
+    button.setAttribute('id', 'infoBoxButton');
+    button.style.display = 'flex';
     button.onclick = async function () {
       console.log('Clicked Infobox Button');
       toggle();
     };
     // create info button content: an icon
     const icon = document.createElement('i');
-    icon.setAttribute('id', 'infoBoxButton');
     icon.classList.add('mdi', 'mdi-information-outline');
     icon.style.paddingLeft = '3px';
     icon.style.fontSize = '24px';
-    icon.style.display = 'flex';
     button.appendChild(icon);
 
     displayDiv.appendChild(button);
@@ -85,10 +93,14 @@ export const createInfobox = function () {
     return this._div;
   };
 
-  info.update = function (content) {
-    console.log(`Called infoBox.update with param ${content}`);
+  info.update = function (data) {
+    console.log(`Called infoBox.update with param ${data.content}`);
+
+    const headlineElement = document.getElementById('infoBoxHeadline');
+    headlineElement.innerHTML = data.headline;
+
     const contentElement = document.getElementById('infoBoxTextContent');
-    contentElement.innerHTML = content;
+    contentElement.innerHTML = data.content;
   };
 
   info.toggle;

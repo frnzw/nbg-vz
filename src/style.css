@@ -1,8 +1,60 @@
-.info-content {
+/* INFO BOX STYLING */
+
+
+/* 1. main div within Leaflet-Control Element */
+.info {
+    position: relative; /* allow absolute positioning of elements within*/
+    background: none;
+    box-shadow: none;
+    
+  }
+  
+  /* 2. button for opening info box */
+  #infoBoxButtonContainer {
+    /* absolute position at top right of parent (.info) – no other content is visible at the same time though */
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    
+    /* remove standard button styling */
+    /* border: none;
+    background: none;
+    cursor: pointer; */
+    
+    /* clean positioning of icon within button */
+    padding: 0; 
+    line-height: 1;
+  }
+  
+  /* 3. 'opened' infobox === infoboxcontent  */
+  #infoBoxContent {
     padding: 6px 8px;
-    font: 14px/16px Arial, Helvetica, sans-serif;
-    background: white;
-    background: rgba(255,255,255,0.8);
-    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
     border-radius: 5px;
-}
+  
+    /* allow absolute positioning of close button */
+    position: relative; 
+    
+    max-width: 350px; 
+    
+  }
+  
+  /* 4. close button within opened infobox */
+  #infoBoxTextCloseButton {
+    /* same positioning as open-button */
+    position: absolute;
+    top: 5px;
+    right: 5px;
+  
+    /* clean positioning of icon within button */
+    padding: 0;
+    line-height: 1;
+  }
+  
+  /* 5. text content within opened infobox */
+  #infoBoxTextContent {
+    word-wrap: break-word; 
+    max-height: 400px;
+    overflow-y: auto;
+  }

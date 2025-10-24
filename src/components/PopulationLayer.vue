@@ -12,11 +12,28 @@
   import { onMounted, ref, defineProps, onUnmounted, watch } from 'vue';
   import SearchField from './SearchField.vue';
 
+  const infoHeadline = 'Ort: Gemeinde';
+  const infoText = `
+  Diese Ansicht zeigt die (potentielle) Größe der Gemeinden an den Missionsstationen anhand der Anzahl der laut ... in ihrem Umfeld wohnhaften Personen.
+  <br><br>
+  Die Größe der roten Kreismarker beschreibt die gesamte Anzahl der Personen, inklusive jener, die nicht Gemeindemitglieder waren.
+  <br><br>
+  Die Größe der blauen Ringe beschreibt die Anzahl der Personen, die 'volle' Gemeindemitglieder waren.
+  <br><br>
+  Der Zeitpunkt der Erfassung ist (mangels Kenntnis des tatsächlichen Datums) wie für die Verzeichnisdaten auf den 31.12. festgelegt worden.
+  Nicht für alle Jahre sind beide Zahlen vorhanden.
+  <br>
+  <br>
+  Vor und nach dem Datum des letzten erfassten NBG-Verzeichnisses werden keine Daten angezeigt.
+  <br> Ein Klick auf die Marker zeigt die genauen Zahlen.
+  `;
+
   const placesStore = usePlacesStore();
   const mapStore = useMapStore();
 
   const props = defineProps({
     map: Object,
+    infobox: Object,
     sliderValue: Number,
     dateSliderValue: Number,
   });
@@ -208,6 +225,9 @@
       placesStore.pathToDataFilePopulationPlaces
     );
     console.log(placesStore.stations);
+
+    // fill info box with content describing this layer
+    props.infobox.update({ headline: infoHeadline, content: infoText });
 
     if (currentPop1Markers === undefined && currentPop2Markers === undefined)
       createStationMarkersDate(placesStore.stations, props.map);

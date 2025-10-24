@@ -10,11 +10,16 @@
     filterByStationId,
     showLayer,
     hideLayer,
-    createInfobox,
   } from '../mapHelpers.js';
   import { onMounted, ref, defineProps, onUnmounted, watch } from 'vue';
   import SearchField from './SearchField.vue';
 
+  const infoHeadline = 'Ort: Personal';
+  const infoText = `
+  Die Größe der Kreismarker beschreibt die Anzahl der Personen, die laut letztem erfassten Verzeichnis aus den NBG an der jeweiligen Missionsstation anwesend waren. Bei Lücken in den erfassten Daten werden also die letzten erfassten Werte angezeigt.
+  <br> Vor und nach dem Datum des letzten erfassten NBG-Verzeichnisses werden keine Daten angezeigt.
+  <br> Ein Klick auf die Marker zeigt eine Liste der anwesenden Personen.
+  `;
   const placesStore = usePlacesStore();
   const mapStore = useMapStore();
 
@@ -215,7 +220,7 @@
     console.log(placesStore.stations);
 
     // fill info box with content describing this layer
-    props.infobox.update('Hello Place Info');
+    props.infobox.update({ headline: infoHeadline, content: infoText });
 
     if (currentPlaceMarkers === undefined)
       createStationMarkersDate(placesStore.stations, props.map);
