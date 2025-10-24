@@ -91,46 +91,48 @@
             'populationDate'
           );
 
-        if (lastPopBeforeSelectedTime.pop_1) {
-          // only create marker if data is present
-          const circle = createCircleMarker(
-            station,
-            lastPopBeforeSelectedTime.pop_1,
-            placesStore.minPopulationCountAllStations,
-            'blue',
-            false,
-            true,
-            mapStore.markerBaseSizePopulation,
-            props.map.getZoom()
-          );
-          createPopUpAndTooltip(
-            circle,
-            station,
-            lastRecordedDatePop,
-            lastPopBeforeSelectedTime
-          );
-          pop1Markers.push(circle);
-        }
+        if (lastPopBeforeSelectedTime) {
+          if (lastPopBeforeSelectedTime.pop_1) {
+            // only create marker if data is present
+            const circle = createCircleMarker(
+              station,
+              lastPopBeforeSelectedTime.pop_1,
+              placesStore.minPopulationCountAllStations,
+              'blue',
+              false,
+              true,
+              mapStore.markerBaseSizePopulation,
+              props.map.getZoom()
+            );
+            createPopUpAndTooltip(
+              circle,
+              station,
+              lastRecordedDatePop,
+              lastPopBeforeSelectedTime
+            );
+            pop1Markers.push(circle);
+          }
 
-        if (lastPopBeforeSelectedTime.pop_2) {
-          // only create marker if data is present
-          const circle = createCircleMarker(
-            station,
-            lastPopBeforeSelectedTime.pop_2,
-            placesStore.minPopulationCountAllStations,
-            'red',
-            true,
-            false,
-            mapStore.markerBaseSizePopulation,
-            props.map.getZoom()
-          );
-          createPopUpAndTooltip(
-            circle,
-            station,
-            lastRecordedDatePop,
-            lastPopBeforeSelectedTime
-          );
-          pop2Markers.push(circle);
+          if (lastPopBeforeSelectedTime.pop_2) {
+            // only create marker if data is present
+            const circle = createCircleMarker(
+              station,
+              lastPopBeforeSelectedTime.pop_2,
+              placesStore.minPopulationCountAllStations,
+              'red',
+              true,
+              false,
+              mapStore.markerBaseSizePopulation,
+              props.map.getZoom()
+            );
+            createPopUpAndTooltip(
+              circle,
+              station,
+              lastRecordedDatePop,
+              lastPopBeforeSelectedTime
+            );
+            pop2Markers.push(circle);
+          }
         }
       }
     }
