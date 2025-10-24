@@ -1,5 +1,4 @@
 import L from 'leaflet';
-// import { useMapStore } from './stores/mapStore';
 
 export const showLayer = function (layergroup, map) {
   layergroup.addTo(map);
@@ -186,19 +185,6 @@ export const filterMarkersByDataKey = function (
   return filtered;
 };
 
-// export const filterByStationId = function (selectedValues, placeMarkers) {
-//   const filteredByNamesPlaces =
-//     selectedValues.length == 0
-//       ? placeMarkers
-//       : placeMarkers.filter((marker) =>
-//           selectedValues.includes(marker.data.stationId)
-//         );
-//   // console.log(filteredByNames)
-//   // console.log(`Filtered markers by names ${selectedValues}: ${filteredByNames.length}`)
-
-//   return filteredByNamesPlaces;
-// };
-
 export const getLastRecordBeforeSelectedDate = function (
   dataMap,
   dateSliderValue,
@@ -206,31 +192,6 @@ export const getLastRecordBeforeSelectedDate = function (
   dataMapKey,
   oldDateSliderValue
 ) {
-  // // find last record before selected data of slider
-  // let lastRecordPosition;
-  // let lastRecordedDate;
-  // let lastRecordBeforeSelectedTime;
-  // for (const ts of dataMap[datesSortedKey]) {
-  //   if (ts < dateSliderValue) {
-  //     continue;
-  //   } else if (ts === dateSliderValue) {
-  //     lastRecordPosition = dataMap[datesSortedKey].indexOf(ts);
-  //     lastRecordedDate = dataMap[datesSortedKey][lastRecordPosition];
-  //     lastRecordBeforeSelectedTime = dataMap[dataMapKey][lastRecordedDate];
-  //     break;
-  //   } else {
-  //     // if ts > dateSliderValue but also only value? -> do not show marker
-  //     if (dataMap[datesSortedKey].length === 1) break;
-  //     // found a date > selected value -> select the date before
-  //     lastRecordPosition = dataMap[datesSortedKey].indexOf(ts) - 1;
-  //     lastRecordedDate = dataMap[datesSortedKey][lastRecordPosition];
-  //     lastRecordBeforeSelectedTime = dataMap[dataMapKey][lastRecordedDate];
-
-  //     break;
-  //   }
-  // }
-
-  // // all recorded dates are smaller than selected date -> show no data
   const [lastRecordedDate, lastRecordBeforeSelectedTime] = getRecordsAroundDate(
     dataMap,
     dateSliderValue,
@@ -386,12 +347,6 @@ export const createCircleMarker = function (
     circle.data = {
       stationId: station.stationId,
     };
-
-    // if (station.stationId === 'Genadendal') {
-    //   console.log(`Created Marker:`);
-    //   console.log(circle);
-    //   console.log(station);
-    // }
 
     return circle;
   } else {
