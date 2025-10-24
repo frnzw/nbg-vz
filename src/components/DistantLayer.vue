@@ -9,6 +9,7 @@
     createPlaceViewLinkAndIcon,
     getLastRecordBeforeSelectedDate,
     scaleRadiusProportionalFlannery,
+    getRecordsAroundDate,
     showLayer,
     hideLayer,
   } from '../mapHelpers.js';
@@ -433,8 +434,15 @@
       for (const key of Object.keys(personsStore.persons)) {
         if (!key) continue;
         const person = personsStore.persons[key];
-        const [currentStation, previousStation, nextStation] =
-          getPersonsCurrentPreviousNextStation(person, oldDateSliderValue);
+        const [lastRecordedDate, currentStation, previousStation, nextStation] =
+          getRecordsAroundDate(
+            person,
+            props.dateSliderValue,
+            'sortedDates',
+            'personsAggregatedDate',
+            oldDateSliderValue,
+            false
+          );
 
         // animation FORWARD in time
         if (newDateSliderValue >= oldDateSliderValue) {
