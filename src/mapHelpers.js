@@ -14,10 +14,6 @@ export const createInfobox = function () {
   const toggle = function () {
     const contentElement = document.getElementById('infoBoxContent');
     const buttonElement = document.getElementById('infoBoxButton');
-    console.log(`buttonElement.style.display: ${buttonElement.style.display}`);
-    console.log(
-      `contentElement.style.display: ${contentElement.style.display}`
-    );
 
     if (buttonElement.style.display === 'none') {
       buttonElement.style.display = 'flex';
@@ -26,11 +22,6 @@ export const createInfobox = function () {
       buttonElement.style.display = 'none';
       contentElement.style.display = 'block';
     }
-
-    console.log(`buttonElement.style.display: ${buttonElement.style.display}`);
-    console.log(
-      `contentElement.style.display: ${contentElement.style.display}`
-    );
   };
 
   info.onAdd = function () {
@@ -48,7 +39,6 @@ export const createInfobox = function () {
     closeButton.title = 'Close Info-Box';
     closeButton.setAttribute('id', 'infoBoxTextCloseButton');
     closeButton.onclick = async function () {
-      console.log('Clicked Infobox Button');
       toggle();
     };
     const closeIcon = document.createElement('i');
@@ -74,7 +64,6 @@ export const createInfobox = function () {
     button.setAttribute('id', 'infoBoxButton');
     button.style.display = 'flex';
     button.onclick = async function () {
-      console.log('Clicked Infobox Button');
       toggle();
     };
     // create info button content: an icon
@@ -93,8 +82,6 @@ export const createInfobox = function () {
   };
 
   info.update = function (data) {
-    console.log(`Called infoBox.update with param ${data.content}`);
-
     const headlineElement = document.getElementById('infoBoxHeadline');
     headlineElement.innerHTML = data.headline;
 
@@ -179,8 +166,6 @@ export const filterMarkersByDataKey = function (
       : markers.filter((marker) =>
           selectedValues.includes(marker.data[dataKey])
         );
-  // console.log(filteredByNames)
-  // console.log(`Filtered markers by ${dataKey} ${selectedValues}: ${filteredByNames.length}`)
 
   return filtered;
 };
