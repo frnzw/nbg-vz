@@ -6,8 +6,8 @@
     createCircleMarker,
     createPersonViewLinkAndIcon,
     createWikidataLinkAndIcon,
-    getStationsLastRecordBeforeSelectedDate,
-    filterByStationId,
+    getLastRecordBeforeSelectedDate,
+    filterMarkersByDataKey,
     showLayer,
     hideLayer,
   } from '../mapHelpers.js';
@@ -126,7 +126,7 @@
         // console.log('station.persons[sliderValue]: ' + station.persons[props.sliderValue])
         // console.log('mapStore.markerBaseSizePersonnel: ' + mapStore.markerBaseSizePersonnel)
         const [lastRecordedDate, lastPersonsBeforeSelectedTime] =
-          getStationsLastRecordBeforeSelectedDate(
+          getLastRecordBeforeSelectedDate(
             station,
             props.dateSliderValue,
             'sortedDates',
@@ -156,9 +156,10 @@
       }
     }
 
-    const filteredByNamesPlaces = filterByStationId(
+    const filteredByNamesPlaces = filterMarkersByDataKey(
       selectedValues.value,
-      placeMarkers
+      placeMarkers,
+      'stationId'
     );
     placeLayer = L.layerGroup(filteredByNamesPlaces);
     currentPlaceMarkers = placeMarkers;
@@ -192,7 +193,7 @@
       const filteredByStationId =
         selectedValues.length == 0
           ? markers
-          : filterByStationId(selectedValues, markers);
+          : filterMarkersByDataKey(selectedValues, markers, 'stationId');
       filteredByStationId.forEach((marker) => marker.addTo(placeLayer));
     }
   };

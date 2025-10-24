@@ -3,6 +3,14 @@
   import 'leaflet-polylinedecorator';
   import 'leaflet/dist/leaflet.css';
   import { useMapStore } from '../stores/mapStore';
+  import {
+    createWikidataLinkAndIcon,
+    createPlaceViewLinkAndIcon,
+    getLastRecordBeforeSelectedDate,
+    showLayer,
+    hideLayer,
+    filterMarkersByDataKey,
+  } from '../mapHelpers.js';
   import { usePersonsStore } from '../stores/personsStore';
   import { onMounted, onUnmounted, watch, ref, defineEmits } from 'vue';
   import SearchField from './SearchField.vue';
@@ -122,7 +130,8 @@
             '-' +
             new Date(nextStationDateTo).getFullYear();
       [buttonNext, iconNext] = createPlaceViewLinkAndIcon(
-        nextStation.stationId
+        nextStation.stationId,
+        emit
       );
     }
     if (prevStation) {
@@ -137,20 +146,22 @@
             '-' +
             new Date(prevStationDateTo).getFullYear();
       [buttonPrev, iconPrev] = createPlaceViewLinkAndIcon(
-        prevStation.stationId
+        prevStation.stationId,
+        emit
       );
     }
 
     const popupDiv = document.createElement('div');
 
     const heading = document.createElement('h3');
-    heading.textContent = `${person.persId} ${lastRecordedDate ? '(' + lastKnownChoir + ')' : ''} : ${marker.data.stationIdx} (${!datePresent ? 'keine Daten' : datePresent})`;
+    heading.textContent = `${person.persId} ${lastRecordedDate ? '(' + lastKnownChoir.choir + ')' : ''} : ${marker.data.stationIdx} (${!datePresent ? 'keine Daten' : datePresent})`;
 
     const subHeadingCurrent = document.createElement('b');
     subHeadingCurrent.textContent = 'Letzte (erfasste) Station aus NBG-VZ:';
 
     const [buttonCurrent, iconCurrent] = createPlaceViewLinkAndIcon(
-      station.stationId
+      station.stationId,
+      emit
     );
 
     const subHeadingPrev = document.createElement('b');
@@ -231,7 +242,7 @@
     if (lastRecordedDate) {
       popupDiv.appendChild(
         document.createTextNode(
-          `Chor: ${lastKnownChoir} (${new Date(lastRecordedDate).getFullYear()})`
+          `Chor: ${lastKnownChoir.choir} (${new Date(lastRecordedDate).getFullYear()})`
         )
       );
       popupDiv.appendChild(document.createElement('br'));
@@ -249,36 +260,36 @@
     marker.bindTooltip(`${person.persId}`);
   };
 
-  const createWikidataLinkAndIcon = function (wdId) {
-    const a = document.createElement('a');
-    const linkText = document.createTextNode(wdId);
-    a.appendChild(linkText);
-    a.title = 'Link to Wikidata Page';
-    a.href = `https://www.wikidata.org/wiki/${wdId}`;
-    a.target = '_blank';
-    const icon = document.createElement('i');
-    icon.classList.add('mdi', 'mdi-open-in-new');
-    icon.style.paddingLeft = '3px';
+  // const createWikidataLinkAndIcon = function (wdId) {
+  //   const a = document.createElement("a");
+  //   const linkText = document.createTextNode(wdId);
+  //   a.appendChild(linkText);
+  //   a.title = "Link to Wikidata Page";
+  //   a.href = `https://www.wikidata.org/wiki/${wdId}`;
+  //   a.target = "_blank";
+  //   const icon = document.createElement("i");
+  //   icon.classList.add("mdi", "mdi-open-in-new");
+  //   icon.style.paddingLeft = "3px";
 
-    return [a, icon];
-  };
+  //   return [a, icon];
+  // };
 
-  const createPlaceViewLinkAndIcon = function (stationId) {
-    const button = document.createElement('button');
-    button.style.color = '#0078A8';
-    button.style.textDecoration = 'underline';
-    button.title = 'View Place in Place View';
-    button.textContent = `${stationId}`;
-    button.onclick = async function () {
-      emit('place-selected', stationId);
-    };
+  // const createPlaceViewLinkAndIcon = function (stationId) {
+  //   const button = document.createElement('button');
+  //   button.style.color = '#0078A8';
+  //   button.style.textDecoration = 'underline';
+  //   button.title = 'View Place in Place View';
+  //   button.textContent = `${stationId}`;
+  //   button.onclick = async function () {
+  //     emit('place-selected', stationId);
+  //   };
 
-    const icon = document.createElement('i');
-    icon.classList.add('mdi', 'mdi-map-marker');
-    icon.style.paddingLeft = '3px';
+  //   const icon = document.createElement('i');
+  //   icon.classList.add('mdi', 'mdi-map-marker');
+  //   icon.style.paddingLeft = '3px';
 
-    return [button, icon];
-  };
+  //   return [button, icon];
+  // };
 
   const createMarkersAndArrowTraces = function (
     orderedStationsAggr,
@@ -360,7 +371,10 @@
         circle.data = { name: person.persId };
         circle.bindTooltip(station.stationId);
 
-        const [button, icon] = createPlaceViewLinkAndIcon(station.stationId);
+        const [button, icon] = createPlaceViewLinkAndIcon(
+          station.stationId,
+          emit
+        );
         const popupDiv = document.createElement('div');
         popupDiv.appendChild(button);
         popupDiv.appendChild(icon);
@@ -432,7 +446,13 @@
         const orderedStationsAggr = stationsIdsTillSelected;
         const groupedStationsAggr = stationsTillSelected;
 
-        const [lastKnownChoir, lastRecordedDate] = findLastKnownChoir(person);
+        const [lastRecordedDate, lastKnownChoir] =
+          getLastRecordBeforeSelectedDate(
+            person,
+            props.dateSliderValue,
+            'sortedDatesChoir',
+            'choirDate'
+          );
 
         // create markers and polylines
         const markers = [];
@@ -458,13 +478,29 @@
     }
 
     // filter station by selected names
-    const [markersFilteredName, tracesFilteredName, placesFilteredName] =
-      filterByNames(
-        selectedValues.value,
-        personMarkers,
-        personTraces,
-        placeMarkers
-      );
+    // const [markersFilteredName, tracesFilteredName, placesFilteredName] =
+    //   filterByNames(
+    //     selectedValues.value,
+    //     personMarkers,
+    //     personTraces,
+    //     placeMarkers
+    //   );
+
+    const markersFilteredName = filterMarkersByDataKey(
+      selectedValues.value,
+      personMarkers,
+      'name'
+    );
+    const tracesFilteredName = filterMarkersByDataKey(
+      selectedValues.value,
+      personTraces,
+      'name'
+    );
+    const placesFilteredName = filterMarkersByDataKey(
+      selectedValues.value,
+      placeMarkers,
+      'name'
+    );
 
     // create layer groups from initial markers
     personLayerMarkers = L.layerGroup(markersFilteredName);
@@ -474,47 +510,47 @@
 
   // ------------------------------ FILTER FUNCTIONS
 
-  const filterByNames = function (selectedValues, markers, traces, places) {
-    const markersFilteredName =
-      selectedValues.length == 0
-        ? markers
-        : markers.filter((marker) => {
-            return selectedValues.includes(marker.data.name);
-          });
-    const tracesFilteredName =
-      selectedValues.length == 0
-        ? traces
-        : traces.filter((trace) => selectedValues.includes(trace.data.name));
-    const placesFilteredName =
-      selectedValues.length == 0
-        ? traces
-        : places.filter((place) => selectedValues.includes(place.data.name));
+  // const filterByNames = function (selectedValues, markers, traces, places) {
+  //   const markersFilteredName =
+  //     selectedValues.length == 0
+  //       ? markers
+  //       : markers.filter((marker) => {
+  //           return selectedValues.includes(marker.data.name);
+  //         });
+  //   const tracesFilteredName =
+  //     selectedValues.length == 0
+  //       ? traces
+  //       : traces.filter((trace) => selectedValues.includes(trace.data.name));
+  //   const placesFilteredName =
+  //     selectedValues.length == 0
+  //       ? traces
+  //       : places.filter((place) => selectedValues.includes(place.data.name));
 
-    return [markersFilteredName, tracesFilteredName, placesFilteredName];
-  };
+  //   return [markersFilteredName, tracesFilteredName, placesFilteredName];
+  // };
 
-  const findLastKnownChoir = function (person) {
-    let lastKnownChoir, lastRecordedDate;
+  // const findLastKnownChoir = function (person) {
+  //   let lastKnownChoir, lastRecordedDate;
 
-    for (const date of person.sortedDatesChoir) {
-      if (date < props.dateSliderValue) {
-        continue;
-      } else if (date === props.dateSliderValue) {
-        lastKnownChoir = person.choirDate[date].choir;
-        lastRecordedDate = date;
-      } else {
-        if (person.sortedDatesChoir.length === 1) break;
+  //   for (const date of person.sortedDatesChoir) {
+  //     if (date < props.dateSliderValue) {
+  //       continue;
+  //     } else if (date === props.dateSliderValue) {
+  //       lastKnownChoir = person.choirDate[date].choir;
+  //       lastRecordedDate = date;
+  //     } else {
+  //       if (person.sortedDatesChoir.length === 1) break;
 
-        const dateBeforeIdx = person.sortedDatesChoir.indexOf(date) - 1;
+  //       const dateBeforeIdx = person.sortedDatesChoir.indexOf(date) - 1;
 
-        lastRecordedDate = person.sortedDatesChoir[dateBeforeIdx];
-        lastKnownChoir = person.choirDate[lastRecordedDate].choir;
-        break;
-      }
-    }
+  //       lastRecordedDate = person.sortedDatesChoir[dateBeforeIdx];
+  //       lastKnownChoir = person.choirDate[lastRecordedDate].choir;
+  //       break;
+  //     }
+  //   }
 
-    return [lastKnownChoir, lastRecordedDate];
-  };
+  //   return [lastKnownChoir, lastRecordedDate];
+  // };
 
   const findStationsTillSelectedAggr = function (person) {
     const stationsTillSelected = [];
@@ -573,12 +609,15 @@
         personLayerPlaces.clearLayers();
 
         createPersonMarkersDate(personsStore.persons, wrapperStyle, iconCss);
-        showPersonsLayer(
-          personLayerMarkers,
-          personLayerTraces,
-          personLayerPlaces,
-          props.map
-        );
+        // showPersonsLayer(
+        //   personLayerMarkers,
+        //   personLayerTraces,
+        //   personLayerPlaces,
+        //   props.map
+        // );
+        showLayer(personLayerMarkers, props.map);
+        showLayer(personLayerTraces, props.map);
+        showLayer(personLayerPlaces, props.map);
       }
     }
   );
@@ -596,36 +635,39 @@
 
       createPersonMarkersDate(personsStore.persons, wrapperStyle, iconCss);
 
-      showPersonsLayer(
-        personLayerMarkers,
-        personLayerTraces,
-        personLayerPlaces,
-        props.map
-      );
+      // showPersonsLayer(
+      //   personLayerMarkers,
+      //   personLayerTraces,
+      //   personLayerPlaces,
+      //   props.map
+      // );
+      showLayer(personLayerMarkers, props.map);
+      showLayer(personLayerTraces, props.map);
+      showLayer(personLayerPlaces, props.map);
     }
   };
 
-  const showPersonsLayer = function (
-    markerLayerGroup,
-    traceLayerGroup,
-    personLayerPlaces,
-    map
-  ) {
-    markerLayerGroup.addTo(map);
-    traceLayerGroup.addTo(map);
-    personLayerPlaces.addTo(map);
-  };
+  // const showPersonsLayer = function (
+  //   markerLayerGroup,
+  //   traceLayerGroup,
+  //   personLayerPlaces,
+  //   map
+  // ) {
+  //   markerLayerGroup.addTo(map);
+  //   traceLayerGroup.addTo(map);
+  //   personLayerPlaces.addTo(map);
+  // };
 
-  const hidePersonsLayer = function (
-    markerLayerGroup,
-    traceLayerGroup,
-    personLayerPlaces,
-    map
-  ) {
-    markerLayerGroup.removeFrom(map);
-    traceLayerGroup.removeFrom(map);
-    personLayerPlaces.removeFrom(map);
-  };
+  // const hidePersonsLayer = function (
+  //   markerLayerGroup,
+  //   traceLayerGroup,
+  //   personLayerPlaces,
+  //   map
+  // ) {
+  //   markerLayerGroup.removeFrom(map);
+  //   traceLayerGroup.removeFrom(map);
+  //   personLayerPlaces.removeFrom(map);
+  // };
 
   // ------------------------------ COMPONENT LIFECYCLE FUNCTIONS
 
@@ -649,22 +691,28 @@
 
     nameList.value = Array.from(Object.keys(personsStore.persons));
 
-    showPersonsLayer(
-      personLayerMarkers,
-      personLayerTraces,
-      personLayerPlaces,
-      props.map
-    );
+    // showPersonsLayer(
+    //   personLayerMarkers,
+    //   personLayerTraces,
+    //   personLayerPlaces,
+    //   props.map
+    // );
+    showLayer(personLayerMarkers, props.map);
+    showLayer(personLayerTraces, props.map);
+    showLayer(personLayerPlaces, props.map);
   });
 
-  onUnmounted(() =>
-    hidePersonsLayer(
-      personLayerMarkers,
-      personLayerTraces,
-      personLayerPlaces,
-      props.map
-    )
-  );
+  onUnmounted(() => {
+    //     hidePersonsLayer(
+    //   personLayerMarkers,
+    //   personLayerTraces,
+    //   personLayerPlaces,
+    //   props.map
+    // )
+    hideLayer(personLayerMarkers, props.map);
+    hideLayer(personLayerTraces, props.map);
+    hideLayer(personLayerPlaces, props.map);
+  });
 </script>
 <template>
   <v-container>
