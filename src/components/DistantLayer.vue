@@ -18,9 +18,7 @@
 
   const infoHeadline = 'Distant View';
   const infoText = `
-  Die Größe der Kreismarker beschreibt die Anzahl der Personen, die laut letztem erfassten Verzeichnis aus den NBG an der jeweiligen Missionsstation anwesend waren. Bei Lücken in den erfassten Daten werden also die letzten erfassten Werte angezeigt.
-  <br> Vor und nach dem Datum des letzten erfassten NBG-Verzeichnisses werden keine Daten angezeigt.
-  <br> Ein Klick auf die Marker zeigt eine Liste der anwesenden Personen.
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
   `;
 
   const placesStore = usePlacesStore();
