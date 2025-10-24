@@ -32,8 +32,8 @@
         </p>
         <ul style="margin-left: 20px">
           <li>
-            Zeitraum 1828 - 1844 für das Missionsgebiet Südafrika (es fehlen
-            Daten für 1834 und 1835)
+            Zeitraum 1828 - 1843 für das Missionsgebiet Südafrika (es fehlen
+            Daten für 1832 und 1833)
           </li>
           <li>
             Einzelne Jahre 1828 und 1838 für alle Missionsgebiete, die in den
