@@ -7,8 +7,9 @@
     createCircleMarker,
     createPersonViewLinkAndIcon,
     createPlaceViewLinkAndIcon,
-    getStationsLastRecordBeforeSelectedDate,
+    getLastRecordBeforeSelectedDate,
     scaleRadiusProportionalFlannery,
+    getRecordsAroundDate,
     showLayer,
     hideLayer,
   } from '../mapHelpers.js';
@@ -167,7 +168,7 @@
 
   const createStationMarker = function (station) {
     const [lastRecordedDate, lastPersonsBeforeSelectedTime] =
-      getStationsLastRecordBeforeSelectedDate(
+      getLastRecordBeforeSelectedDate(
         station,
         props.dateSliderValue,
         'sortedDates',
@@ -433,8 +434,15 @@
       for (const key of Object.keys(personsStore.persons)) {
         if (!key) continue;
         const person = personsStore.persons[key];
-        const [currentStation, previousStation, nextStation] =
-          getPersonsCurrentPreviousNextStation(person, oldDateSliderValue);
+        const [lastRecordedDate, currentStation, previousStation, nextStation] =
+          getRecordsAroundDate(
+            person,
+            props.dateSliderValue,
+            'sortedDatesStation',
+            'stationsDate',
+            oldDateSliderValue,
+            false
+          );
 
         // animation FORWARD in time
         if (newDateSliderValue >= oldDateSliderValue) {
