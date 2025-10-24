@@ -198,14 +198,6 @@
     }
   };
 
-  // const showPlacesLayer = function (layergroup, map) {
-  //   layergroup.addTo(map);
-  // };
-
-  // const hidePlacesLayer = function (layergroup, map) {
-  //   if (layergroup) layergroup.removeFrom(map);
-  // };
-
   onMounted(async () => {
     // console.log('Places view test prop: ' + props.test);
     // console.log('Places view map prop: ');

@@ -564,21 +564,6 @@
       // console.log('animations finished!');
       placeLayer.clearLayers();
       createStationMarkersDate(placesStore.stations, props.map);
-      // for (const key of Object.keys(placesStore.stations)) {
-      //   if (!key) continue;
-      //   const station = placesStore.stations[key];
-
-      //   const [lastRecordedDate, lastPersonsBeforeSelectedTime] =
-      //     getStationsLastRecordBeforeSelectedDate(
-      //       station,
-      //       props.dateSliderValue,
-      //       'sortedDates',
-      //       'personsAggregatedDate'
-      //     );
-
-      //   placeLayer.clearLayers();
-      //   createStationMarkersDate(placesStore.stations, props.map);
-      // }
     }
   );
 </script>
