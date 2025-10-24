@@ -438,8 +438,8 @@
           getRecordsAroundDate(
             person,
             props.dateSliderValue,
-            'sortedDates',
-            'personsAggregatedDate',
+            'sortedDatesStation',
+            'stationsDate',
             oldDateSliderValue,
             false
           );
