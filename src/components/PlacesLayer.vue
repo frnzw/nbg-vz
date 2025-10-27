@@ -1,230 +1,243 @@
 <script setup>
-    import L from "leaflet";
-    import { usePlacesStore } from '../stores/placesStore'
-    import {onMounted, ref, defineProps, onUnmounted, watch, h, render } from 'vue'
-    import SearchField from './SearchField.vue'
+  import L from 'leaflet';
+  import { usePlacesStore } from '../stores/placesStore';
+  import { useMapStore } from '../stores/mapStore';
+  import {
+    createCircleMarker,
+    createPersonViewLinkAndIcon,
+    createWikidataLinkAndIcon,
+    getLastRecordBeforeSelectedDate,
+    filterMarkersByDataKey,
+    showLayer,
+    hideLayer,
+  } from '../mapHelpers.js';
+  import { onMounted, ref, defineProps, onUnmounted, watch } from 'vue';
+  import SearchField from './SearchField.vue';
 
-    const placesStore = usePlacesStore();
+  const infoHeadline = 'Ort: Personal';
+  const infoText = `
+  Die Größe der Kreismarker beschreibt die <b>Anzahl der Personen</b>, die laut letztem erfassten Verzeichnis aus den NBG an der jeweiligen Missionsstation anwesend waren. Bei Lücken in den erfassten Daten werden also die <b>letzten erfassten Werte</b> angezeigt.
+  <br> Vor und nach dem Datum des letzten erfassten NBG-Verzeichnisses werden keine Daten angezeigt.
+  <br> Ein Klick auf die Marker zeigt eine Liste der anwesenden Personen und erlaubt, mit Vorauswahl einer Person in die Ansicht "Traces" zu wechseln.
+  `;
+  const placesStore = usePlacesStore();
+  const mapStore = useMapStore();
 
-    const props = defineProps({
-        map: Object,
-        sliderValue: Number,
-        dateSliderValue: Number,
-        placesSelectedFromTrace: Array
-    });
+  const props = defineProps({
+    map: Object,
+    infobox: Object,
+    sliderValue: Number,
+    dateSliderValue: Number,
+    placesSelectedFromTrace: Array,
+  });
 
-    const emit = defineEmits(['person-selected', 'place-pre-selection-cleared']);
+  const emit = defineEmits(['person-selected', 'place-pre-selection-cleared']);
 
-    let currentPlaceMarkers = undefined;
-    let placeLayer = undefined;
+  let currentPlaceMarkers = undefined;
+  let placeLayer = undefined;
 
-    const facetName = "Stationsnamen"
-    let nameList = ref([])
-    const selectedValues = ref(props.placesSelectedFromTrace)
-    const markerBaseSize = 500
+  const facetName = 'Stationsnamen';
+  let nameList = ref([]);
+  const selectedValues = ref(props.placesSelectedFromTrace);
 
-    const createPopUpAndTooltip = function (circle, station, lastRecordedDate, lastPersonsBeforeSelectedTime) {
-        
-        let popUpHtml = `<h3>${station.stationId}</h3></br>`
-                      + `<b>Anwesend laut letztem erfassten NBG-Verzeichnis ${lastRecordedDate ? new Date(lastRecordedDate).getFullYear() : ''} (${lastPersonsBeforeSelectedTime ? lastPersonsBeforeSelectedTime.count : 'keine Daten'}):</b></br>`
+  const createPopUpAndTooltip = function (
+    circle,
+    station,
+    lastRecordedDate,
+    lastPersonsBeforeSelectedTime
+  ) {
+    let popUpHtml =
+      `<h3>${station.stationId}</h3></br>` +
+      `<b>Anwesend laut letztem erfassten NBG-Verzeichnis ${lastRecordedDate ? new Date(lastRecordedDate).getFullYear() : ''} (${lastPersonsBeforeSelectedTime ? lastPersonsBeforeSelectedTime.count : 'keine Daten'}):</b></br>`;
 
-        const popupDiv = document.createElement('div');
-        popupDiv.innerHTML = popUpHtml;
+    const popupDiv = document.createElement('div');
+    popupDiv.innerHTML = popUpHtml;
 
+    if (lastPersonsBeforeSelectedTime) {
+      for (const [
+        index,
+        person,
+      ] of lastPersonsBeforeSelectedTime.persons.entries()) {
+        const [button, icon] = createPersonViewLinkAndIcon(person.persId, emit);
+        popupDiv.appendChild(button);
+        popupDiv.appendChild(icon);
+        if (index < lastPersonsBeforeSelectedTime.persons.length - 1)
+          popupDiv.appendChild(document.createElement('br'));
+      }
+    }
+
+    const subHeadingPlace = document.createElement('b');
+    subHeadingPlace.textContent = 'Zum Ort:';
+
+    popupDiv.appendChild(document.createElement('br'));
+    popupDiv.appendChild(document.createElement('br'));
+    popupDiv.appendChild(subHeadingPlace);
+    popupDiv.appendChild(document.createElement('br'));
+
+    if (station.altName) {
+      popupDiv.appendChild(
+        document.createTextNode(`Alt.-Name: ${station.altName}`)
+      );
+      popupDiv.appendChild(document.createElement('br'));
+    }
+    if (station.yFounded) {
+      popupDiv.appendChild(
+        document.createTextNode(`Gegründet: ${station.yFounded}`)
+      );
+      popupDiv.appendChild(document.createElement('br'));
+    }
+    if (station.yRenewed) {
+      popupDiv.appendChild(
+        document.createTextNode(`Erneuert: ${station.yRenewed}`)
+      );
+      popupDiv.appendChild(document.createElement('br'));
+    }
+    if (station.region) {
+      popupDiv.appendChild(
+        document.createTextNode(`Region: ${station.region}`)
+      );
+      popupDiv.appendChild(document.createElement('br'));
+    }
+    if (station.wdId) {
+      const [a, icon] = createWikidataLinkAndIcon(station.wdId);
+      popupDiv.appendChild(document.createTextNode('Wikidata: '));
+      popupDiv.appendChild(a);
+      popupDiv.appendChild(icon);
+      popupDiv.appendChild(document.createElement('br'));
+    }
+
+    circle.bindPopup(popupDiv);
+    circle.bindTooltip(`${station.stationId}`);
+  };
+
+  const createStationMarkersDate = function (stations) {
+    // console.log("Attempting to add " + Object.keys(stations).length + " markers")
+    const placeMarkers = [];
+
+    // console.log('resizing markers for slidervalue: ' + props.sliderValue)
+    for (const key of Object.keys(stations)) {
+      if (!key) continue;
+      if (stations.hasOwnProperty(key)) {
+        //console.log(key)
+
+        const station = stations[key];
+        //console.log(key, station)
+
+        // console.log('station.persons[sliderValue]: ' + station.persons[props.sliderValue])
+        // console.log('mapStore.markerBaseSizePersonnel: ' + mapStore.markerBaseSizePersonnel)
+        const [lastRecordedDate, lastPersonsBeforeSelectedTime] =
+          getLastRecordBeforeSelectedDate(
+            station,
+            props.dateSliderValue,
+            'sortedDates',
+            'personsAggregatedDate'
+          );
 
         if (lastPersonsBeforeSelectedTime) {
-            for (const [index, person] of lastPersonsBeforeSelectedTime.persons.entries()) {
-                const button = document.createElement('button');
-                button.textContent = `${person.persId} (${person.choir})`;
-                button.onclick = async function() {
-                    console.log(`Clicked on ${person.persId} (${person.choir})`);
-                    emit('person-selected', person.persId)
-                }
-                popupDiv.appendChild(button);
-                if (index < lastPersonsBeforeSelectedTime.persons.length - 1) popupDiv.appendChild(document.createElement('br'));
-            }
-
+          // only create marker if data is present
+          const circle = createCircleMarker(
+            station,
+            lastPersonsBeforeSelectedTime.count,
+            placesStore.minPersonnelCountAllStations,
+            'red',
+            true,
+            true,
+            mapStore.markerBaseSizePersonnel,
+            null
+          );
+          createPopUpAndTooltip(
+            circle,
+            station,
+            lastRecordedDate,
+            lastPersonsBeforeSelectedTime
+          );
+          placeMarkers.push(circle);
         }
-
-        circle.bindPopup(popupDiv);
-        circle.bindTooltip(`${station.stationId}`)           
-        
+      }
     }
 
-    const getLastRecordBeforeSelectedDate = function(station, dateSliderValue) {
+    const filteredByNamesPlaces = filterMarkersByDataKey(
+      selectedValues.value,
+      placeMarkers,
+      'stationId'
+    );
+    placeLayer = L.layerGroup(filteredByNamesPlaces);
+    currentPlaceMarkers = placeMarkers;
+    placeLayer.addTo(props.map);
 
-        // find last record before selected data of slider
-        let lastRecordPosition;
-        let lastRecordedDate;
-        let lastPersonsBeforeSelectedTime;
-        for (const ts of station.sortedDates) {
+    // console.log('markers added to layergroup')
+  };
 
-            if (ts < dateSliderValue) {
-                continue;
-            } else if (ts === dateSliderValue) {
-                lastRecordPosition = station.sortedDates.indexOf(ts);
-                lastRecordedDate = station.sortedDates[lastRecordPosition];
-                lastPersonsBeforeSelectedTime = station.personsAggregatedDate[station.sortedDates[lastRecordPosition]];
-                break; 
-            } else {
-                // if ts > dateSliderValue but also only value? -> do not show marker
-                if (station.sortedDates.length === 1) break
-
-                lastRecordPosition = station.sortedDates.indexOf(ts) - 1;
-                lastRecordedDate = station.sortedDates[lastRecordPosition];
-                lastPersonsBeforeSelectedTime = station.personsAggregatedDate[station.sortedDates[lastRecordPosition]];
-                break;
-            }
-        }
-
-        return [lastRecordedDate, lastPersonsBeforeSelectedTime];
-    }
-
-    const createCircleMarker = function(station, lastPersonsBeforeSelectedTime, markerBaseSize) {
-        // scale radius according to last known record
-        const radiusScaled = lastPersonsBeforeSelectedTime ? markerBaseSize * parseInt(lastPersonsBeforeSelectedTime.count) : markerBaseSize
-        // console.log('radius scaled: ' + radiusScaled)
-        const circle = L.circle([station.lat, station.long], {
-            color: lastPersonsBeforeSelectedTime ? 'red' : 'grey',
-            fillColor: '#f03',
-            fillOpacity: 0.5,
-            radius: radiusScaled * (20 - props.map.getZoom())
-        });
-
-        circle.data = {stationId:station.stationId, persons:station.persons}
-   
-        return circle;
-    }
-
-    const createStationMarkersDate = function(stations) {
-        // console.log("Attempting to add " + Object.keys(stations).length + " markers")
-        const placeMarkers = []
-
-        // console.log('resizing markers for slidervalue: ' + props.sliderValue)
-        for (const key of Object.keys(stations)) {
-            if (!key) continue
-            if (stations.hasOwnProperty(key)) {
-                //console.log(key)
-                
-                const station = stations[key]
-                //console.log(key, station)
-           
-                // console.log('station.persons[sliderValue]: ' + station.persons[props.sliderValue])
-                // console.log('markerBaseSize: ' + markerBaseSize)
-                const [
-                    lastRecordedDate, 
-                    lastPersonsBeforeSelectedTime ] = getLastRecordBeforeSelectedDate(station, props.dateSliderValue);
-                
-                const circle = createCircleMarker(station, lastPersonsBeforeSelectedTime, markerBaseSize);
-                
-                createPopUpAndTooltip(circle, station, lastRecordedDate, lastPersonsBeforeSelectedTime);
-
-                placeMarkers.push(circle)
-            }
-
-        }
-        const filtered = filterByStationId(selectedValues.value, placeMarkers)
-        placeLayer = L.layerGroup(filtered);
-        currentPlaceMarkers = placeMarkers;
-        placeLayer.addTo(props.map)
-        // console.log('markers added to layergroup')
-        
-
-    }
-    
-    const filterByStationId = function(selectedValues, markers) {
-
-        const filteredByNames = selectedValues.length == 0 ? markers : markers.filter(marker => selectedValues.includes(marker.data.stationId))
-        // console.log(filteredByNames)
-        // console.log(`Filtered markers by names ${selectedValues}: ${filteredByNames.length}`)
-
-        return filteredByNames
-    }
-
-watch(() => props.dateSliderValue, (dateSliderValue) => {
-    // console.log('triggered watch for date slider!')
-    // console.log(`selected date: ${dateSliderValue} = ${new Date(dateSliderValue).toDateString()}`)
-    if (currentPlaceMarkers && placeLayer) {
+  watch(
+    () => props.dateSliderValue,
+    () => {
+      // console.log('triggered watch for date slider!')
+      // console.log(`selected date: ${dateSliderValue} = ${new Date(dateSliderValue).toDateString()}`)
+      if (currentPlaceMarkers && placeLayer) {
         if (placeLayer) placeLayer.clearLayers();
-        const placeMarkers = [];                    
-            
-        for (const key of Object.keys(placesStore.stations)) {
-            if (!key) continue
-            if (placesStore.stations.hasOwnProperty(key)) {
-                //console.log(key)
-                
-                const station = placesStore.stations[key]
-                //console.log(key, station)
-           
-                // console.log('station.persons[sliderValue]: ' + station.persons[props.sliderValue])
-                // console.log('markerBaseSize: ' + markerBaseSize)
-                const [
-                    lastRecordedDate, 
-                    lastPersonsBeforeSelectedTime 
-                ] = getLastRecordBeforeSelectedDate(station, dateSliderValue);
-                
-                const circle = createCircleMarker(station, lastPersonsBeforeSelectedTime, markerBaseSize);
-                
-                createPopUpAndTooltip(circle, station, lastRecordedDate, lastPersonsBeforeSelectedTime);
 
-                placeMarkers.push(circle)
-            }
-
-        }
-        const filtered = filterByStationId(selectedValues.value, placeMarkers)
-        filtered.forEach(marker => marker.addTo(placeLayer))
-        currentPlaceMarkers = placeMarkers;
+        createStationMarkersDate(placesStore.stations, props.map);
+        showLayer(placeLayer, props.map);
+      }
     }
+  );
 
-});
-
-        const onSelectedNamesUpdate = function (selectedValues, markers) {
-            // clear pre-selection prop in map component to avoid pre-selection being active next time
-            // a user navigates here via tabs
-            emit('place-pre-selection-cleared')
-            if (markers && placeLayer) {
-                // console.log('On selected names update:')
-                // console.log(selectedValues) // !!! selectedValues comes from template here, can access directly not via .value
-                placeLayer.clearLayers()
-                const filteredByStationId = selectedValues.length == 0 ? markers : filterByStationId(selectedValues, markers)
-                filteredByStationId.forEach(marker => marker.addTo(placeLayer))
-
-            }
-        }
-
-
-
-    const showPlacesLayer = function(layergroup, map) {
-        layergroup.addTo(map)
+  const onSelectedNamesUpdate = function (selectedValues, markers) {
+    // clear pre-selection prop in map component to avoid pre-selection being active next time
+    // a user navigates here via tabs
+    emit('place-pre-selection-cleared');
+    if (markers && placeLayer) {
+      // console.log('On selected names update:')
+      // console.log(selectedValues) // !!! selectedValues comes from template here, can access directly not via .value
+      placeLayer.clearLayers();
+      const filteredByStationId =
+        selectedValues.length == 0
+          ? markers
+          : filterMarkersByDataKey(selectedValues, markers, 'stationId');
+      filteredByStationId.forEach((marker) => marker.addTo(placeLayer));
     }
+  };
 
-    const hidePlacesLayer = function(layergroup, map) {
-        layergroup.removeFrom(map)
+  onMounted(async () => {
+    // console.log('Places view test prop: ' + props.test);
+    // console.log('Places view map prop: ');
+    // console.log(props.map);
+    // console.log('pathToDataFile: ' + placesStore.pathToDataFile)
+    if (!placesStore.loaded) {
+      await placesStore.readData(
+        placesStore.pathToDataFilePlaces,
+        placesStore.pathToDataFilePersonsPlaces,
+        placesStore.pathToDataFilePopulationPlaces
+      );
     }
+    console.log(placesStore.stations);
 
-    onMounted(async () => {
-        // console.log('Places view test prop: ' + props.test);
-        // console.log('Places view map prop: ');
-        console.log(props.map);
-        // console.log('pathToDataFile: ' + placesStore.pathToDataFile)
-        await placesStore.readData(placesStore.pathToDataFile)
-        // console.log(placesStore.stations)
+    // fill info box with content describing this layer
+    props.infobox.update({ headline: infoHeadline, content: infoText });
 
-        if (currentPlaceMarkers === undefined) createStationMarkersDate(placesStore.stations, props.map)
-        // console.log(Object.keys(placesStore.stations))
-        nameList.value = Array.from(Object.keys(placesStore.stations))
-        // console.log(nameList.value)
+    if (currentPlaceMarkers === undefined)
+      createStationMarkersDate(placesStore.stations, props.map);
 
-        showPlacesLayer(placeLayer, props.map);
+    nameList.value = Array.from(Object.keys(placesStore.stations));
 
-    })
+    showLayer(placeLayer, props.map);
+  });
 
-    onUnmounted(() => hidePlacesLayer(placeLayer, props.map))
-
+  onUnmounted(() => {
+    hideLayer(placeLayer, props.map);
+  });
 </script>
 <template>
-    <v-container>
-        <SearchField v-model="selectedValues" @update:modelValue="onSelectedNamesUpdate(selectedValues, currentPlaceMarkers)" :v-if="nameList.length > 0" :facet="facetName" :facetData="nameList"/>
-        <p>{{ selectedValues }}</p>
-    </v-container>
+  <v-container>
+    <SearchField
+      v-model="selectedValues"
+      @update:modelValue="
+        onSelectedNamesUpdate(selectedValues, currentPlaceMarkers)
+      "
+      :v-if="nameList.length > 0"
+      :facet="facetName"
+      :facetData="nameList"
+    />
+    <p>{{ selectedValues }}</p>
+  </v-container>
 </template>

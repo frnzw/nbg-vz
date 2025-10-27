@@ -1,52 +1,30 @@
 <script setup>
-    import { useRoute, RouterView } from 'vue-router'
-    import Map from './components/Map.vue'
-    
-    const route = useRoute()
+  import { useRoute, RouterView } from 'vue-router';
 
+  const route = useRoute();
 </script>
 
 <template>
   <v-app>
-
     <!-- App Bar Header -->
-      <v-app-bar app :elevation="2">
-        <!-- <template v-slot:prepend>
-          <v-app-bar-nav-icon></v-app-bar-nav-icon>
-        </template> -->
-        <v-app-bar-title>Herrnhut WWW (Wer, wo, wann)</v-app-bar-title>
+    <v-app-bar app :elevation="2">
+      <v-app-bar-title>Herrnhut WWW (Wer, wo, wann)</v-app-bar-title>
 
-        <!-- Tab Navigation -->
-        <v-tabs :model-value="route.path" align-tabs="center">
-          <v-tab to="/map/places" value="/map/places">
-            Places View
-          </v-tab>
-          <v-tab to="/map/persons" value="/map/persons">
-            Persons View
-          </v-tab>
-          <v-tab to="/map/traces" value="/map/traces">
-            Traces View
-          </v-tab>
-          <v-tab to="/map/distant" value="/map/distant">
-            Distant View
-          </v-tab>
+      <!-- Tab Navigation -->
+      <v-tabs :model-value="route.path" align-tabs="center">
+        <v-tab to="/map/places" value="/map/places"> Ort:Personal </v-tab>
+        <v-tab to="/map/population" value="/map/population">
+          Ort:Gemeinde
+        </v-tab>
+        <v-tab to="/map/traces" value="/map/traces"> Traces </v-tab>
+        <v-tab to="/map/distant" value="/map/distant"> Distant View </v-tab>
+        <v-tab to="/about" value="/about"> About </v-tab>
+      </v-tabs>
+    </v-app-bar>
 
-        </v-tabs>
-
-      </v-app-bar>
-
-      <!-- Main Content -->
-      <v-main>
-      
-        <!-- Global Map Instance for all map views-->
-        <!-- When bringing in other views (About, Data): use v-if / v-else to render map -->
-        <!-- <Map /> -->
-
-      
-        <RouterView />
-
-      </v-main>
-
+    <!-- Main Content -->
+    <v-main>
+      <RouterView />
+    </v-main>
   </v-app>
-
 </template>
