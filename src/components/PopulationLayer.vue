@@ -67,7 +67,7 @@
       popupDiv.appendChild(document.createTextNode('Keine Daten.'));
 
     const subHeadingPop1 = document.createElement('b');
-    subHeadingPop1.textContent = 'Gemeindegröße_1: ';
+    subHeadingPop1.textContent = 'Mitglieder: ';
     popupDiv.appendChild(subHeadingPop1);
     if (lastPopBeforeSelectedTime.pop_1) {
       popupDiv.appendChild(
@@ -77,7 +77,7 @@
     popupDiv.appendChild(document.createElement('br'));
 
     const subHeadingPop2 = document.createElement('b');
-    subHeadingPop2.textContent = 'Gemeindegröße_1: ';
+    subHeadingPop2.textContent = 'Größe Gemeinde: ';
     popupDiv.appendChild(subHeadingPop2);
     if (lastPopBeforeSelectedTime.pop_2) {
       popupDiv.appendChild(
