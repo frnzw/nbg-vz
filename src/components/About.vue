@@ -18,13 +18,14 @@
           Diese Anwendung visualisiert Daten verschiedener Quellen über
           <b>Personen und Orte</b> aus dem Kontext der
           <b>Herrnhuter Brüdergemeine</b> im 19. Jahrhundert. Sie entstand im
-          Rahmen eines Praktikums als <b>Prototyp</b> auf Grundlage weniger,
-          beispielhafter Daten. Es handelt sich also nicht um ein ausgereiftes
-          Analysewerkzeug auf umfassender Datengrundlage. Das Ziel der
-          Entwicklung war vielmehr, im Prozess Möglichkeiten und Grenzen der
-          Visualisierung zu untersuchen und interaktives Anschauungsmaterial zu
-          schaffen um Anforderungen an eine visuelle Forschungsumgebung für
-          Herrnhuter Daten zukünftig besser formulieren zu können.
+          Rahmen eines Praktikums als <b>Prototyp</b> auf Grundlage
+          <b>weniger, beispielhafter Daten</b>. Es handelt sich also nicht um
+          ein ausgereiftes Analysewerkzeug auf umfassender Datengrundlage. Das
+          Ziel der Entwicklung war vielmehr, im Prozess Möglichkeiten und
+          Grenzen der Visualisierung zu untersuchen und interaktives
+          Anschauungsmaterial zu schaffen um Anforderungen an eine visuelle
+          Forschungsumgebung für Herrnhuter Daten zukünftig besser formulieren
+          zu können.
           <br />
           <br />
           Die Visualisierung basiert auf folgenden Quellen:
@@ -49,17 +50,18 @@
           <li>
             In der Anreise befindliche und außerordentlich abwesende Personen
             mit expliziten Angaben wie "auf Besuch in ..." im Verzeichnis wurden
-            nicht mit erfasst
+            nicht mit erfasst.
           </li>
           <li>
             Eine Desambiguierung liegt nur für einen Teil der erfassten Personen
-            in den Jahren ... vor. Für die meisten Jahre wurden Personen ohne
-            Desambiguierung nach folgendem Schema erfasst: [Nachname]_[Initialen
-            Vorname, falls vorhanden]_[XX für Schwester, XY für Bruder]
+            (Genadendal 1839, Südafrika 1843) vor. Für die meisten Jahre wurden
+            Personen ohne Desambiguierung nach folgendem Schema erfasst:
+            [Nachname]_[Initialen Vorname, falls vorhanden]_[XX für Schwester,
+            XY für Bruder]
           </li>
           <li>
             Visualisiert werden nur die Daten derjenigen Stationen, für die eine
-            Geokodierung vorhanden war – insgesamt x Stück:
+            Geokodierung vorhanden war – insgesamt 18 Stück:
             <ul>
               <li>Missionsgebiet Südafrika: Elim, Enon, Genadendal, Mamre</li>
               <li>
