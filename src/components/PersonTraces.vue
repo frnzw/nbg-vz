@@ -19,7 +19,15 @@
 
   const infoHeadline = 'Person: Traces';
   const infoText = `
-  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+Diese Darstellung zeigt die aus den NBG-Verzeichnissen erfassten Aufenthaltsorte einzelner Personen im zeitlichen Verlauf. 
+Die Visualierung ist für die <b>Betrachtung ausgewählter Personen</b> konzipiert – das geht mittels des <b>Suchfeldes</b> unterhalb des Zeitsliders.
+</br>
+</br>
+Der Personenmarker gibt den zu dem ausgewählten Datum zuletzt erfassten Aufenthaltsort der Person an. Rote Kreismarker symbolisieren 
+die in der Vergangenheit besuchten Missionsstationen, Pfeile die Abfolge, in der die jeweilige Person an ihnen erfasst war. 
+</br>
+</br>
+Wiederholt besuchte Marker und "gegangene Wege" werden entsprechend der Häufigkeit der Aufenthalte / Ortswechsel dunkler dargestellt.
   `;
 
   const personsStore = usePersonsStore();

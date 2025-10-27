@@ -19,7 +19,17 @@
 
   const infoHeadline = 'Distant View';
   const infoText = `
-  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+  Diese Darstellung zeigt eine <b>übersichtsartige Animation</b> der in den erfassten NBG-Verzeichnissen dokumentierten Ortswechsel einzelner Missionar:innen. 
+  Ein Ortswechsel beliebig vieler Personen wird dafür als animierter, blauer Marker dargestellt. 
+  </br>
+  </br>
+  Die Größe der Ortmarker beschreibt die Anzahl der laut NBG-Verzeichnis anwesenden Personen und wird in der Animation dynamisch angepasst. 
+  Nach Animation aller Ortswechsel wird die Größe der Stationen final für das gewählte Datum berechnet. 
+  Damit wird Neuerfassungen oder Sterbefällen, die ohne dokumentierten Ortswechels
+  die Personenananzahl verändern, Rechnung getragen.
+  </br>
+  </br>
+  Ein Klick auf die Marker zeigt <b>weitere Informationen</b> an und erlaubt Wechsel in die Ansichten Ort:Personal und Traces.
   `;
 
   const placesStore = usePlacesStore();
