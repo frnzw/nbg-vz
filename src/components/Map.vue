@@ -34,10 +34,8 @@
   const placesSelectedFromTrace = ref([]);
 
   const initMap = function () {
-    const map = L.map('mapContainer').fitWorld().zoomIn(); //.setView(center, 2);
-    /**
-     * @todo set minZoom and initial view dependent on screen size: large screen needs minZoom 3 for initial view / overview
-     */
+    const map = L.map('mapContainer').fitWorld().zoomIn();
+
     const tileLayer = L.tileLayer(
       'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}' +
         (L.Browser.retina ? '@2x.png' : '.png'),
