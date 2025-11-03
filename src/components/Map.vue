@@ -57,9 +57,6 @@
     const info = createInfobox();
     info.addTo(map);
 
-    // a debugging convenience
-    map.on('click', () => console.log(map.getZoom()));
-
     // set vue variables to hand down as props
     globalMap = map;
     globalInfoBox = info;
@@ -74,24 +71,20 @@
   });
 
   const switchToPersonView = function (persId) {
-    console.log('caught event person-selected!');
     personsSelectedFromPlace.value = [persId];
     router.push({ name: 'traces' });
   };
 
   const clearPreSelectionPerson = function () {
-    console.log('caught event person-pre-selection-cleared!');
     personsSelectedFromPlace.value = [];
   };
 
   const switchToPlacesView = function (stationId) {
-    console.log('caught event place-selected!');
     placesSelectedFromTrace.value = [stationId];
     router.push({ name: 'places' });
   };
 
   const clearPreSelectionPlace = function () {
-    console.log('caught event place-pre-selection-cleared!');
     placesSelectedFromTrace.value = [];
   };
 
@@ -103,21 +96,18 @@
         readyForPopulationView.value = false;
         readyForTraceView.value = false;
         readyForDistantView.value = false;
-        console.log('ready for place view');
       } else if (route.path === '/map/population') {
         readyForPopulationView.value = true;
 
         readyForTraceView.value = false;
         readyForPlaceView.value = false;
         readyForDistantView.value = false;
-        console.log('ready for trace view');
       } else if (route.path === '/map/traces') {
         readyForTraceView.value = true;
 
         readyForPlaceView.value = false;
         readyForPopulationView.value = false;
         readyForDistantView.value = false;
-        console.log('ready for person view');
       } else if (route.path === '/map/distant') {
         readyForDistantView.value = true;
 
@@ -133,9 +123,6 @@
   };
 
   watch(route, () => {
-    console.log(
-      `route changed to ${route.path} with params ${JSON.stringify(route.query)}`
-    );
     prepareRenderingOfSubComponents();
   });
 </script>

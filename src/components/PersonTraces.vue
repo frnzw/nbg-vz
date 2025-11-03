@@ -526,7 +526,6 @@ Wiederholt besuchte Marker und "gegangene Wege" werden entsprechend der Häufigk
   watch(
     () => props.dateSliderValue,
     () => {
-      console.log('triggered watch for slider!');
       if (personLayerMarkers && personLayerTraces) {
         personLayerMarkers.clearLayers(); // apparently critical for slider performance to do this before creating new markers...?
         personLayerTraces.clearLayers();
@@ -546,8 +545,6 @@ Wiederholt besuchte Marker und "gegangene Wege" werden entsprechend der Häufigk
     // a user navigates here via tabs
     emit('person-pre-selection-cleared');
     if (personLayerMarkers && personLayerTraces && personLayerPlaces) {
-      console.log('On selected names update:');
-
       personLayerMarkers.clearLayers();
       personLayerTraces.clearLayers();
       personLayerPlaces.clearLayers();
@@ -563,16 +560,11 @@ Wiederholt besuchte Marker und "gegangene Wege" werden entsprechend der Häufigk
   // ------------------------------ COMPONENT LIFECYCLE FUNCTIONS
 
   onMounted(async () => {
-    console.log('RENDERED PERSONS LAYER');
-
     if (!personsStore.loaded)
       await personsStore.readData(
         personsStore.pathToDataFilePersons,
         personsStore.pathToDataFilePersonsPlaces
       );
-
-    console.log('personsStore.persons:');
-    console.log(personsStore.persons);
 
     // fill info box with content describing this layer
     props.infobox.update({ headline: infoHeadline, content: infoText });

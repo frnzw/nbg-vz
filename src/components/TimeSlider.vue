@@ -1,78 +1,69 @@
 <script setup>
-import { ref, watch } from "vue";
-const props = defineProps({
-  modelValue: Number,
-});
+  import { ref, watch } from 'vue';
+  const props = defineProps({
+    modelValue: Number,
+  });
 
-// have to use timestamps here, since vuetify slider only works with numbers
-const start = new Date("1800-01-01").getTime();
-const end = new Date("1900-01-01").getTime();
-let isPlaying = ref(false);
+  // have to use timestamps here, since vuetify slider only works with numbers
+  const start = new Date('1800-01-01').getTime();
+  const end = new Date('1900-01-01').getTime();
+  let isPlaying = ref(false);
 
-// console.log(`slider start: ${start}`)
-// console.log(`slider end: ${end}`)
+  const sliderValue = ref(props.modelValue); // suppress warning that props are read only, indirectly bind to slider v-model via this local var
+  const emit = defineEmits(['update:modelValue']);
 
-const sliderValue = ref(props.modelValue); // suppress warning that props are read only, indirectly bind to slider v-model via this local var
-const emit = defineEmits(["update:modelValue"]);
-
-const ticks = [];
-for (const offset of [...Array(100).keys()]) {
-  const tick = new Date(`${1800 + offset}-12-31`).getTime();
-  ticks.push(tick);
-}
-
-// choose closest tick instead of real value – emit update here, not on update event itself
-watch(sliderValue, (val) => {
-  if (!ticks.includes(val)) {
-    const closestTick = ticks.reduce((a, b) =>
-      Math.abs(b - val) < Math.abs(a - val) ? b : a,
-    );
-    sliderValue.value = closestTick;
+  const ticks = [];
+  for (const offset of [...Array(100).keys()]) {
+    const tick = new Date(`${1800 + offset}-12-31`).getTime();
+    ticks.push(tick);
   }
-  emit("update:modelValue", sliderValue.value);
-});
 
-// console.log(tickLabels)
-// converting back timestamps for displaying
-function formatThumbLabel(val) {
-  // console.log(val)
-  const d = new Date(val);
-  // console.log(d)
-  // console.log(`extracted date: ${d}`)
-  return d.getFullYear().toString() + "-" + (d.getMonth() + 1).toString();
-}
-
-const playBack = async function () {
-  while (isPlaying.value === true) {
-    const newValue = sliderValue.value + 365 * 24 * 60 * 60 * 1000;
-    if (newValue >= end) {
-      sliderValue.value = start;
-      continue;
-    }
-
-    if (!ticks.includes(newValue)) {
+  // choose closest tick instead of real value – emit update here, not on update event itself
+  watch(sliderValue, (val) => {
+    if (!ticks.includes(val)) {
       const closestTick = ticks.reduce((a, b) =>
-        Math.abs(b - newValue) < Math.abs(a - newValue) ? b : a,
+        Math.abs(b - val) < Math.abs(a - val) ? b : a
       );
       sliderValue.value = closestTick;
-    } else {
-      sliderValue.value = newValue;
     }
+    emit('update:modelValue', sliderValue.value);
+  });
 
-    // console.log(`sliderValue.value === ${sliderValue.value}`)
-    emit("update:modelValue", sliderValue.value);
-    await new Promise((resolve) => {
-      setTimeout(resolve, 1000);
-    });
+  // converting back timestamps for displaying
+  function formatThumbLabel(val) {
+    const d = new Date(val);
+    return d.getFullYear().toString() + '-' + (d.getMonth() + 1).toString();
   }
-  // console.log('Ending Playback')
-};
 
-const togglePlay = function () {
-  isPlaying.value = !isPlaying.value;
-  // console.log(`isPlaying === ${isPlaying.value}`)
-  if (isPlaying) playBack(isPlaying);
-};
+  const playBack = async function () {
+    while (isPlaying.value === true) {
+      const newValue = sliderValue.value + 365 * 24 * 60 * 60 * 1000;
+      if (newValue >= end) {
+        sliderValue.value = start;
+        continue;
+      }
+
+      if (!ticks.includes(newValue)) {
+        const closestTick = ticks.reduce((a, b) =>
+          Math.abs(b - newValue) < Math.abs(a - newValue) ? b : a
+        );
+        sliderValue.value = closestTick;
+      } else {
+        sliderValue.value = newValue;
+      }
+
+      emit('update:modelValue', sliderValue.value);
+      await new Promise((resolve) => {
+        setTimeout(resolve, 1000);
+      });
+    }
+    // console.log('Ending Playback')
+  };
+
+  const togglePlay = function () {
+    isPlaying.value = !isPlaying.value;
+    if (isPlaying) playBack(isPlaying);
+  };
 </script>
 
 <template>
