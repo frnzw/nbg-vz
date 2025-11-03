@@ -222,7 +222,6 @@
     // console.log("Attempting to add " + Object.keys(stations).length + " markers")
     const placeMarkers = [];
 
-    // console.log('resizing markers for slidervalue: ' + props.sliderValue)
     for (const key of Object.keys(stations)) {
       if (!key) continue;
       if (stations.hasOwnProperty(key)) {

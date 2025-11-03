@@ -34,7 +34,6 @@
   const props = defineProps({
     map: Object,
     infobox: Object,
-    sliderValue: Number,
     dateSliderValue: Number,
   });
 

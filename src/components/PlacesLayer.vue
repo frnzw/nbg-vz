@@ -26,7 +26,6 @@
   const props = defineProps({
     map: Object,
     infobox: Object,
-    sliderValue: Number,
     dateSliderValue: Number,
     placesSelectedFromTrace: Array,
   });
@@ -114,7 +113,6 @@
     // console.log("Attempting to add " + Object.keys(stations).length + " markers")
     const placeMarkers = [];
 
-    // console.log('resizing markers for slidervalue: ' + props.sliderValue)
     for (const key of Object.keys(stations)) {
       if (!key) continue;
       if (stations.hasOwnProperty(key)) {
@@ -123,7 +121,6 @@
         const station = stations[key];
         //console.log(key, station)
 
-        // console.log('station.persons[sliderValue]: ' + station.persons[props.sliderValue])
         // console.log('mapStore.markerBaseSizePersonnel: ' + mapStore.markerBaseSizePersonnel)
         const [lastRecordedDate, lastPersonsBeforeSelectedTime] =
           getLastRecordBeforeSelectedDate(

@@ -36,7 +36,6 @@ Wiederholt besuchte Marker und "gegangene Wege" werden entsprechend der Häufigk
   const props = defineProps({
     map: Object,
     infobox: Object,
-    sliderValue: Number,
     dateSliderValue: Number,
     personsSelectedFromPlace: Array,
   });

@@ -15,7 +15,6 @@
 
   const emit = defineEmits(['mapIsReady']); // for passing map to parent component
 
-  const sliderValue = ref(1828);
   const dateSliderValue = ref(new Date('1827-12-31').getTime());
 
   // reactive switch for checking if props.map is initialized before rendering child components
@@ -167,7 +166,6 @@
     @person-pre-selection-cleared="clearPreSelectionPerson"
     :map="globalMap"
     :infobox="globalInfoBox"
-    :sliderValue="sliderValue"
     :dateSliderValue="dateSliderValue"
     :personsSelectedFromPlace="personsSelectedFromPlace"
   />
@@ -177,7 +175,6 @@
     @place-selected="switchToPlacesView"
     :map="globalMap"
     :infobox="globalInfoBox"
-    :sliderValue="sliderValue"
     :dateSliderValue="dateSliderValue"
   />
 </template>
