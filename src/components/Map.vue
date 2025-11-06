@@ -43,7 +43,7 @@
   const initMap = function () {
     const map = L.map('mapContainer').fitWorld().zoomIn();
 
-    if (mapStore.localApiKey) {
+    if (import.meta.env.DEV) {
       // WENN wir lokal sind (weil der Key gefunden wurde):
       // Hänge den Key an die URL an.
       stadiaStyleUrl = `${stadiaStyleUrl}?api_key=${mapStore.localApiKey}`;
