@@ -3,10 +3,7 @@
   import 'leaflet/dist/leaflet.css';
   import 'maplibre-gl/dist/maplibre-gl.css';
 
-  // JS-Module importieren
   import L from 'leaflet';
-
-  // WICHTIG: Importiere den Patch von dem von dir genannten Paket
   import '@maplibre/maplibre-gl-leaflet';
 
   import PlacesLayer from './PlacesLayer.vue';
@@ -16,7 +13,9 @@
   import PersonTraces from './TracesLayer.vue';
   import { useRoute, useRouter } from 'vue-router';
   import { createInfobox } from '../mapHelpers';
+  import { useMapStore } from '../stores/mapStore';
 
+  const mapStore = useMapStore();
   const route = useRoute();
   const router = useRouter();
 
@@ -40,14 +39,23 @@
   const personsSelectedFromPlace = ref([]);
   const placesSelectedFromTrace = ref([]);
 
+  let stadiaStyleUrl = mapStore.stadiaStyleUrl;
   const initMap = function () {
     const map = L.map('mapContainer').fitWorld().zoomIn();
 
-    const basemapStyleUrl =
-      'https://sgx.geodatenzentrum.de/gdz_basemapworld_vektor/styles/bm_web_wld_col.json';
+    if (mapStore.localApiKey) {
+      // WENN wir lokal sind (weil der Key gefunden wurde):
+      // Hänge den Key an die URL an.
+      stadiaStyleUrl = `${stadiaStyleUrl}?api_key=${mapStore.localApiKey}`;
+      console.log('Lokale Entwicklung: Verwende API-Key-Authentifizierung.');
+    } else {
+      // WENN wir in Produktion sind (Key nicht gefunden):
+      // Verwende die Basis-URL (Domain-Authentifizierung greift).
+      console.log('Produktion: Verwende Domain-Authentifizierung.');
+    }
+
     const vectorLayer = L.maplibreGL({
-      style: basemapStyleUrl,
-      validateStyle: false, //
+      style: stadiaStyleUrl,
     }).addTo(map);
 
     // // carto db tile layer example
