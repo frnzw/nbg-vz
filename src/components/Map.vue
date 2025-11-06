@@ -1,7 +1,14 @@
 <script setup>
   import { onMounted, ref, watch } from 'vue';
   import 'leaflet/dist/leaflet.css';
+  import 'maplibre-gl/dist/maplibre-gl.css';
+
+  // JS-Module importieren
   import L from 'leaflet';
+
+  // WICHTIG: Importiere den Patch von dem von dir genannten Paket
+  import '@maplibre/maplibre-gl-leaflet';
+
   import PlacesLayer from './PlacesLayer.vue';
   import PopulationLayer from './PopulationLayer.vue';
   import TimeSlider from './TimeSlider.vue';
@@ -36,21 +43,28 @@
   const initMap = function () {
     const map = L.map('mapContainer').fitWorld().zoomIn();
 
-    // carto db tile layer example
-    const tileLayer = L.tileLayer(
-      'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}' +
-        (L.Browser.retina ? '@2x.png' : '.png'),
-      {
-        attribution:
-          'Map tiles by <a href="https://carto.com/attributions">CARTO</a>, under CC BY 3.0. Data by <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        subdomains: 'abcd',
-        maxZoom: 20,
-        minZoom: 2,
-      }
-    );
+    const basemapStyleUrl =
+      'https://sgx.geodatenzentrum.de/gdz_basemapworld_vektor/styles/bm_web_wld_col.json';
+    const vectorLayer = L.maplibreGL({
+      style: basemapStyleUrl,
+      validateStyle: false, //
+    }).addTo(map);
 
-    // add tile layer
-    tileLayer.addTo(map);
+    // // carto db tile layer example
+    // const tileLayer = L.tileLayer(
+    //   'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}' +
+    //     (L.Browser.retina ? '@2x.png' : '.png'),
+    //   {
+    //     attribution:
+    //       'Map tiles by <a href="https://carto.com/attributions">CARTO</a>, under CC BY 3.0. Data by <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    //     subdomains: 'abcd',
+    //     maxZoom: 20,
+    //     minZoom: 2,
+    //   }
+    // );
+
+    // // add tile layer
+    // tileLayer.addTo(map);
 
     // add infobox (without any content at this point)
     const info = createInfobox();
