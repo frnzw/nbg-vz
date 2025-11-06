@@ -14,12 +14,9 @@
 
   const infoHeadline = 'Ort: Gemeinde';
   const infoText = `
-  Diese Ansicht zeigt die (potentielle) Größe der Gemeinden an den Missionsstationen anhand der Anzahl der laut ... in ihrem Umfeld wohnhaften Personen.
-  <br><br>
-  Die Größe der roten Kreismarker beschreibt die gesamte Anzahl der Personen, inklusive jener, die nicht Gemeindemitglieder waren.
-  <br><br>
-  Die Größe der blauen Ringe beschreibt die Anzahl der Personen, die 'volle' Gemeindemitglieder waren.
-  <br><br>
+  Diese Ansicht zeigt zwei Zahlen zur Größe der Gemeinden an den Missionsstationen, die im Rahmen des Forschungsnetzwerkes MKN aus den Missionsatlanten der Brüdergemeine erhoben wurden.  <br><br>
+  Die Größe der roten Kreismarker kodiert die gesamte Anzahl der im Umfeld des Missionsortes wohnhaften Personen, inklusive jener, die nicht Gemeindemitglieder waren.  <br><br>
+  Die Größe der blauen Ringe beschreibt die Anzahl der Personen , die ‘volle’ Gemeindemitglieder am jeweiligen Missionsort waren.  <br><br>
   Der Zeitpunkt der Erfassung ist (mangels Kenntnis des tatsächlichen Datums) wie für die Verzeichnisdaten auf den 31.12. festgelegt worden.
   Nicht für alle Jahre sind beide Zahlen vorhanden.
   <br>
