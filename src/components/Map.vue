@@ -36,12 +36,13 @@
   const initMap = function () {
     const map = L.map('mapContainer').fitWorld().zoomIn();
 
+    // carto db tile layer example
     const tileLayer = L.tileLayer(
       'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}' +
         (L.Browser.retina ? '@2x.png' : '.png'),
       {
         attribution:
-          '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>',
+          'Map tiles by <a href="https://carto.com/attributions">CARTO</a>, under CC BY 3.0. Data by <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
         subdomains: 'abcd',
         maxZoom: 20,
         minZoom: 2,
