@@ -14,12 +14,9 @@
 
   const infoHeadline = 'Ort: Gemeinde';
   const infoText = `
-  Diese Ansicht zeigt die (potentielle) Größe der Gemeinden an den Missionsstationen anhand der Anzahl der laut ... in ihrem Umfeld wohnhaften Personen.
-  <br><br>
-  Die Größe der roten Kreismarker beschreibt die gesamte Anzahl der Personen, inklusive jener, die nicht Gemeindemitglieder waren.
-  <br><br>
-  Die Größe der blauen Ringe beschreibt die Anzahl der Personen, die 'volle' Gemeindemitglieder waren.
-  <br><br>
+  Diese Ansicht zeigt zwei Zahlen zur Größe der Gemeinden an den Missionsstationen, die im Rahmen des Forschungsnetzwerkes MKN aus den Missionsatlanten der Brüdergemeine erhoben wurden.  <br><br>
+  Die Größe der roten Kreismarker kodiert die gesamte Anzahl der im Umfeld des Missionsortes wohnhaften Personen, inklusive jener, die nicht Gemeindemitglieder waren.  <br><br>
+  Die Größe der blauen Ringe beschreibt die Anzahl der Personen , die ‘volle’ Gemeindemitglieder am jeweiligen Missionsort waren.  <br><br>
   Der Zeitpunkt der Erfassung ist (mangels Kenntnis des tatsächlichen Datums) wie für die Verzeichnisdaten auf den 31.12. festgelegt worden.
   Nicht für alle Jahre sind beide Zahlen vorhanden.
   <br>
@@ -34,7 +31,6 @@
   const props = defineProps({
     map: Object,
     infobox: Object,
-    sliderValue: Number,
     dateSliderValue: Number,
   });
 
@@ -91,7 +87,6 @@
   };
 
   const createStationMarkersDate = function (stations) {
-    // console.log("Attempting to add " + Object.keys(stations).length + " markers")
     const pop1Markers = [];
     const pop2Markers = [];
 
@@ -176,14 +171,12 @@
   watch(
     () => props.dateSliderValue,
     () => {
-      // console.log('triggered watch for date slider!')
-      // console.log(`selected date: ${dateSliderValue} = ${new Date(dateSliderValue).toDateString()}`)
       if (currentPop1Markers && currentPop2Markers && popLayer1 && popLayer2) {
         if (popLayer1) popLayer1.clearLayers();
         if (popLayer2) popLayer2.clearLayers();
 
         createStationMarkersDate(placesStore.stations, props.map);
-        // showPopulationLayer(popLayer1, popLayer2, props.map);
+
         showLayer(popLayer1, props.map);
         showLayer(popLayer2, props.map);
       }
@@ -195,9 +188,6 @@
     pop1Markers,
     pop2Markers
   ) {
-    // console.log('On selected names update:');
-    // console.log(selectedValues); // !!! selectedValues comes from template here, can access directly not via .value
-
     // clear pre-selection prop in map component to avoid pre-selection being active next time
     // a user navigates here via tabs
     emit('place-pre-selection-cleared');
@@ -222,15 +212,11 @@
   };
 
   onMounted(async () => {
-    // console.log('Places view map prop: ');
-    // console.log(props.map);
-    // console.log('pathToDataFile: ' + placesStore.pathToDataFile)
     await placesStore.readData(
       placesStore.pathToDataFilePlaces,
       placesStore.pathToDataFilePersonsPlaces,
       placesStore.pathToDataFilePopulationPlaces
     );
-    console.log(placesStore.stations);
 
     // fill info box with content describing this layer
     props.infobox.update({ headline: infoHeadline, content: infoText });

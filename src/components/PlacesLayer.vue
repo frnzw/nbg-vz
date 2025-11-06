@@ -26,7 +26,6 @@
   const props = defineProps({
     map: Object,
     infobox: Object,
-    sliderValue: Number,
     dateSliderValue: Number,
     placesSelectedFromTrace: Array,
   });
@@ -111,20 +110,13 @@
   };
 
   const createStationMarkersDate = function (stations) {
-    // console.log("Attempting to add " + Object.keys(stations).length + " markers")
     const placeMarkers = [];
 
-    // console.log('resizing markers for slidervalue: ' + props.sliderValue)
     for (const key of Object.keys(stations)) {
       if (!key) continue;
       if (stations.hasOwnProperty(key)) {
-        //console.log(key)
-
         const station = stations[key];
-        //console.log(key, station)
 
-        // console.log('station.persons[sliderValue]: ' + station.persons[props.sliderValue])
-        // console.log('mapStore.markerBaseSizePersonnel: ' + mapStore.markerBaseSizePersonnel)
         const [lastRecordedDate, lastPersonsBeforeSelectedTime] =
           getLastRecordBeforeSelectedDate(
             station,
@@ -164,15 +156,11 @@
     placeLayer = L.layerGroup(filteredByNamesPlaces);
     currentPlaceMarkers = placeMarkers;
     placeLayer.addTo(props.map);
-
-    // console.log('markers added to layergroup')
   };
 
   watch(
     () => props.dateSliderValue,
     () => {
-      // console.log('triggered watch for date slider!')
-      // console.log(`selected date: ${dateSliderValue} = ${new Date(dateSliderValue).toDateString()}`)
       if (currentPlaceMarkers && placeLayer) {
         if (placeLayer) placeLayer.clearLayers();
 
@@ -187,8 +175,7 @@
     // a user navigates here via tabs
     emit('place-pre-selection-cleared');
     if (markers && placeLayer) {
-      // console.log('On selected names update:')
-      // console.log(selectedValues) // !!! selectedValues comes from template here, can access directly not via .value
+      // !!! selectedValues comes from template here, can access directly not via .value
       placeLayer.clearLayers();
       const filteredByStationId =
         selectedValues.length == 0
@@ -199,10 +186,6 @@
   };
 
   onMounted(async () => {
-    // console.log('Places view test prop: ' + props.test);
-    // console.log('Places view map prop: ');
-    // console.log(props.map);
-    // console.log('pathToDataFile: ' + placesStore.pathToDataFile)
     if (!placesStore.loaded) {
       await placesStore.readData(
         placesStore.pathToDataFilePlaces,
@@ -210,7 +193,6 @@
         placesStore.pathToDataFilePopulationPlaces
       );
     }
-    console.log(placesStore.stations);
 
     // fill info box with content describing this layer
     props.infobox.update({ headline: infoHeadline, content: infoText });

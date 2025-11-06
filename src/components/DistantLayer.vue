@@ -219,10 +219,8 @@
   };
 
   const createStationMarkersDate = function (stations) {
-    // console.log("Attempting to add " + Object.keys(stations).length + " markers")
     const placeMarkers = [];
 
-    // console.log('resizing markers for slidervalue: ' + props.sliderValue)
     for (const key of Object.keys(stations)) {
       if (!key) continue;
       if (stations.hasOwnProperty(key)) {
@@ -233,7 +231,6 @@
       }
     }
 
-    // console.log(placeMarkers);
     placeLayer = L.layerGroup(placeMarkers);
     allPlaceMarkers = placeMarkers;
     placeLayer.addTo(props.map);
@@ -267,9 +264,6 @@
     const progressOnLine = (time - startTime) / duration;
 
     if (progressOnLine >= 1) {
-      // if (markerEnd.data.stationId === 'Genadendal') {
-      //   console.log(`radius Genadendal END: ${markerEnd.getRadius()}`);
-      // }
       persMarker.setLatLng(markerEnd.getLatLng());
       // update end markers person count and radius
       markerEnd.data.persCount = markerEnd.data.persCount + 1;
@@ -281,24 +275,10 @@
           mapStore.markerBaseSizePersonnel
         )
       );
-      // if (markerEnd.data.stationId === 'Genadendal') {
-      //   console.log(`markerEnd.data.persCount: ${markerEnd.data.persCount}`);
-      //   console.log(
-      //     `minPersonnelCountAllStations: ${minPersonnelCountAllStations}`
-      //   );
-      //   console.log(
-      //     `mapStore.markerBaseSizePersonnel: ${mapStore.markerBaseSizePersonnel}`
-      //   );
-      //   console.log(`radius Genadendal END UPDATED: ${markerEnd.getRadius()}`);
-      // }
+
       persMarker.removeFrom(props.map);
       return; // end animation
     }
-
-    // if (!markerStart)
-    //   console.log(`persId: ${persId}; markerEnd: ${markerEnd.stationId}`);
-    // if (!markerEnd)
-    //   console.log(`persId: ${persId}; markerStart: ${markerStart.stationId}`);
 
     // transform LatLng to pixel coordinates with native leaflet function
     const startPoint = props.map.latLngToLayerPoint(markerStart.getLatLng());
@@ -355,9 +335,7 @@
     // update start markers radius here
     if (markerStart.data.persCount > 0)
       markerStart.data.persCount = markerStart.data.persCount - 1;
-    // if (markerStart.data.stationId === 'Genadendal') {
-    //   console.log(`radius Genadendal START: ${markerStart.getRadius()}`);
-    // }
+
     markerStart.setRadius(
       scaleRadiusProportionalFlannery(
         markerStart.data.persCount,
@@ -365,11 +343,7 @@
         mapStore.markerBaseSizePersonnel
       )
     );
-    // if (markerStart.data.stationId === 'Genadendal') {
-    //   console.log(
-    //     `radius Genadendal START UPDATED: ${markerStart.getRadius()}`
-    //   );
-    // }
+
     requestAnimationFrame(
       async (t) =>
         await animateMarker(
@@ -392,10 +366,6 @@
   // ----------------- Lifecycle Functions -------------------------
 
   onMounted(async () => {
-    console.log('RENDERED DISTANT LAYER');
-    // console.log('Distant view map prop: ');
-    // console.log(props.map);
-    // console.log('pathToDataFile: ' + placesStore.pathToDataFile);
     if (!placesStore.loaded)
       await placesStore.readData(
         placesStore.pathToDataFilePlaces,
@@ -410,9 +380,6 @@
     // fill info box with content describing this layer
     props.infobox.update({ headline: infoHeadline, content: infoText });
 
-    console.log(placesStore.stations);
-    console.log(personsStore.persons);
-
     if (allPlaceMarkers === undefined)
       createStationMarkersDate(placesStore.stations, props.map);
 
@@ -424,20 +391,12 @@
   watch(
     () => props.dateSliderValue,
     async (newDateSliderValue, oldDateSliderValue) => {
-      // console.log(
-      //   `triggered watch for slider! old = ${oldDateSliderValue}, new = ${newDateSliderValue}`
-      // );
-      // console.log(
-      //   `mapStore.dateFirstRecordsPlace ${mapStore.dateFirstRecordsPlace}`
-      // );
-
       // if newDate is first date there are records for AND we have moved FORWARDS in time:
       // (re-)create all markers having data for this date, (re-)create layer
       if (
         newDateSliderValue === mapStore.dateFirstRecordsPlace &&
         newDateSliderValue > oldDateSliderValue
       ) {
-        // console.log('Stepped INTO data range!');
         createStationMarkersDate(placesStore.stations, props.map);
       }
       // if oldDate is first date there are records for AND we have moved BACKWARDS in time:
@@ -446,7 +405,6 @@
         oldDateSliderValue === mapStore.dateFirstRecordsPlace &&
         newDateSliderValue < oldDateSliderValue
       ) {
-        // console.log('Stepped OUT data range: BEFORE!');
         hideLayer(placeLayer, props.map);
       }
 
@@ -477,15 +435,12 @@
                 .map((m) => m.data.stationId)
                 .includes(currentStation.stationId)
             ) {
-              // console.log(`Adding markers for station:`);
-              // console.log(placesStore.stations[currentStation.stationId]);
               // ! create marker using the entry from places store, currentStation-Object from above
               // is from person.stationsDate entry -> does not contain all data for marker creation
               const circle = createStationMarker(
                 placesStore.stations[currentStation.stationId]
               );
-              // console.log(`Created marker:`);
-              // console.log(circle);
+
               if (circle) allPlaceMarkers.push(circle);
               circle.addTo(placeLayer);
             }
@@ -495,23 +450,16 @@
                 .map((m) => m.data.stationId)
                 .includes(previousStation.stationId)
             ) {
-              // console.log(`Adding markers for station:`);
-              // console.log(placesStore.stations[previousStation.stationId]);
               // ! create marker using the entry from places store, currentStation-Object from above
               // is from person.stationsDate entry -> does not contain all data for marker creation
               const circle = createInitialMarker(
                 placesStore.stations[currentStation.stationId]
               );
-              // console.log(`Created marker:`);
-              // console.log(circle);
+
               if (circle) allPlaceMarkers.push(circle);
               circle.addTo(placeLayer);
             }
 
-            // console.log(
-            //   `Retrieving markers for ${person.persId} from ${JSON.stringify(previousStation)} to ${JSON.stringify(currentStation)}`
-            // );
-            // console.log(allPlaceMarkers.map((m) => m.data.stationId));
             // get the actual markers for the previous and the next station
             // this would be easier with a hashmap built upon initial marker creation
             let currentMarker;
@@ -549,8 +497,6 @@
                 currentMarker = m;
             }
 
-            // console.log(`Trigger animation for ${person.personId} from ${JSON.stringify(nextMarker.data)} to ${JSON.stringify(currentMarker.data)}`);
-
             animateMarkerPromises.push(
               createNativeMovingMarker(
                 nextMarker,
@@ -571,7 +517,6 @@
       // need to be taken into account for total person count on a particular date
       await Promise.all(animateMarkerPromises);
 
-      // console.log('animations finished!');
       placeLayer.clearLayers();
       createStationMarkersDate(placesStore.stations, props.map);
     }

@@ -176,10 +176,9 @@ export const usePlacesStore = defineStore('places', () => {
         ...stationMinPopulationCounts
       );
 
-      console.log('Loaded placesStore.');
       loaded.value = true;
     } catch (error) {
-      console.log(error);
+      console.error(error);
       return undefined;
     }
   }

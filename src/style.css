@@ -1,3 +1,8 @@
+.maplibregl-map {
+  filter: grayscale(100%) brightness(1.05);
+}
+
+
 /* INFO BOX STYLING */
 
 
