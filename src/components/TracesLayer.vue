@@ -2,7 +2,7 @@
   import L from 'leaflet';
   import 'leaflet-polylinedecorator';
   import 'leaflet/dist/leaflet.css';
-  import { useMapStore } from '../stores/mapStore';
+  import { useMapStore } from '../stores/mapStore.js';
   import {
     createWikidataLinkAndIcon,
     createPlaceViewLinkAndIcon,
@@ -11,7 +11,7 @@
     hideLayer,
     filterMarkersByDataKey,
   } from '../mapHelpers.js';
-  import { usePersonsStore } from '../stores/personsStore';
+  import { usePersonsStore } from '../stores/personsStore.js';
   import { onMounted, onUnmounted, watch, ref, defineEmits } from 'vue';
   import SearchField from './SearchField.vue';
 

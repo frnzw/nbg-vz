@@ -6,7 +6,7 @@
   import PopulationLayer from './PopulationLayer.vue';
   import TimeSlider from './TimeSlider.vue';
   import DistantLayer from './DistantLayer.vue';
-  import PersonTraces from './PersonTraces.vue';
+  import PersonTraces from './TracesLayer.vue';
   import { useRoute, useRouter } from 'vue-router';
   import { createInfobox } from '../mapHelpers';
 
