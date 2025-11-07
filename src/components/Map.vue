@@ -44,35 +44,17 @@
     const map = L.map('mapContainer').fitWorld().zoomIn();
 
     if (import.meta.env.DEV) {
-      // WENN wir lokal sind (weil der Key gefunden wurde):
-      // Hänge den Key an die URL an.
+      // local development requires stadia API key to avoid suspension when hitting tile rate limits
       stadiaStyleUrl = `${stadiaStyleUrl}?api_key=${mapStore.localApiKey}`;
-      console.log('Lokale Entwicklung: Verwende API-Key-Authentifizierung.');
     } else {
-      // WENN wir in Produktion sind (Key nicht gefunden):
-      // Verwende die Basis-URL (Domain-Authentifizierung greift).
-      console.log('Produktion: Verwende Domain-Authentifizierung.');
+      // deployment uses domain name authentication
     }
 
     const vectorLayer = L.maplibreGL({
       style: stadiaStyleUrl,
-    }).addTo(map);
+    });
 
-    // // carto db tile layer example
-    // const tileLayer = L.tileLayer(
-    //   'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}' +
-    //     (L.Browser.retina ? '@2x.png' : '.png'),
-    //   {
-    //     attribution:
-    //       'Map tiles by <a href="https://carto.com/attributions">CARTO</a>, under CC BY 3.0. Data by <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    //     subdomains: 'abcd',
-    //     maxZoom: 20,
-    //     minZoom: 2,
-    //   }
-    // );
-
-    // // add tile layer
-    // tileLayer.addTo(map);
+    vectorLayer.addTo(map);
 
     // add infobox (without any content at this point)
     const info = createInfobox();
