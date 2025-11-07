@@ -19,7 +19,7 @@
           <b>Personen und Orte</b> aus dem Kontext der
           <b>Herrnhuter Brüdergemeine</b> im 19. Jahrhundert. Sie entstand im
           Rahmen eines Praktikums von Franz Wendt (Student M. Sc. Digital
-          Humanities, Universität Leipzig) am TextLab der SLUB in Dresden. 
+          Humanities, Universität Leipzig) am TextLab der SLUB in Dresden.
           <br />
           <br />
           Die Anwendung ist ein <b>Prototyp</b> auf Grundlage
@@ -34,15 +34,28 @@
           Die Visualisierung basiert auf folgenden <b>Quellen</b>:
           <br />
           <br />
-          <ul style="margin-left: 20px">
-            <li><b>Aufenthaltsorte:</b> ausgewählte Personenverzeichnisse aus den Nachrichten aus der Brüdergemeine</li>
-            <li><b>Metadaten Personen:</b> Personenregister von südafrikanischen Missionen ("Die in Afrika tätigen Geschwister, 1737-1962". Zusammengestellt aus dem Unitätsarchiv der Brüdergemeine Herrnhut von ... )</li>
-            <li><b>Metadaten Orte:</b> Missionsatlanten der Brüdergemeine</li>
-            <li>Ergänzungen der o.g. Quellen durch Recherchearbeit innerhalb des MKN</li>
-          </ul>
-          <br />
-          <br />
-          Für die <b>Anzahl der laut NBG-Verzeichnissen als Personal anwesenden</b>
+        </p>
+        <ul style="margin-left: 20px">
+          <li>
+            <b>Aufenthaltsorte:</b> ausgewählte Personenverzeichnisse aus den
+            Nachrichten aus der Brüdergemeine
+          </li>
+          <li>
+            <b>Metadaten Personen:</b> Personenregister von südafrikanischen
+            Missionen ("Die in Afrika tätigen Geschwister, 1737-1962".
+            Zusammengestellt aus dem Unitätsarchiv der Brüdergemeine Herrnhut
+            von ... )
+          </li>
+          <li><b>Metadaten Orte:</b> Missionsatlanten der Brüdergemeine</li>
+          <li>
+            Ergänzungen der o.g. Quellen durch Recherchearbeit innerhalb des MKN
+          </li>
+        </ul>
+        <br />
+        <br />
+        <p>
+          Für die
+          <b>Anzahl der laut NBG-Verzeichnissen als Personal anwesenden</b>
           Personen wurde ein Testdatensatz mit folgenden Einschränkungen von
           Hand erfasst:
           <br />
@@ -91,9 +104,11 @@
           </li>
         </ul>
         <br />
-
-          Für die <b>Größe der Gemeindeorte</b> wurde auf Daten aus den Missionsatlanten der Brüdergemeine mit folgenden
-          Einschränkungen zurückgegriffen:
+        <p>
+          Für die <b>Größe der Gemeindeorte</b> wurde auf Daten aus den
+          Missionsatlanten der Brüdergemeine mit folgenden Einschränkungen
+          zurückgegriffen:
+        </p>
         <br />
         <br />
         <ul style="margin-left: 20px">
@@ -102,7 +117,8 @@
           </li>
           <li>
             Einzelnes Jahr 1860 für alle Missionsstationen, die in den
-            ausgewählten Verzeichnissen gelistet sind und für die Geokoordinaten vorliegen
+            ausgewählten Verzeichnissen gelistet sind und für die Geokoordinaten
+            vorliegen
           </li>
         </ul>
         <br />
