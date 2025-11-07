@@ -2,25 +2,52 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import Papa from 'papaparse';
 
+/**
+ * Store for managing person data, including their stations and choir affiliations over time.
+ * This store handles fetching, parsing, and aggregating data from CSV files.
+ *
+ * Import, parsing, extraction functions are specific to different datasets.
+ */
 export const usePersonsStore = defineStore('persons', () => {
+  /**
+   * @type {import('vue').Ref<boolean>}
+   * Tracks whether the person data has been successfully loaded.
+   */
   let loaded = ref(false);
+
+  /**
+   * @type {string}
+   * Path to the persons data file.
+   */
   const pathToDataFilePersons = `${import.meta.env.BASE_URL}persons_vis.csv`;
+
+  /**
+   * @type {string}
+   * Path to the file linking persons to places (stations).
+   */
   const pathToDataFilePersonsPlaces = `${import.meta.env.BASE_URL}persons_places_vis.csv`;
+
+  /**
+   * @type {import('vue').Ref<Object<string, Object>>}
+   * Main data of this store.
+   * A reactive object holding all person data, indexed by `persId`.
+   * Each person object contains aggregated and processed data for quick access.
+   */
   const persons = ref({});
 
   /**
-   *
-   * Import, parsing, extraction functions are specific to different datasets.
-   */
-
-  /**
-   * Extract a persons recorded stations by date, dictionary style.
-   * @param {*} data
-   * @param {*} personId
-   * @returns
+   * Extract a person's recorded stations by date, dictionary style.
+   * @param {Array<Object>} data - The raw data parsed from the persons_places_vis.csv file.
+   * @param {string | number} personId - The ID of the person to extract data for.
+   * @returns {Array<[Object<number, Object>, Array<number>]>}
+   * An array containing two elements:
+   * 1. An object mapping timestamps to station data ({ date, stationId, lat, long }).
+   * 2. An array of sorted timestamps (as numbers).
    */
   function extractStationsPerPersonDate(data, personId) {
     const filteredByPerson = data.filter((entry) => entry.persId === personId);
+
+    // Reduce the filtered data into an object keyed by timestamp
     const stationsByDate = filteredByPerson.reduce((acc, entry) => {
       // build date from year, assuming year-12-31 for NBG-VZ data (source specifies only as "end of year")
       const d = new Date(`${entry.year}-12-31`);
@@ -36,14 +63,26 @@ export const usePersonsStore = defineStore('persons', () => {
       return acc;
     }, {});
 
+    // Create a sorted list of dates for chronological access
     const sortedDates = Object.keys({ ...stationsByDate })
       .sort((a, b) => a - b)
       .map((d) => parseInt(d));
     return [stationsByDate, sortedDates];
   }
 
+  /**
+   * Extracts a person's recorded choir affiliations by date.
+   * @param {Array<Object>} data - The raw data parsed from the persons_places_vis.csv file.
+   * @param {string | number} personId - The ID of the person to extract data for.
+   * @returns {Array<[Object<number, Object>, Array<number>]>}
+   * An array containing two elements:
+   * 1. An object mapping timestamps to choir data ({ date, choir }).
+   * 2. An array of sorted timestamps (as numbers).
+   */
   function extractChoirPerPersonDate(data, personId) {
     const filteredByPerson = data.filter((entry) => entry.persId === personId);
+
+    // Reduce the filtered data into an object keyed by timestamp
     const choirByDate = filteredByPerson.reduce((acc, entry) => {
       // build date from year, assuming year-12-31 for NBG-VZ data (source specifies only as "end of year")
       const d = new Date(`${entry.year}-12-31`);
@@ -53,6 +92,7 @@ export const usePersonsStore = defineStore('persons', () => {
       return acc;
     }, {});
 
+    // Create a sorted list of dates for chronological access
     const sortedDatesChoir = Object.keys({ ...choirByDate })
       .sort((a, b) => a - b)
       .map((d) => parseInt(d));
@@ -61,13 +101,15 @@ export const usePersonsStore = defineStore('persons', () => {
   }
 
   /**
-   * Aggregate a persons recorded stations, summing up multiple records for the same station in
-   * a row resulting in a stay from...to... , listing separate stays of a person in an ordered
-   * subattribute (person.groupedStationsAggr[stationId].stays).
+   * Aggregate a person's recorded stations, summing up consecutive records for the same station to
+   *  a stay from...to... .
    *
-   * @param {*} data
-   * @param {*} personId
-   * @returns
+   * @param {Array<Object>} data - The raw data parsed from the persons_places_vis.csv file.
+   * @param {string | number} personId - The ID of the person to aggregate data for.
+   * @returns {Array<[Array<Object>, Object<string, Object>]>}
+   * An array containing two elements:
+   * 1. `orderedStationsAggr`: An array of objects ({ stationId, stayIdx }) representing stays in chronological order.
+   * 2. `groupedStationsAggr`: An object mapping `stationId` to aggregated data, including a `stays` object.
    */
   const aggregateStations = function (data, personId) {
     // first: stations per person, ordered by date
@@ -82,11 +124,12 @@ export const usePersonsStore = defineStore('persons', () => {
 
       // station was visited before
       if (acc[entry.stationId]) {
+        // Get all stay indices for the current station
         const idx = Object.keys(acc[entry.stationId].stays).map((k) => {
           return parseInt(k);
         });
-        const idxMax = Math.max(...idx);
-        // check if person stays in same place
+        const idxMax = Math.max(...idx); // Find the most recent stay index
+        // check if person stays in same place (is the last recorded station the same as the current one?)
         if (
           acc[entry.stationId].stationId ===
           orderedStationsAggr[orderedStationsAggr.length - 1].stationId
@@ -94,24 +137,28 @@ export const usePersonsStore = defineStore('persons', () => {
           // -> update .dateTo of most recent stay
           acc[entry.stationId].stays[idxMax].dateTo = d.getTime();
         } else {
-          // -> add new subentry to acc with stationId+_count
+          // -> Person returned to this station after being somewhere else.
+          // -> Add new subentry to acc.stays
           acc[entry.stationId].stays[idxMax + 1] = {
             dateFrom: d.getTime(),
             dateTo: d.getTime(),
           };
+          // Log this new stay in the chronological list
           orderedStationsAggr.push({
             stationId: entry.stationId,
             stayIdx: idxMax + 1,
           });
         }
       } else {
-        // create inital acc entry
+        // -> This is the first time the person is recorded at this station.
+        // -> create inital acc entry
         acc[entry.stationId] = {
           stationId: entry.stationId,
           lat: entry.lat,
           long: entry.long,
         };
 
+        // Create the first stay record for this station
         acc[entry.stationId].stays = {
           0: {
             dateFrom: d.getTime(),
@@ -119,6 +166,7 @@ export const usePersonsStore = defineStore('persons', () => {
           },
         };
 
+        // Log this first stay in the chronological list
         orderedStationsAggr.push({ stationId: entry.stationId, stayIdx: 0 });
       }
       return acc;
@@ -127,6 +175,13 @@ export const usePersonsStore = defineStore('persons', () => {
     return [orderedStationsAggr, groupedStationsAggr];
   };
 
+  /**
+   * Fetches, parses, and processes all person-related data from CSV files.
+   * Populates the `persons` ref and sets `loaded` to true.
+   * @param {string} pathToDataFilePersons - Path to the persons CSV.
+   * @param {string} pathToDataFilePersonsPlaces - Path to the persons-places CSV.
+   * @returns {Promise<void>}
+   */
   async function readData(pathToDataFilePersons, pathToDataFilePersonsPlaces) {
     try {
       // kick off async data loading
@@ -146,6 +201,8 @@ export const usePersonsStore = defineStore('persons', () => {
         );
       }
       const csvStringPersons = await personsRes.text();
+
+      // Use PapaParse to convert CSV string to JSON
       const dataPersons = Papa.parse(csvStringPersons, {
         header: true,
         dynamicTyping: true,
@@ -166,26 +223,34 @@ export const usePersonsStore = defineStore('persons', () => {
 
       // create entry in store, adding metadata about the place
       for (const person of dataPersons) {
+        // Skip rows that are empty or don't have a person ID
         if (!person.persId) continue;
 
-        // some aggregation
-        // different structures for same data – redundant, but saves time filtering / aggregation
-        // for interaction / animations
+        // --- Data Aggregation ---
+        // Pre-calculate and store different data structures for performance.
+        // This avoids costly filtering and aggregation during user interaction.
         // these redundant structures should come from a backend in the future, only being loaded here
+
+        // 1. Stations by date (for timeline)
         const [stationsByDate, sortedDatesStation] =
           extractStationsPerPersonDate(dataPersonsPlaces, person.persId);
+
+        // 2. Choir by date (for timeline)
         const [choirByDate, sortedDatesChoir] = extractChoirPerPersonDate(
           dataPersonsPlaces,
           person.persId
         );
+
+        // 3. Aggregated stays (for "Traces" View, avoiding duplicate markers and trace symbols)
         const [orderedStationsAggr, groupedStationsAggr] = aggregateStations(
           dataPersonsPlaces,
           person.persId
         );
 
+        // Populate the persons ref with the processed data
         persons.value[person.persId] = {
           persId: person.persId,
-          wdId: person.wdId,
+          wdId: person.wdId, // Wikidata ID
           familyName: person.familyName,
           birthName: person.birthName,
           givenName: person.givenName,
@@ -200,18 +265,40 @@ export const usePersonsStore = defineStore('persons', () => {
         };
       }
 
+      // Signal that data loading is complete
       loaded.value = true;
     } catch (error) {
       console.error(error);
+      // Don't set loaded to true, so UI can show an error or loading state
       return undefined;
     }
   }
 
   return {
+    /**
+     * @type {string}
+     * Path to the persons data file.
+     */
     pathToDataFilePersons,
+    /**
+     * @type {string}
+     * Path to the file linking persons to places (stations).
+     */
     pathToDataFilePersonsPlaces,
+    /**
+     * @type {Function}
+     * Kicks off the data loading and processing.
+     */
     readData,
+    /**
+     * @type {import('vue').Ref<boolean>}
+     * A reactive boolean indicating if data has finished loading.
+     */
     loaded,
+    /**
+     * @type {import('vue').Ref<Object<string, Object>>}
+     * The reactive object holding all processed person data, indexed by `persId`.
+     */
     persons,
   };
 });
