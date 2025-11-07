@@ -488,7 +488,7 @@ export const scaleRadiusProportional = function (value, minValue, minRadius) {
  * This adjusts for human perceptual underestimation of larger circles.
  * @param {number} value - The data value to scale.
  * @param {number} minValue - The minimum value in the dataset (for ratio).
- *CH @param {number} minRadius - The radius corresponding to the minimum value.
+ * @param {number} minRadius - The radius corresponding to the minimum value.
  * @returns {number} The calculated, perceptually-adjusted radius.
  * @see Barvir, R., Holub, M., & Vondrakova, A. (2025). Proportional Symbol Maps: Value-Scale Types, Online Value-Scale Generator and User Perspectives. ISPRS International Journal of Geo-Information, 14(9), 340. https://doi.org/10.3390/ijgi14090340
  */
