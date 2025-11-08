@@ -1,15 +1,20 @@
 <template>
+  <!-- A container to center the card vertically and horizontally in the viewport -->
   <v-container class="d-flex align-center justify-center fill-height pa-0">
+    <!-- The main content card, constrained in size -->
     <v-card
       class="d-flex flex-column"
       style="max-height: 90vh; max-width: 70vw"
       elevation="4"
     >
+      <!-- Card Header: Title -->
       <v-card-title class="text-center flex-grow-1"> About </v-card-title>
+      <!-- Card Header: Subtitle -->
       <v-card-subtitle class="text-center flex-grow-1"
         >Informationen zu Umfang und Daten der Visualisierung</v-card-subtitle
       >
 
+      <!-- Card Body: Scrollable text content -->
       <v-card-text
         class="flex-grow-1 overflow-y-auto mx-auto"
         style="max-width: 70%"
@@ -123,6 +128,8 @@
         </ul>
         <br />
       </v-card-text>
+
+      <!-- Card Actions: Contains the external link button -->
       <v-card-actions class="mx-auto flex-shrink-0">
         <v-btn
           color="deep-purple-lighten-2"
