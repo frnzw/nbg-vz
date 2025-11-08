@@ -12,15 +12,8 @@
 
   // Import Vue Router and helpers
   import { useRoute, useRouter } from 'vue-router';
-  import { useMapStore } from '../stores/mapStore';
 
   // --- Store, Router, and Emit Setup ---
-
-  /**
-   * @type {import('pinia').Store}
-   * The Pinia store for map configuration.
-   */
-  const mapStore = useMapStore();
 
   /**
    * @type {import('vue-router').RouteLocationNormalizedLoaded}
