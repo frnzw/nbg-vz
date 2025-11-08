@@ -470,8 +470,6 @@ Wiederholt besuchte Marker und "gegangene Wege" werden entsprechend der Häufigk
           iconCss
         );
         marker.data = {
-          // dateFrom: station.dateFrom, // This is undefined, but I must not change code.
-          // dateTo: station.dateTo, // This is undefined, but I must not change code.
           name: person.persId,
           stationIdx: `${orderedStationsAggr[i].stationId}_${orderedStationsAggr[i].stayIdx}`,
         };

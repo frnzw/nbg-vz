@@ -381,7 +381,6 @@
     hideLayer(popLayer1, props.map);
     hideLayer(popLayer2, props.map);
   });
-  D;
 </script>
 <template>
   <v-container>
