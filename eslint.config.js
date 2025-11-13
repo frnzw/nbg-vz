@@ -1,15 +1,18 @@
 // eslint.config.js
-import js from "@eslint/js";
-import eslintPluginVue from "eslint-plugin-vue";
-import eslintConfigPrettier from "eslint-config-prettier";
-import vueEslintParser from "vue-eslint-parser";
-import globals from "globals"; // Explicitly installed package to define global environment variables
+/**
+ * This config has been generated with Google Gemini Pro 2.5, then tested and debugged manually.
+ */
+import js from '@eslint/js';
+import eslintPluginVue from 'eslint-plugin-vue';
+import eslintConfigPrettier from 'eslint-config-prettier';
+import vueEslintParser from 'vue-eslint-parser';
+import globals from 'globals'; // Explicitly installed package to define global environment variables
 
 export default [
   // 0. Environment Setup (Browser Globals)
   // Defines global variables like 'document', 'console', and 'fetch' for all relevant files.
   {
-    files: ["**/*.{js,vue,ts,jsx,tsx}"],
+    files: ['**/*.{js,vue,ts,jsx,tsx}'],
     languageOptions: {
       globals: {
         ...globals.browser, // Merges all standard browser globals from the 'globals' package.
@@ -25,7 +28,7 @@ export default [
 
   // 2. Vue-specific configuration for .vue and .js files
   {
-    files: ["**/*.{js,vue}"],
+    files: ['**/*.{js,vue}'],
     plugins: {
       vue: eslintPluginVue,
     },
@@ -33,21 +36,21 @@ export default [
       parser: vueEslintParser, // Use the dedicated parser for Vue files
       // Globals needed for Vue 3's Composition API features (e.g., defineProps)
       globals: {
-        "vue/setup-compiler-macros": true,
+        'vue/setup-compiler-macros': true,
       },
       ecmaVersion: 2021, // Use ES2021 syntax
-      sourceType: "module",
+      sourceType: 'module',
     },
 
     // Extends from the highly recommended Vue 3 rule set
-    ...eslintPluginVue.configs["vue3-recommended"],
+    ...eslintPluginVue.configs['vue3-recommended'],
 
     // Custom rules and overrides (Vuetify compatibility)
     rules: {
       // Off: Allows single-word component names (common for Vuetify components)
-      "vue/multi-word-component-names": "off",
+      'vue/multi-word-component-names': 'off',
       // Off: Allows component names that may conflict with native HTML tags
-      "vue/no-reserved-component-names": "off",
+      'vue/no-reserved-component-names': 'off',
     },
   },
 

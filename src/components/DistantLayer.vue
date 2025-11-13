@@ -244,6 +244,9 @@
   /**
    * The core animation function, called recursively by `requestAnimationFrame`.
    * Calculates a marker's position along a line and updates its LatLng.
+   *
+   * The logic for using requestAnimationFrame and updating marker positions was generated with OpenAI GPT-5.
+   *
    * @param {number} time - The high-resolution timestamp provided by `requestAnimationFrame`.
    * @param {L.Circle} persMarker - The temporary (blue) marker that moves.
    * @param {L.CircleMarker} markerStart - The station marker (start).
@@ -364,6 +367,8 @@
     );
 
     // Kick off the animation loop
+    // The logic for using requestAnimationFrame and updating marker positions was generated
+    // with  OpenAI GPT-5.
     requestAnimationFrame(
       async (t) =>
         await animateMarker(
@@ -378,7 +383,7 @@
         )
     );
 
-    // Return a promise that resolves when the animation is *supposed* to be done.
+    // Sort of a hack – Return a promise that resolves when the animation is *supposed* to be done.
     // This is used by `Promise.all` in the watcher.
     return new Promise((resolve) => {
       setTimeout(resolve, 500);

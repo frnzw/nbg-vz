@@ -1,24 +1,26 @@
 # NBG-VZ / Herrnhut: Wer, wo, wann?
 
-Work in progress.
-
 Visualierungsprototyp für Aufenthaltsorte Herrnhuther Missionar:innen.
 
 Der Prototyp basiert auf den Quellen ausgewählter "Verzeichnisse" aus den "Nachrichten aus der Brüdergemeine".
 
+### Dokumentation
+
+Die Dokumentation, insbesondere die Kommentare im JS-Doc Stil wurden zu großen Teilen mit Google Gemini Pro 2.5 erzeugt, geprüft und ggf. inhaltlich angepasst.
+
 ### Code Formatting and Linting
 
-The project uses ESLint and Prettier for code linting and formatting.
+Das Projekt nutzt ESLint und Prettier für Code Linting und Formatierung.
 
 **VSCodium / VS Code Editor Setup**
 
-Extensions used:
+Empfohlene Erweiterungen:
 
 - ESLint (by dbaeumer)
 - Prettier - Code formatter (by esbenp)
 - Vue (by Vue)
 
-Settings used in `settings.json` (User) --- ⚠️ proceed with caution when editing your own!
+Einstellungen in `settings.json` (User) --- ⚠️ Vorsicht bei Anpassungen der Einstellungen im eigenen Editor!
 
 ```
 {

@@ -64,6 +64,9 @@
    * Watches the local `sliderValue` for changes (e.g., from the user dragging).
    * It "snaps" the value to the nearest defined tick and then emits the
    * `update:modelValue` event to the parent.
+   *
+   * This "snap-to-tick"-logic was generated with OpenAI GPT-5.
+   *
    * @param {number} val - The new, "raw" value from the slider.
    */
   watch(sliderValue, (val) => {
